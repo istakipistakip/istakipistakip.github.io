@@ -7,12 +7,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="istaakip">
-<link rel="apple-touch-icon" href="icon-180.png">
-<link rel="icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="İşTakip">
+<link rel="apple-touch-icon" href="ikon-180.png">
+<link rel="icon" href="ikon-180.png">
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="leaflet.css">
-<title>istaakip</title>
+<title>İşTakip Mobil</title>
 <style>
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html,body{ margin:0; height:100%; }
@@ -1139,7 +1139,7 @@ html.dark .durb{ background:#1a2335 !important; border-color:#2a3650 !important;
 </style>
 </head>
 <body>
-<div id="app"><main id="main"><div class="hos" id="acilis"><div class="hos-logo"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M8 3L4 21M16 3l4 18"/><path d="M12 4v3M12 10.5v3M12 17v3" stroke="#fde68a"/></svg></div><h1>istaakip</h1><div class="hos-alt" data-kurum></div><div class="acil-y"><i></i></div><div class="alt-not">YALNIZ GÖRÜNTÜLEME · VERİ BU TELEFONDA</div></div></main><nav class="tabs" id="tabs" style="display:none"></nav></div>
+<div id="app"><main id="main"><div class="hos" id="acilis"><div class="hos-logo"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M8 3L4 21M16 3l4 18"/><path d="M12 4v3M12 10.5v3M12 17v3" stroke="#fde68a"/></svg></div><h1>İşTakip</h1><div class="hos-alt" data-kurum></div><div class="acil-y"><i></i></div><div class="alt-not">YALNIZ GÖRÜNTÜLEME · VERİ BU TELEFONDA</div></div></main><nav class="tabs" id="tabs" style="display:none"></nav></div>
 <script>
 "use strict";
 // ---------- Çizgi ikonlar (emoji yerine; her telefonda aynı görünür) ----------
@@ -1362,7 +1362,7 @@ temaUygula();
 // listelenir (favoriler üstte), yazdıkça süzülür, ✕ ile geri dönülür.
 function anasayfa(){
   const list = aramaAcik ? aramaSonuc() : [];
-  return `<div class="hdr${KILIT ? " ust-dort" : ""}"><div class="marka"><div class="u">${esc(kurumU() || "istaakip")}</div>${kurumK() ? `<div class="k"><b>${esc(kurumUst())}</b>${esc(kurumK())}</div>` : ""}</div>
+  return `<div class="hdr${KILIT ? " ust-dort" : ""}"><div class="marka"><div class="u">${esc(kurumU() || "İşTakip")}</div>${kurumK() ? `<div class="k"><b>${esc(kurumUst())}</b>${esc(kurumK())}</div>` : ""}</div>
 <div class="hbtn${KILIT ? " dort" : ""}"><button class="ikb${aramaAcik ? " on" : ""}" data-arama aria-label="${aramaAcik ? "Aramayı kapat" : "İş ara"}">${IK(aramaAcik ? "x" : "ara")}</button>${KILIT ? `<button class="ikb" data-sifre aria-label="Şifre değiştir">${IK("anahtar")}</button>` : ""}<span class="tm"><button data-tema="acik"${tema === "acik" ? ' class="on"' : ""} aria-label="Açık mod">${IK("gunes")}</button><button data-tema="koyu"${tema === "koyu" ? ' class="on"' : ""} aria-label="Karanlık mod">${IK("ay")}</button></span><button class="yukle" data-yukle>${IK("yukle")}Veri Yükle</button></div></div>
 <div class="pad">${eskiUyari()}
 ${aramaAcik ? `<input class="search" id="isAra" type="search" placeholder="İş, firma, şef ya da il ara…" value="${esc(isAra)}" autocomplete="off">
@@ -3547,7 +3547,7 @@ function hosgeldin(mesaj){
   document.getElementById("tabs").style.display = "none";
   document.getElementById("main").innerHTML = `<div class="hos">
 <div class="hos-logo"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M8 3L4 21M16 3l4 18"/><path d="M12 4v3M12 10.5v3M12 17v3" stroke="#fde68a"/></svg></div>
-<h1>istaakip</h1>
+<h1>İşTakip</h1>
 <div class="hos-alt">${kurumHtml()}</div>
 <button class="btn" data-yukle style="margin-top:26px">${IK("yukle")}Veri Dosyasını Yükle</button>
 ${mesaj ? `<div class="hos-hata">${esc(mesaj)}</div>` : ""}
@@ -3579,8 +3579,8 @@ function dosyaSec(){
         await kilitYaz(null);
         await veriYukle(v);
       }catch(e){
-        if(D) bildir("Bu dosya istaakip veri dosyası değil.");
-        else hosgeldin("Bu dosya istaakip veri dosyası değil. WhatsApp'taki .istakip dosyasını seçin.");
+        if(D) bildir("Bu dosya İşTakip veri dosyası değil.");
+        else hosgeldin("Bu dosya İşTakip veri dosyası değil. WhatsApp'taki .istakip dosyasını seçin.");
       }
     });
     document.body.appendChild(inp);
@@ -3661,7 +3661,7 @@ const GIRIS = (() => {
     kapatAlt && kapatAlt();
     document.getElementById("main").innerHTML = `<div class="hos giris"><canvas class="yolc" id="yolc"></canvas>
 <div class="hos-logo"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path class="k5" d="M8 3L4 21"/><path class="k5" d="M16 3l4 18"/><path d="M12 4v3M12 10.5v3M12 17v3" stroke="#fde68a"/></svg></div>
-<h1>istaakip</h1>
+<h1>İşTakip</h1>
 <div class="hos-alt">${kurumHtml()}</div>
 <form class="gform" id="gform" method="post" action="#" autocomplete="on">
 <label for="gkadi">Kullanıcı adı</label><input id="gkadi" name="username" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
@@ -3754,7 +3754,7 @@ document.addEventListener("pointerdown", e => { sonDokunma = { x: e.clientX, y: 
 // ---------- Anasayfa ----------
 function anaUst(){
   const o = oturumBilgi();
-  return `<div class="r"><div class="lg">${LOGO5}</div><div class="t"><b>${esc(kurumU() || "istaakip")}</b>${kurumK() ? `<small><i>${esc(kurumUst())}</i> · ${esc(kurumK())}</small>` : ""}</div><button class="ci" data-arama aria-label="${aramaAcik ? "Aramayı kapat" : "İş ara"}">${IK(aramaAcik ? "x" : "ara")}</button><button class="av" data-avatar aria-label="Menü">${o ? esc(basHarf(o.ad || o.k)) : "•••"}</button></div>`;
+  return `<div class="r"><div class="lg">${LOGO5}</div><div class="t"><b>${esc(kurumU() || "İşTakip")}</b>${kurumK() ? `<small><i>${esc(kurumUst())}</i> · ${esc(kurumK())}</small>` : ""}</div><button class="ci" data-arama aria-label="${aramaAcik ? "Aramayı kapat" : "İş ara"}">${IK(aramaAcik ? "x" : "ara")}</button><button class="av" data-avatar aria-label="Menü">${o ? esc(basHarf(o.ad || o.k)) : "•••"}</button></div>`;
 }
 function anasayfa(){
   if(aramaAcik){
@@ -3865,7 +3865,7 @@ function avatarMenu(){
   document.getElementById("avm")?.remove();
   const o = oturumBilgi();
   const m = document.createElement("div"); m.className = "avm"; m.id = "avm";
-  m.innerHTML = `<div class="m"><div class="k"><b>${o ? esc(o.ad || o.k) : "istaakip"}</b><small>${o ? esc(o.k) + " · " : ""}Veri ${esc(veriTarih())}</small></div><button data-yukle>${IK("yukle")}Veri Yükle</button><button data-temadegis>${IK(tema === "koyu" ? "gunes" : "ay")}${tema === "koyu" ? "Açık mod" : "Karanlık mod"}</button>${KILIT ? `<button data-sifre>${IK("anahtar")}Şifre değiştir</button><button data-cikis5>${IK("geri")}Çıkış yap</button>` : ""}</div>`;
+  m.innerHTML = `<div class="m"><div class="k"><b>${o ? esc(o.ad || o.k) : "İşTakip Mobil"}</b><small>${o ? esc(o.k) + " · " : ""}Veri ${esc(veriTarih())}</small></div><button data-yukle>${IK("yukle")}Veri Yükle</button><button data-temadegis>${IK(tema === "koyu" ? "gunes" : "ay")}${tema === "koyu" ? "Açık mod" : "Karanlık mod"}</button>${KILIT ? `<button data-sifre>${IK("anahtar")}Şifre değiştir</button><button data-cikis5>${IK("geri")}Çıkış yap</button>` : ""}</div>`;
   m.addEventListener("click", e => { if(e.target === m) m.remove(); else if(e.target.closest("button")) setTimeout(() => m.remove(), 0); });
   document.body.appendChild(m);
 }

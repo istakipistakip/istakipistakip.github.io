@@ -1,4 +1,4 @@
-# istaakip
+# İşTakip Mobil
 
 İş takip programının telefon görüntüleyicisi. Bu depoda hiçbir veri yoktur; veri, programın ürettiği şifreli dosyayla telefonda yüklenir ve yalnızca o telefonda saklanır.
 

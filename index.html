@@ -1136,6 +1136,11 @@ html.dark .durb{ background:#1a2335 !important; border-color:#2a3650 !important;
 .hust .honer{ z-index:7; }
 .hust .honer button{ height:auto; min-height:0; width:100%; color:inherit; }
 .hust .honer:empty{ display:none; }
+/* v35: İL / STD etiketleri sabit, yalnız çipler kayar */
+.hcsat{ overflow:visible !important; }
+.hcsat .hck{ display:flex; align-items:center; gap:6px; flex:1; min-width:0; overflow-x:auto; scrollbar-width:none; padding-bottom:2px; -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%); mask-image:linear-gradient(90deg, transparent 0, #000 10px, #000 calc(100% - 14px), transparent 100%); padding-left:6px; }
+.hcsat .hck::-webkit-scrollbar{ display:none; }
+.bs .grab{ visibility:hidden; height:4px; margin:6px auto 0; } /* v35: aşağı çekme kalktı, tutamaç gösterilmez */
 </style>
 </head>
 <body>
@@ -2666,14 +2671,19 @@ async function pdfHarita(doc, j, x, y, w){
     const ox = (cx - kx / 2) * N, oy = (cy - ky / 2) * N;
     const tx1 = Math.floor(ox / TS), tx2 = Math.floor((ox + kx * N) / TS), ty1 = Math.floor(oy / TS), ty2 = Math.floor((oy + ky * N) / TS);
     const isler = [];
-    for(let tx = tx1; tx <= tx2; tx++) for(let ty = ty1; ty <= ty2; ty++) isler.push(new Promise(ok => {
+    // masaüstünde (kurum ağı) uydu karoları erişilemiyorsa uzun beklenmez;
+    // bir kez hiç gelmezse o oturumda bir daha denenmez
+    const masa = location.hash === "#masaustu-pdf", karoSure = masa ? 2500 : 8000;
+    let gelen = 0;
+    if(!(masa && window.__karoYok)) for(let tx = tx1; tx <= tx2; tx++) for(let ty = ty1; ty <= ty2; ty++) isler.push(new Promise(ok => {
       const im = new Image(); im.crossOrigin = "anonymous";
-      const t = setTimeout(() => ok(), 8000);
-      im.onload = () => { clearTimeout(t); try{ g.drawImage(im, (tx * TS - ox) * k, (ty * TS - oy) * k, TS * k + 0.5, TS * k + 0.5); }catch(e){} ok(); };
+      const t = setTimeout(() => ok(), karoSure);
+      im.onload = () => { clearTimeout(t); gelen++; try{ g.drawImage(im, (tx * TS - ox) * k, (ty * TS - oy) * k, TS * k + 0.5, TS * k + 0.5); }catch(e){} ok(); };
       im.onerror = () => { clearTimeout(t); ok(); };
       im.src = `${PDF_UYDU}${z}/${ty}/${tx}`;
     }));
     if(navigator.onLine !== false) await Promise.all(isler);
+    if(masa && isler.length && !gelen) window.__karoYok = true;
     g.lineCap = g.lineJoin = "round";
     const lw = Math.max(3, CW / 260);
     cz.forEach(cc => {
@@ -3039,30 +3049,7 @@ function geriDon(){
   });
 })();
 
-// ---------- alttan açılan pencereyi aşağı çekip kapatma ----------
-(() => {
-  let s = null;
-  document.addEventListener("touchstart", e => {
-    if(!e.target.closest) return;
-    const h = e.target.closest(".bs .grab, .bs .bh3");
-    if(!h || e.target.closest("button")) return;
-    s = { y: e.touches[0].clientY, el: h.closest(".bs") };
-    s.el.style.transition = "none";
-  }, { passive: true });
-  document.addEventListener("touchmove", e => {
-    if(!s) return;
-    const dy = Math.max(0, e.touches[0].clientY - s.y);
-    s.el.style.transform = `translateY(${dy}px)`;
-  }, { passive: true });
-  document.addEventListener("touchend", e => {
-    if(!s) return;
-    const dy = e.changedTouches[0].clientY - s.y, el = s.el;
-    s = null;
-    el.style.transition = "transform .2s ease";
-    if(dy > 90){ el.style.transform = "translateY(110%)"; setTimeout(() => kapatAlt(), 180); }
-    else el.style.transform = "";
-  });
-})();
+// (v35) alttan açılan pencere aşağı çekilerek kapanmaz; sol kenardan kaydırarak, dışına dokunarak ya da ✕ ile kapanır
 
 // ---------- arama: eşleşen yazıyı vurgulama ----------
 function vurgula(metin, q){
@@ -4185,8 +4172,8 @@ function haritaUst(){
   const stdler = stdSirala([...new Set(ISLER.flatMap(j => j.cats.map(c => c.ad)))]);
   const c = (attr, k, on) => `<button class="hcip${on ? " on" : ""}" ${attr}="${esc(k)}">${esc(k)}</button>`;
   return `<div class="hust"><div class="hara">${IK("ara")}<input id="hAra" type="search" placeholder="Haritada iş ara…" value="${esc(hAra)}" autocomplete="off"><div class="honer" id="hOner"></div></div>
-<div class="hcsat"><span class="lb">İL</span><button class="hcip tumu${hIl.size ? "" : " on"}" data-hil="">Tümü</button>${iller.map(il => c("data-hil", il, hIl.has(il))).join("")}</div>
-${stdler.length ? `<div class="hcsat"><span class="lb">STD</span><button class="hcip tumu${hStd.size ? "" : " on"}" data-hstd="">Tümü</button>${stdler.map(s => c("data-hstd", s, hStd.has(s))).join("")}</div>` : ""}<div class="hozet" id="hozet"></div></div>`;
+<div class="hcsat"><span class="lb">İL</span><div class="hck"><button class="hcip tumu${hIl.size ? "" : " on"}" data-hil="">Tümü</button>${iller.map(il => c("data-hil", il, hIl.has(il))).join("")}</div></div>
+${stdler.length ? `<div class="hcsat"><span class="lb">STD</span><div class="hck"><button class="hcip tumu${hStd.size ? "" : " on"}" data-hstd="">Tümü</button>${stdler.map(s => c("data-hstd", s, hStd.has(s))).join("")}</div></div>` : ""}<div class="hozet" id="hozet"></div></div>`;
 }
 const hUyar = j => (!hIl.size || j.il.some(x => hIl.has(x))) && (!hStd.size || j.cats.some(c => hStd.has(c.ad)));
 function vurguUygula(){
@@ -4618,26 +4605,7 @@ function galeriAc(j, anahtar){
     if(dy > 70 && dy > Math.abs(dx)){ kapat(); return; }
     if(Math.abs(dx) > 35 && Math.abs(dx) > Math.abs(dy)){ ai = Math.max(0, Math.min(K.length - 1, ai + (dx < 0 ? 1 : -1))); yer(); } });
 }
-// alt çubuk düğmeleri
-let uzunBas6 = null, uzunOldu6 = false;
-window.addEventListener("pointerdown", e => {
-  const b = e.target.closest && e.target.closest(".dalt .da.km, .dalt .da.yt, .hdalt .da.km, .hdalt .da.yt"); uzunOldu6 = false; clearTimeout(uzunBas6);
-  if(!b || b.classList.contains("bos")) return;
-  const id = b.dataset.hat || b.dataset.yt; const j = byId(id); if(!j) return;
-  uzunBas6 = setTimeout(() => { uzunOldu6 = true; try{ navigator.vibrate && navigator.vibrate(10); }catch(_){} galeriAc(j, b.dataset.hat ? "hat" : "yt"); }, 450);
-}, true);
-["pointerup", "pointercancel", "pointerleave"].forEach(t => window.addEventListener(t, () => clearTimeout(uzunBas6), true));
-window.addEventListener("contextmenu", e => { if(e.target.closest && e.target.closest(".dalt .da, .hdalt .da")) e.preventDefault(); }, true);
-window.addEventListener("click", e => {
-  if(!e.target.closest) return;
-  const b = e.target.closest(".dalt .da, .hdalt .da"); if(!b) return;
-  if(uzunOldu6){ uzunOldu6 = false; e.stopImmediatePropagation(); e.preventDefault(); return; }
-  if(b.classList.contains("bos")) return;
-  const id = b.dataset.parasal || b.dataset.iti || b.dataset.pdf; if(!id) return;   // KMZ, Yol Tarifi: doğrudan
-  const j = byId(id); if(!j) return;
-  e.stopImmediatePropagation(); e.preventDefault();
-  galeriAc(j, b.dataset.parasal ? "parasal" : b.dataset.iti ? "iti" : "pdf");
-}, true);
+// alt çubuk düğmeleri: İhale / İtinerer / PDF doğrudan açılır (kaydırmalı galeri kaldırıldı, v35)
 
 // ---------- KMZ ve İtinerer: yalnız sol kenardan kaydırarak kapatma ----------
 (() => {
@@ -4765,13 +4733,7 @@ bildir = function(m){
 function kipGuncel(x){ let k = document.getElementById("kip6d"); if(!k){ k = document.createElement("div"); k.className = "kip6"; k.id = "kip6d"; k.textContent = "‹"; document.body.appendChild(k); }
   const p = Math.min(1, x / (innerWidth / 3)); k.style.opacity = p; k.style.transform = `scale(${.4 + .6 * p})`; k.style.background = p >= 1 ? "#ea580c" : ""; }
 function kipKaldir(){ document.getElementById("kip6d")?.remove(); }
-// hızlı menüdeki İhale Bilgileri de galeriyi açar
-window.addEventListener("click", e => {
-  const b = e.target.closest && e.target.closest(".onz .mn [data-parasal], .onz .mn [data-iti], .onz .mn [data-pdf]"); if(!b) return;
-  const id = b.dataset.parasal || b.dataset.iti || b.dataset.pdf, j = byId(id); if(!j) return;
-  e.stopImmediatePropagation(); e.preventDefault(); document.getElementById("onz")?.remove();
-  galeriAc(j, b.dataset.parasal ? "parasal" : b.dataset.iti ? "iti" : "pdf");
-}, true);
+// hızlı menüdeki İhale Bilgileri doğrudan açılır (v35)
 // hikâye zeminleri lacivert tonlarında
 const HIK_LAC = ["linear-gradient(165deg,#24477a,#13264a 60%,#0b1428)", "linear-gradient(165deg,#1e3a66,#102142 60%,#0a1326)", "linear-gradient(165deg,#2a5288,#152a4e 60%,#0b1428)", "linear-gradient(165deg,#1b365f,#0f203d 60%,#091224)", "linear-gradient(165deg,#294b7d,#13264a 60%,#0b1428)"];
 const _hikGoster7 = hikGoster;
@@ -4969,8 +4931,42 @@ if(location.hash === "#masaustu-pdf"){
       }
     }catch(err){ cevap({ ok: false, hata: err.message || String(err) }); }
   });
+  kutuphaneMasa(); // PDF bileşeni ve yazı tipi hemen yüklensin, ilk PDF beklemesin
+  // uydu karolarına bu bilgisayardan ulaşılıyor mu? (kurum ağı kapalıysa ilk PDF de beklemesin)
+  setTimeout(() => { const im = new Image(); let bitti = false; const son = ok => { if(bitti) return; bitti = true; if(!ok) window.__karoYok = true; };
+    setTimeout(() => son(false), 3000); im.onload = () => son(true); im.onerror = () => son(false); im.src = PDF_UYDU + "3/3/4"; }, 500);
   try{ parent.postMessage({ tur: "istaakip-pdf-hazir" }, "*"); }catch(_){}
 }
+// v35: alttan açılan pencereler (İhale Bilgileri, PDF vb.) de sol kenardan kaydırarak kapanır
+(() => {
+  let g = null;
+  window.addEventListener("touchstart", e => {
+    g = null;
+    const ov = document.getElementById("bsov"); if(!ov || e.touches.length !== 1) return;
+    const t = e.touches[0]; if(t.clientX > 18) return;
+    const el = ov.querySelector(".bs"); if(!el) return;
+    g = { el, x: t.clientX, y: t.clientY, akt: false };
+  }, { capture: true, passive: true });
+  window.addEventListener("touchmove", e => {
+    if(!g) return;
+    const t = e.touches[0], dx = t.clientX - g.x, dy = t.clientY - g.y;
+    if(!g.akt){
+      if(Math.abs(dy) > 10 && Math.abs(dy) > dx){ g = null; return; }
+      if(!(dx > 8 && dx > Math.abs(dy))) return;
+      g.akt = true; g.el.style.transition = "none";
+    }
+    if(e.cancelable) e.preventDefault();
+    g.el.style.transform = `translateX(${Math.max(0, dx)}px)`;
+  }, { capture: true, passive: false });
+  window.addEventListener("touchend", e => {
+    if(!g) return;
+    const el = g.el, akt = g.akt, dx = e.changedTouches[0].clientX - g.x; g = null;
+    if(!akt) return;
+    el.style.transition = "transform .22s ease-out";
+    if(dx > innerWidth / 3){ el.style.transform = "translateX(110%)"; setTimeout(() => kapatAlt(), 200); }
+    else el.style.transform = "";
+  }, true);
+})();
 function bildir(m){
   document.querySelectorAll(".bildir").forEach(x => x.remove());
   const t = document.createElement("div"); t.className = "bildir"; t.textContent = m;

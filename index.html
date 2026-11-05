@@ -2794,7 +2794,8 @@ async function pdfIs(doc, j, bol){
     kutuYazildi = true;
     const W = doc.internal.pageSize.getWidth(), gen = W - 2 * PDF.k, Hs = doc.internal.pageSize.getHeight() - PDF.alt;
     const par = bol.par && parVar(j), bil = bol.bilgi;
-    const harV = par && (!!j.hr || !!(j.hat && j.hat.cizgi && j.hat.cizgi.some(c => c.p && c.p.length > 1)));
+    // Harita: işe bağlı harita resmi (yoksa KMZ) — İhale Bilgileri olmasa da basılır
+    const harV = bol.harita !== false && (!!j.hr || !!(j.hat && j.hat.cizgi && j.hat.cizgi.some(c => c.p && c.p.length > 1)));
     // Sütunlar: solda İhale Bilgileri, sağda KM Bilgileri (biri yoksa tam genişlik)
     const ara = 7, solG = par && bil ? (gen - ara) * 0.535 : gen;
     const ciz = (d, yy) => {
@@ -4994,14 +4995,14 @@ if(location.hash === "#masaustu-pdf"){
         kur(m.veri); D._agirTam = true;
         if(m.yil && yillar().includes(m.yil) && m.yil !== secYil){ secYil = m.yil; yilUygula(m.yil); }
         const j = ISLER.find(x => String(x.id) === String(m.isId));
-        cevap({ ok: !!j, hata: j ? "" : "İş telefon verisinde bulunamadı", par: !!j && parVar(j), iti: !!j && itiVar(j) });
+        cevap({ ok: !!j, hata: j ? "" : "İş telefon verisinde bulunamadı", par: !!j && parVar(j), iti: !!j && itiVar(j), hr: !!j && !!j.hr, harita: !!j && (!!j.hr || !!(j.hat && j.hat.cizgi && j.hat.cizgi.some(c => c.p && c.p.length > 1))) });
         kutuphaneMasa();
         return;
       }
       if(m.tur === "istaakip-pdf-uret"){
         const j = ISLER.find(x => String(x.id) === String(m.isId)); if(!j) throw new Error("İş bulunamadı");
-        const bol = { bilgi: !!m.bol.bilgi, par: !!m.bol.par && parVar(j), iti: !!m.bol.iti && itiVar(j) };
-        if(!bol.bilgi && !bol.par && !bol.iti) throw new Error("En az bir bölüm seçin");
+        const bol = { bilgi: !!m.bol.bilgi, par: !!m.bol.par && parVar(j), iti: !!m.bol.iti && itiVar(j), harita: m.bol.harita !== false };
+        if(!bol.bilgi && !bol.par && !bol.iti) throw new Error("En az bir bölüm seçin (KM Bilgileri, İhale Bilgileri ya da İtinerer)");
         const font = await kutuphaneMasa();
         const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
         doc.addFileToVFS("dv.ttf", font.normal); doc.addFont("dv.ttf", "DV", "normal");
@@ -5344,6 +5345,62 @@ document.addEventListener("click", e => {
   if(e.target.closest("[data-snotkapat]")){ e.stopPropagation(); document.getElementById("snot9")?.remove(); }
 }, true);
 
+
+// ---------- v41: sessiz güncelleme ----------
+// Yeni sürüm arka planda inip hazır olunca uygulama hiçbir yazı göstermeden
+// kendini yeniler. Yenilemeden önce kullanıcının yeri (sekme, açık iş, arama,
+// kaydırma, harita, KMZ) kaydedilir; yenilenince aynı yere döner. PDF hazırlanırken,
+// şifre yazılırken ya da veri yüklenirken beklenir.
+const GERI9 = "istakip-mobil-geri";
+function mesgul9(){
+  const a = document.activeElement;
+  if(a && a.tagName === "INPUT" && a.type === "password") return true;
+  if(document.getElementById("gform") && [...document.querySelectorAll("#gform input")].some(i => i.value)) return true;
+  if([...document.querySelectorAll("button")].some(b => b.disabled && /Hazırlanıyor|Kontrol ediliyor|Yükleniyor|Oluşturuluyor/.test(b.textContent))) return true;
+  if(document.querySelector(".pdfyuk, #ada, .ada")) return true;
+  return false;
+}
+function yerKaydet9(){
+  try{
+    const m = document.getElementById("main"), hv = document.getElementById("hatv");
+    const y = { t: Date.now(), tab, detay, aramaAcik, isAra, secKutu, mz: { ...mz }, gdSekme, gdSec, yil: secYil, sy: m ? m.scrollTop : 0,
+      hat: hv && hatIs ? hatIs.id : null, hatTum, gdg: document.getElementById("gdg")?.scrollTop || 0 };
+    sessionStorage.setItem(GERI9, JSON.stringify(y));
+  }catch(_){}
+}
+let guncelBekle9 = 0;
+function sessizGuncelle9(){
+  clearTimeout(guncelBekle9);
+  if(mesgul9()){ guncelBekle9 = setTimeout(sessizGuncelle9, 1500); return; }
+  yerKaydet9();
+  location.reload();
+}
+// yenilendikten sonra aynı yere dön
+(function geriYukle9(){
+  let s = null;
+  try{ s = JSON.parse(sessionStorage.getItem(GERI9) || "null"); sessionStorage.removeItem(GERI9); }catch(_){}
+  if(!s || Date.now() - s.t > 60000) return;
+  let n = 0;
+  const dene = () => {
+    if(++n > 60) return;
+    if(!D || !ISLER || !ISLER.length || document.getElementById("gform") || !document.getElementById("tabs")){ setTimeout(dene, 150); return; }
+    try{
+      if(s.yil && typeof yillar === "function" && yillar().includes(s.yil) && s.yil !== secYil){ secYil = s.yil; yilUygula(s.yil); }
+      tab = s.tab === "map" ? "map" : "home";
+      gdSekme = s.gdSekme || gdSekme; gdSec = s.gdSec || null;
+      aramaAcik = !!s.aramaAcik; isAra = s.isAra || "";
+      secKutu = s.secKutu && byId(s.secKutu) ? s.secKutu : null;
+      detay = s.detay && byId(s.detay.id) ? s.detay : null;
+      ciz(); ust();
+      if(tab === "map" && s.mz){ mz = s.mz; resimHazir(mapUygula); }
+      const m = document.getElementById("main"); if(m) m.scrollTop = s.sy || 0;
+      const g = document.getElementById("gdg"); if(g) g.scrollTop = s.gdg || 0;
+      if(s.hat && byId(s.hat)) hatGoster(s.hat).then(() => { if(s.hatTum) document.querySelector("#hatv [data-htum]")?.click(); }).catch(() => {});
+    }catch(_){}
+  };
+  setTimeout(dene, 0);
+})();
+
 function bildir(m){
   document.querySelectorAll(".bildir").forEach(x => x.remove());
   const t = document.createElement("div"); t.className = "bildir"; t.textContent = m;
@@ -5371,10 +5428,10 @@ document.addEventListener("click", e => { if(e.target.closest("[data-yukle]")){ 
   else hosgeldin();
 })();
 // Çevrimdışı çalışma (yalnızca https adresinde)
-// Uygulama önbellekten hemen açılır; yeni sürüm arka planda iner, hazır olunca not çıkar.
+// Uygulama önbellekten hemen açılır; yeni sürüm arka planda iner, hazır olunca sessizce geçilir.
 if("serviceWorker" in navigator && location.protocol === "https:"){
   const vardi = !!navigator.serviceWorker.controller;
-  navigator.serviceWorker.addEventListener("controllerchange", () => { if(vardi) surumNotu9(); });
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if(vardi) sessizGuncelle9(); });
   navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(reg => {
     document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") reg.update().catch(() => {}); });
   }).catch(() => {});

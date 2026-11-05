@@ -1603,7 +1603,7 @@ function daDugmeler(j){
 const parVar = j => j.par.ib !== null || j.par.pb !== null || (j.ek && j.ek.length);
 function parasalPenceresi(j){
   const par = j.par;
-  const tl = n => n !== null && n !== undefined ? f2(n) + " ₺" : "–";
+  const tl = n => n !== null && n !== undefined ? f2(n) + " TL" : "–";
   // PDF ile aynı: Excel'de seçilen sütunlar Excel sırasıyla, bedeller de kendi yerinde
   const satirlar = l => l.map(([b, v]) => `<div class="erow"><span>${esc(b)}</span><b>${esc(v)}</b></div>`).join("");
   let html = satirlar(pdfIhaleListe(j, tl));
@@ -2640,7 +2640,7 @@ function pdfBilgi(doc, j, y){
 // İhale Bilgileri listesi (PDF.sx'ten başlar; harita varsa onun sağında)
 function pdfParasal(doc, j, y){
   const o = PDF.o, a = PDF.a;
-  const tl = n => n !== null && n !== undefined ? f2(n) + " ₺" : "–";
+  const tl = n => n !== null && n !== undefined ? f2(n) + " TL" : "–";
   y = pdfYer(doc, y, 24 * a);
   y = pdfBolumBaslik(doc, y, "İhale Bilgileri");
   pdfIhaleListe(j, tl).forEach(([b, v]) => {
@@ -2660,10 +2660,27 @@ function pdfParasal(doc, j, y){
   return y + 3 * a;
 }
 // Excel'de seçilen sütunlar Excel sırasıyla; İhale/Proje Bedeli de seçildiyse
-// kendi yerinde (₺ ile). Seçilmemişse listede yer almaz.
+// kendi yerinde. Para değerleri hep "1.250.000,00 TL" biçiminde.
+const PARA_B9 = /bedel|tutar|oden|harcama|hakedis|maliyet|fiyat|butce|kesif|avans|fark|gider|borc|kesinti|teminat|tahsis|\btl\b|₺/;
+const PARA_D9 = /uzunlu|\bkm\b|\boran|yuzde|%|tarih|\bsure|\bgun\b|\bgunu\b|\badet|\bno\b|numara|\bsayi/;
+function paraBicim9(baslik, deger){
+  const b = fold(baslik), t = String(deger ?? "").trim();
+  const isaretli = /TL|₺/i.test(t);
+  if(!t || /%/.test(t) || ((!PARA_B9.test(b) || PARA_D9.test(b)) && !isaretli)) return deger;
+  let x = t.replace(/TL|₺/gi, "").replace(/\s/g, "");
+  if(/[a-zçğıöşü]{2,}/i.test(x)) return deger;
+  const sv = x.lastIndexOf(","), sn = x.lastIndexOf(".");
+  if(sv >= 0 && sn >= 0) x = sv > sn ? x.replace(/\./g, "").replace(",", ".") : x.replace(/,/g, "");
+  else if(sv >= 0) x = /^-?\d{1,3}(,\d{3})+$/.test(x) ? x.replace(/,/g, "") : x.replace(",", ".");
+  else if(sn >= 0 && /^-?\d{1,3}(\.\d{3})+$/.test(x)) x = x.replace(/\./g, "");
+  const n = Number(x);
+  return Number.isFinite(n) && x !== "" ? f2(n) + " TL" : deger;
+}
 function pdfIhaleListe(j, tl){
-  const p = j.par, bedel = b => { const f = fold(b); return /proje\s*bedel/.test(f) ? p.pb : /ihale\s*(bedel|tutar)/.test(f) ? p.ib : undefined; };
-  const liste = (j.ek || []).map(([b, v]) => { const n = bedel(b); return [b, n !== undefined && n !== null ? tl(n) : v]; });
+  // Yalnız başlığı tam "Proje Bedeli" / "İhale Bedeli" olan satır programdaki bedeli gösterir;
+  // "Güncel Kalan Proje Bedeli" gibi başka sütunlar Excel'deki değeriyle kalır.
+  const p = j.par, bedel = b => { const f = fold(b).replace(/\(.*?\)/g, " ").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim(); return /^proje bedeli?$/.test(f) ? p.pb : /^ihale (bedeli?|tutari)$/.test(f) ? p.ib : undefined; };
+  const liste = (j.ek || []).map(([b, v]) => { const n = bedel(b); return [b, n !== undefined && n !== null ? tl(n) : paraBicim9(b, v)]; });
   if((j.il || []).length){
     const k = liste.findIndex(([b]) => /^kbos\b|^k\.?\s*b\.?\s*o\.?\s*s/.test(fold(b).trim()));
     liste.splice(k >= 0 ? k + 1 : 0, 0, ["İl", j.il.join(", ")]);
@@ -4632,7 +4649,7 @@ function cizgiOnizle(c, j, yt){
 }
 function galeriKartlar(j){
   const K = [];
-  if(parVar(j)){ const tl = n => n !== null && n !== undefined ? f2(n) + " ₺" : "–"; const l = pdfIhaleListe(j, tl);
+  if(parVar(j)){ const tl = n => n !== null && n !== undefined ? f2(n) + " TL" : "–"; const l = pdfIhaleListe(j, tl);
     K.push({ k: "parasal", ik: "tl", ad: "İhale Bilgileri", alt: "Excel sırasıyla", g: l.length ? l.map(([b, v]) => `<div class="erow"><span>${esc(b)}</span><b>${esc(v)}</b></div>`).join("") : '<div class="ipc6">Excel Yükle\'de sütun seçilmemiş.</div>' }); }
   if(itiVar(j)){ const kod = (j.iti || []).filter(k => D.itiKod.has(k)), pad = k => { const p = D.iti && D.iti.projeler && D.iti.projeler[k]; return p && p.ad ? kisaAd(p.ad) : "Proje " + k; };
     K.push({ k: "iti", ik: "iti", ad: "İtinerer", alt: `Yol Takip çizimi · ${kod.length} proje`, g: `<div class="pl6">${kod.map(k => `<div>${esc(pad(k))}<span>${esc(k)}</span></div>`).join("")}</div><div class="ipc6">Yatay kaydırılır, iki parmakla büyütülür; Lejant düğmesi renkleri açıklar.</div>`, b: "İtinereri aç" }); }

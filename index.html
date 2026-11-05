@@ -1198,6 +1198,9 @@ html, body{ touch-action:manipulation; }
 .snot9 button{ border:none; background:#ea580c; color:#fff; font-weight:800; font-size:12.5px; border-radius:10px; height:34px; padding:0 12px; }
 .snot9 button[data-snotkapat]{ background:rgba(255,255,255,.12); width:34px; padding:0; display:grid; place-items:center; }
 .snot9 button svg{ width:16px; height:16px; }
+
+/* PDF seçimi: KM Bilgileri'nin altındaki Devam Eden / Biten seçenekleri */
+.pdfbol label.alt9{ margin-left:22px; padding:7px 12px; font-size:12.5px; border-style:dashed; }
 </style>
 </head>
 <body>
@@ -2308,6 +2311,13 @@ function pdfPenceresi(j){
   altSayfa(IK("pdf"), "PDF Gönder", j.ad, "", "pdfbb", "pdfs");
   pdfCiz();
 }
+// KM Bilgileri'nin altına "<yıl> Devam Eden" / "<yıl> Biten" yazısı (isteğe bağlı, açılışta kapalı)
+function yaziSec9(k, ad, sec, d){
+  const ok = sec.some(x => String(x[k] || "").trim());
+  const ilk = sec.length === 1 ? String(sec[0][k] || "").trim().split(/\r?\n/)[0] : "";
+  const alt = ok ? (ilk ? (ilk.length > 46 ? ilk.slice(0, 46) + "…" : ilk) : "Yazısı olan işlerde KM Bilgileri'nin altında") : "Bu işte yazı yok";
+  return `<label class="alt9${ok ? "" : " yok"}"><input type="checkbox" data-pdfbol="${k}"${d.bol[k] && ok ? " checked" : ""}${ok ? "" : " disabled"}><span>${D.yil} ${ad}<small>${esc(alt)}</small></span></label>`;
+}
 function pdfSecili(){ return pdfDurum.tek ? [pdfDurum.j] : ISLER.filter(x => pdfDurum.sec.has(x.id)); }
 function pdfCiz(){
   const b = document.getElementById("pdfbb"); if(!b || !pdfDurum) return;
@@ -2321,7 +2331,7 @@ ${d.tek ? "" : `<div class="pdfara"><input id="pdfara" type="search" placeholder
 <div class="pdfis" id="pdfis">${liste.map(x => `<label><input type="checkbox" data-pdfis="${esc(x.id)}"${d.sec.has(x.id) ? " checked" : ""}><span>${esc(x.ad)}</span></label>`).join("") || '<div class="muted" style="padding:10px">İş bulunamadı.</div>'}</div>
 <div class="muted" style="margin:6px 2px 12px">${d.sec.size} iş seçili</div>`}
 <div class="bgrp" style="margin-top:${d.tek ? 4 : 0}px">BÖLÜMLER</div>
-<div class="pdfbol">${bol("par", "İhale Bilgileri", parOk ? "Harita, Proje / İhale Bedeli ve Excel bilgileri" : "Seçili işlerde ihale bilgisi yok", parOk)}${bol("bilgi", "KM Bilgileri", "İhale uzunluğu, yapılan ve kalan km'ler", true)}${bol("iti", "İtinerer", itiOk ? "Her itinerer ayrı yatay sayfada" : "Seçili işlerde itinerer yok", itiOk)}</div>
+<div class="pdfbol">${bol("par", "İhale Bilgileri", parOk ? "Harita, Proje / İhale Bedeli ve Excel bilgileri" : "Seçili işlerde ihale bilgisi yok", parOk)}${bol("bilgi", "KM Bilgileri", "İhale uzunluğu, yapılan ve kalan km'ler", true)}${yaziSec9("devam", "Devam Eden", sec, d)}${yaziSec9("biten", "Biten", sec, d)}${bol("iti", "İtinerer", itiOk ? "Her itinerer ayrı yatay sayfada" : "Seçili işlerde itinerer yok", itiOk)}</div>
 ${d.blob ? `<button class="go" data-pdfpaylas>${IK("paylas")}Paylaş / Gönder</button><div class="ytalt"><span>${esc(d.ad)}</span><button data-pdfonizle>Önizle</button></div>` : `<button class="go" data-pdfyap>${IK("pdf")}PDF Oluştur</button>`}
 <div class="pdfdur" id="pdfdur"></div>`;
 }
@@ -2391,9 +2401,9 @@ async function itiResimleri(kod){
 const dosyaGuvenli = s => String(s).replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 120);
 async function pdfYap(){
   const d = pdfDurum, isler = pdfSecili();
-  const bol = { bilgi: d.bol.bilgi, par: d.bol.par && isler.some(parVar), iti: d.bol.iti && isler.some(itiVar) };
+  const bol = { bilgi: d.bol.bilgi, par: d.bol.par && isler.some(parVar), iti: d.bol.iti && isler.some(itiVar), devam: !!d.bol.devam, biten: !!d.bol.biten };
   if(!isler.length){ pdfDurumYaz("En az bir iş seçin."); return; }
-  if(!bol.bilgi && !bol.par && !bol.iti){ pdfDurumYaz("En az bir bölüm seçin."); return; }
+  if(!bol.bilgi && !bol.par && !bol.iti && !bol.devam && !bol.biten){ pdfDurumYaz("En az bir bölüm seçin."); return; }
   const btn = document.querySelector("[data-pdfyap]"); if(btn){ btn.disabled = true; btn.textContent = "Hazırlanıyor…"; }
   try{
     await agirHazir();
@@ -2632,7 +2642,23 @@ function pdfBilgi(doc, j, y){
     ]));
   }
   if(oz.u !== null) y = pdfSatir(doc, y, "Toplam Kalan", km(oz.kalan), true);
-  return y + 3 * a;
+  return pdfYazi9(doc, j, y) + 3 * a;
+}
+// KM Bilgileri'nin altında "<yıl> Devam Eden" ve "<yıl> Biten" yazıları (PDF alırken seçilirse)
+function pdfYazi9(doc, j, y){
+  const s = PDF.yazi9 || {}, o = PDF.o, a = PDF.a;
+  [["devam", "Devam Eden"], ["biten", "Biten"]].forEach(([k, ad]) => {
+    const t = String(j[k] || "").trim(); if(!s[k] || !t) return;
+    y = pdfYer(doc, y + 2.5 * a, 10 * a);
+    doc.setFont("DV", "bold"); doc.setFontSize(7.8 * o); doc.setTextColor(...PDF.turuncu);
+    doc.text(BUYUK(`${D.yil} ${ad}`), PDF.x0 + 1.5, y + 3 * o);
+    doc.setDrawColor(...PDF.turuncu); doc.setLineWidth(0.35); doc.line(PDF.x0, y + 4.4 * o, PDF.x1, y + 4.4 * o);
+    y += 6.2 * o;
+    doc.setFont("DV", "normal"); doc.setFontSize(7.6 * o); doc.setTextColor(...PDF.koyu);
+    const satirlar = t.split(/\r?\n/).flatMap(p => p.trim() ? doc.splitTextToSize(p.trim(), PDF.x1 - PDF.x0 - 3) : []);
+    satirlar.forEach(l => { y = pdfYer(doc, y, 3.6 * o); doc.text(l, PDF.x0 + 1.5, y + 2.6 * o); y += 3.6 * o; });
+  });
+  return y;
 }
 // İhale Bilgileri: solda işin KMZ'si (uydu altlıklı, yazısız kare), sağda
 // tek liste: Proje Bedeli, İhale Bedeli, ardından Excel satırları — hepsi
@@ -2784,7 +2810,10 @@ function yeniSayfa(doc, yatay){
   doc.addPage("a4", yatay ? "landscape" : "portrait");
 }
 async function pdfIs(doc, j, bol){
-  const dikey = bol.bilgi || (bol.par && parVar(j));
+  PDF.yazi9 = { devam: !!bol.devam, biten: !!bol.biten };
+  // Devam Eden / Biten yazısı KM Bilgileri seçilmese de basılabilir (kendi başlığıyla)
+  const yazi = !!((bol.devam && String(j.devam || "").trim()) || (bol.biten && String(j.biten || "").trim()));
+  const dikey = bol.bilgi || (bol.par && parVar(j)) || yazi;
   let kutuYazildi = false;
   if(dikey){
     yeniSayfa(doc, false);
@@ -2793,14 +2822,14 @@ async function pdfIs(doc, j, bol){
     let y = pdfKutu(doc, j, PDF.ust);
     kutuYazildi = true;
     const W = doc.internal.pageSize.getWidth(), gen = W - 2 * PDF.k, Hs = doc.internal.pageSize.getHeight() - PDF.alt;
-    const par = bol.par && parVar(j), bil = bol.bilgi;
+    const par = bol.par && parVar(j), bil = bol.bilgi || yazi;
     // Harita: işe bağlı harita resmi (yoksa KMZ) — İhale Bilgileri olmasa da basılır
     const harV = bol.harita !== false && (!!j.hr || !!(j.hat && j.hat.cizgi && j.hat.cizgi.some(c => c.p && c.p.length > 1)));
     // Sütunlar: solda İhale Bilgileri, sağda KM Bilgileri (biri yoksa tam genişlik)
     const ara = 7, solG = par && bil ? (gen - ara) * 0.535 : gen;
     const ciz = (d, yy) => {
       let yK = yy, yI = yy;
-      if(bil){ PDF.x0 = par ? PDF.k + solG + ara : PDF.k; PDF.x1 = W - PDF.k; yK = pdfBilgi(d, j, yy); }
+      if(bil){ PDF.x0 = par ? PDF.k + solG + ara : PDF.k; PDF.x1 = W - PDF.k; yK = bol.bilgi ? pdfBilgi(d, j, yy) : pdfYazi9(d, j, pdfBolumBaslik(d, pdfYer(d, yy, 24 * PDF.a), `${D.yil} Çalışmalar`) - 2.5 * PDF.a) + 3 * PDF.a; }
       if(par){ const ilk = d.getNumberOfPages ? d.getNumberOfPages() : 0; PDF.x0 = PDF.k; PDF.x1 = PDF.k + solG; yI = pdfParasal(d, j, yy); }
       pdfTam(doc);
       return Math.max(yK, yI);
@@ -4193,9 +4222,9 @@ function adaBitir(ok){
 }
 async function pdfYap(){
   const d = pdfDurum, isler = pdfSecili();
-  const bol = { bilgi: d.bol.bilgi, par: d.bol.par && isler.some(parVar), iti: d.bol.iti && isler.some(itiVar) };
+  const bol = { bilgi: d.bol.bilgi, par: d.bol.par && isler.some(parVar), iti: d.bol.iti && isler.some(itiVar), devam: !!d.bol.devam, biten: !!d.bol.biten };
   if(!isler.length){ pdfDurumYaz("En az bir iş seçin."); return; }
-  if(!bol.bilgi && !bol.par && !bol.iti){ pdfDurumYaz("En az bir bölüm seçin."); return; }
+  if(!bol.bilgi && !bol.par && !bol.iti && !bol.devam && !bol.biten){ pdfDurumYaz("En az bir bölüm seçin."); return; }
   const btn = document.querySelector("[data-pdfyap]"); if(btn){ btn.disabled = true; btn.textContent = "Hazırlanıyor…"; }
   try{
     adaYaz("PDF hazırlanıyor", .04);
@@ -4995,14 +5024,14 @@ if(location.hash === "#masaustu-pdf"){
         kur(m.veri); D._agirTam = true;
         if(m.yil && yillar().includes(m.yil) && m.yil !== secYil){ secYil = m.yil; yilUygula(m.yil); }
         const j = ISLER.find(x => String(x.id) === String(m.isId));
-        cevap({ ok: !!j, hata: j ? "" : "İş telefon verisinde bulunamadı", par: !!j && parVar(j), iti: !!j && itiVar(j), hr: !!j && !!j.hr, harita: !!j && (!!j.hr || !!(j.hat && j.hat.cizgi && j.hat.cizgi.some(c => c.p && c.p.length > 1))) });
+        cevap({ ok: !!j, hata: j ? "" : "İş telefon verisinde bulunamadı", par: !!j && parVar(j), iti: !!j && itiVar(j), devam: !!j && !!String(j.devam || "").trim(), biten: !!j && !!String(j.biten || "").trim(), hr: !!j && !!j.hr, harita: !!j && (!!j.hr || !!(j.hat && j.hat.cizgi && j.hat.cizgi.some(c => c.p && c.p.length > 1))) });
         kutuphaneMasa();
         return;
       }
       if(m.tur === "istaakip-pdf-uret"){
         const j = ISLER.find(x => String(x.id) === String(m.isId)); if(!j) throw new Error("İş bulunamadı");
-        const bol = { bilgi: !!m.bol.bilgi, par: !!m.bol.par && parVar(j), iti: !!m.bol.iti && itiVar(j), harita: m.bol.harita !== false };
-        if(!bol.bilgi && !bol.par && !bol.iti) throw new Error("En az bir bölüm seçin (KM Bilgileri, İhale Bilgileri ya da İtinerer)");
+        const bol = { bilgi: !!m.bol.bilgi, par: !!m.bol.par && parVar(j), iti: !!m.bol.iti && itiVar(j), harita: m.bol.harita !== false, devam: !!m.bol.devam, biten: !!m.bol.biten };
+        if(!bol.bilgi && !bol.par && !bol.iti && !bol.devam && !bol.biten) throw new Error("En az bir bölüm seçin");
         const font = await kutuphaneMasa();
         const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
         doc.addFileToVFS("dv.ttf", font.normal); doc.addFont("dv.ttf", "DV", "normal");

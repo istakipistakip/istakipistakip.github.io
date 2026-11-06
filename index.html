@@ -1201,6 +1201,19 @@ html, body{ touch-action:manipulation; }
 
 /* PDF seçimi: KM Bilgileri'nin altındaki Devam Eden / Biten seçenekleri */
 .pdfbol label.alt9{ margin-left:22px; padding:7px 12px; font-size:12.5px; border-style:dashed; }
+
+/* v45: yakınlaşınca küçülen düğme ikiye bölünür */
+.hust .hfd9{ padding:0 !important; overflow:hidden; }
+.hust .hfd9 button{ display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 13px; border:none; background:none; color:#fff; font:inherit; font-weight:700; font-size:13px; }
+.hust .hfd9 em{ width:1px; align-self:stretch; margin:8px 0; background:rgba(255,255,255,.25); }
+/* PDF önizleme: sayfa yakınlaşır, çubuklar sabit */
+.pon{ touch-action:none; }
+.pon-govde{ touch-action:pan-x pan-y; overscroll-behavior:contain; }
+.pon-sayfalar{ will-change:transform; }
+/* boy kesit 3B işareti: yuvarlağın merkezi tam hatta, KM etiketi üstünde */
+.bk9m{ position:relative; width:16px; height:16px; display:block !important; }
+.bk9m i{ position:absolute; inset:0; box-sizing:border-box; }
+.bk9m span{ position:absolute; bottom:calc(100% + 4px); left:50%; transform:translateX(-50%); margin:0 !important; }
 </style>
 </head>
 <body>
@@ -1283,7 +1296,7 @@ const IL_SIRA = []; // il sırası veri dosyasından gelir (depoda bölge bilgis
 const IKON_IS = '<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="17" rx="2" stroke="#ea580c" stroke-width="1.8"/><rect x="9" y="2.5" width="6" height="3" rx="1" fill="#ea580c"/><line x1="8" y1="10" x2="16" y2="10" stroke="#ea580c" stroke-width="1.6" stroke-linecap="round"/><line x1="8" y1="13.5" x2="16" y2="13.5" stroke="#ea580c" stroke-width="1.6" stroke-linecap="round"/><line x1="8" y1="17" x2="13" y2="17" stroke="#ea580c" stroke-width="1.6" stroke-linecap="round"/></svg>';
 const IKON_HEDEF = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#16a34a" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#16a34a" stroke-width="2"/><circle cx="12" cy="12" r="1" fill="#16a34a"/></svg>';
 const yerel = (k, v) => { try{ if(v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); }catch(e){ return null; } };
-let gdAcik = true, gdSekme = yerel("istakip-mobil-gd-sekme") || "std", gdSec = null;
+let gdAcik = true, gdSekme = "std", gdSec = null;
 // Yılı içinde silinen işler o yılın toplamlarında "(silindi)" olarak kalır
 const sayilan = () => ISLER.filter(j => !j.ekleme).concat(((D.silinen || {})[D.yil] || []).map((x, i) => ({ id: "sil" + i, ad: x.ad + " (silindi)", firma: x.firma, il: x.il || [], cats: x.cats || [], fh: 0, kmler: [], kutular: [], silindi: 1 })));
 const stdSirala = ads => ads.sort((a, b) => (STD_SIRA.indexOf(a) + 1 || 99) - (STD_SIRA.indexOf(b) + 1 || 99) || a.localeCompare(b, "tr"));
@@ -2307,7 +2320,7 @@ document.addEventListener("click", e => {
 // tipi PDF'e gömülür.
 let pdfDurum = null;
 function pdfPenceresi(j){
-  pdfDurum = { tek: true, j, sec: new Set([j.id]), bol: { bilgi: true, par: parVar(j), iti: itiVar(j) }, ara: "", blob: null, ad: "" };
+  pdfDurum = { tek: true, j, sec: new Set([j.id]), bol: { bilgi: true, par: parVar(j), iti: itiVar(j), devam: true, biten: true }, ara: "", blob: null, ad: "" };
   altSayfa(IK("pdf"), "PDF Gönder", j.ad, "", "pdfbb", "pdfs");
   pdfCiz();
 }
@@ -2331,7 +2344,7 @@ ${d.tek ? "" : `<div class="pdfara"><input id="pdfara" type="search" placeholder
 <div class="pdfis" id="pdfis">${liste.map(x => `<label><input type="checkbox" data-pdfis="${esc(x.id)}"${d.sec.has(x.id) ? " checked" : ""}><span>${esc(x.ad)}</span></label>`).join("") || '<div class="muted" style="padding:10px">İş bulunamadı.</div>'}</div>
 <div class="muted" style="margin:6px 2px 12px">${d.sec.size} iş seçili</div>`}
 <div class="bgrp" style="margin-top:${d.tek ? 4 : 0}px">BÖLÜMLER</div>
-<div class="pdfbol">${bol("par", "İhale Bilgileri", parOk ? "Harita, Proje / İhale Bedeli ve Excel bilgileri" : "Seçili işlerde ihale bilgisi yok", parOk)}${bol("bilgi", "KM Bilgileri", "İhale uzunluğu, yapılan ve kalan km'ler", true)}${yaziSec9("devam", "Devam Eden", sec, d)}${yaziSec9("biten", "Biten", sec, d)}${bol("iti", "İtinerer", itiOk ? "Her itinerer ayrı yatay sayfada" : "Seçili işlerde itinerer yok", itiOk)}</div>
+<div class="pdfbol">${bol("par", "İhale Bilgileri", parOk ? "Harita, Proje / İhale Bedeli ve Excel bilgileri" : "Seçili işlerde ihale bilgisi yok", parOk)}${bol("bilgi", "KM Bilgileri", sec.some(kmVar9) ? "İhale uzunluğu, yapılan ve kalan km'ler" : "Bu işte hedef, yapılan ya da kalan km yok", sec.some(kmVar9))}${yaziSec9("devam", "Devam Eden", sec, d)}${yaziSec9("biten", "Biten", sec, d)}${bol("iti", "İtinerer", itiOk ? "Her itinerer ayrı yatay sayfada" : "Seçili işlerde itinerer yok", itiOk)}</div>
 ${d.blob ? `<button class="go" data-pdfpaylas>${IK("paylas")}Paylaş / Gönder</button><div class="ytalt"><span>${esc(d.ad)}</span><button data-pdfonizle>Önizle</button></div>` : `<button class="go" data-pdfyap>${IK("pdf")}PDF Oluştur</button>`}
 <div class="pdfdur" id="pdfdur"></div>`;
 }
@@ -2401,9 +2414,9 @@ async function itiResimleri(kod){
 const dosyaGuvenli = s => String(s).replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 120);
 async function pdfYap(){
   const d = pdfDurum, isler = pdfSecili();
-  const bol = { bilgi: d.bol.bilgi, par: d.bol.par && isler.some(parVar), iti: d.bol.iti && isler.some(itiVar), devam: !!d.bol.devam, biten: !!d.bol.biten };
+  const bol = { bilgi: d.bol.bilgi && isler.some(kmVar9), par: d.bol.par && isler.some(parVar), iti: d.bol.iti && isler.some(itiVar), devam: !!d.bol.devam, biten: !!d.bol.biten };
   if(!isler.length){ pdfDurumYaz("En az bir iş seçin."); return; }
-  if(!bol.bilgi && !bol.par && !bol.iti && !bol.devam && !bol.biten){ pdfDurumYaz("En az bir bölüm seçin."); return; }
+  if(!bol.bilgi && !bol.par && !bol.iti && !(bol.devam && isler.some(x => String(x.devam || "").trim())) && !(bol.biten && isler.some(x => String(x.biten || "").trim()))){ pdfDurumYaz("En az bir bölüm seçin."); return; }
   const btn = document.querySelector("[data-pdfyap]"); if(btn){ btn.disabled = true; btn.textContent = "Hazırlanıyor…"; }
   try{
     await agirHazir();
@@ -2455,6 +2468,9 @@ async function pdfOnizle(){
 <div class="pon-alt"><button class="go" data-ponpaylas>${IK("paylas")}Paylaş / Gönder</button></div>`;
   document.body.appendChild(ov);
   let olcek = 1, belge = null, ciziliyor = 0;
+  const gv = ov.querySelector("#pon-govde");
+  gv._olcek = 1;
+  gv._yakinlas = yeni => { olcek = yeni; gv._olcek = yeni; ciz(); };
   const ciz = async () => {
     const no = ++ciziliyor, g = document.getElementById("pon-govde"); if(!g || !belge) return;
     const gen = (g.clientWidth - 16) * olcek, dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -2466,15 +2482,16 @@ async function pdfOnizle(){
       c.style.width = Math.round(v1.width * sc) + "px"; c.style.height = Math.round(v1.height * sc) + "px";
       kap.appendChild(c);
       await sy.render({ canvasContext: c.getContext("2d"), viewport: v }).promise;
-      if(i === 1){ g.innerHTML = ""; g.appendChild(kap); }
+      if(i === 1){ g.innerHTML = ""; g.appendChild(kap); if(g._hedef){ g.scrollLeft = g._hedef.x; g.scrollTop = g._hedef.y; } }
     }
     if(!kap.parentNode){ g.innerHTML = ""; g.appendChild(kap); }
+    if(g._hedef){ g.scrollLeft = g._hedef.x; g.scrollTop = g._hedef.y; g._hedef = null; }
   };
   ov.addEventListener("click", e => {
     if(e.target.closest("[data-ponkapat]")){ ciziliyor++; ov.remove(); return; }
     if(e.target.closest("[data-ponpaylas]")){ pdfPaylas(); return; }
     const z = e.target.closest("[data-ponz]");
-    if(z){ const yeni = Math.max(1, Math.min(3, olcek + Number(z.dataset.ponz) * 0.5)); if(yeni !== olcek){ olcek = yeni; ciz(); } }
+    if(z){ const yeni = Math.max(1, Math.min(4, olcek + Number(z.dataset.ponz) * 0.5)); if(yeni !== olcek){ const r = gv.getBoundingClientRect(), cx = r.width / 2, cy = r.height / 2; gv._hedef = { x: (gv.scrollLeft + cx) / olcek * yeni - cx, y: (gv.scrollTop + cy) / olcek * yeni - cy }; olcek = yeni; gv._olcek = yeni; ciz(); } }
   });
   try{
     await pdfjsHazir();
@@ -2611,6 +2628,13 @@ function kmKolonlar(j){
   j.onc.forEach(x => { const c = k.find(y => y.ad === x.ad); if(c) c.o = x.o; else k.push({ ad: x.ad, h: 0, b: 0, o: x.o }); });
   return k.sort((a, b) => (STD_SIRA.indexOf(a.ad) + 1 || 99) - (STD_SIRA.indexOf(b.ad) + 1 || 99));
 }
+// PDF'te KM Bilgileri: bu yılın hedefi, yapılan km'si ya da kalanı (İhale Uzunluğu'ndan
+// gelen Toplam Kalan dahil) yoksa seçilemez ve basılmaz
+function kmVar9(j){
+  if(!j) return false;
+  if((j.cats || []).some(c => (Number(c.h) || 0) > 0 || (Number(c.b) || 0) > 0)) return true;
+  return kmOzet(j).u !== null;
+}
 function kmOzet(j){
   const uz = j.uz || [];
   const top = k => uz.reduce((t, r) => t + (Number(r[k]) || 0), 0);
@@ -2642,16 +2666,21 @@ function pdfBilgi(doc, j, y){
     ]));
   }
   if(oz.u !== null) y = pdfSatir(doc, y, "Toplam Kalan", km(oz.kalan), true);
-  return pdfYazi9(doc, j, y) + 3 * a;
+  return y + 3 * a;
 }
-// KM Bilgileri'nin altında "<yıl> Devam Eden" ve "<yıl> Biten" yazıları (PDF alırken seçilirse)
+// "<yıl> Yılı Çalışmalar" bölümü: her zaman kendi başlığıyla (KM Bilgileri varsa onun altında),
+// içinde "Devam Eden" ve "Biten" ara başlıkları (PDF alırken seçilenler)
+function pdfCalismalar9(doc, j, y){
+  y = pdfBolumBaslik(doc, pdfYer(doc, y, 24 * PDF.a), `${D.yil} Yılı Çalışmalar`) - 2.5 * PDF.a;
+  return pdfYazi9(doc, j, y) + 3 * PDF.a;
+}
 function pdfYazi9(doc, j, y){
   const s = PDF.yazi9 || {}, o = PDF.o, a = PDF.a;
   [["devam", "Devam Eden"], ["biten", "Biten"]].forEach(([k, ad]) => {
     const t = String(j[k] || "").trim(); if(!s[k] || !t) return;
     y = pdfYer(doc, y + 2.5 * a, 10 * a);
     doc.setFont("DV", "bold"); doc.setFontSize(7.8 * o); doc.setTextColor(...PDF.turuncu);
-    doc.text(BUYUK(`${D.yil} ${ad}`), PDF.x0 + 1.5, y + 3 * o);
+    doc.text(BUYUK(ad), PDF.x0 + 1.5, y + 3 * o);
     doc.setDrawColor(...PDF.turuncu); doc.setLineWidth(0.35); doc.line(PDF.x0, y + 4.4 * o, PDF.x1, y + 4.4 * o);
     y += 6.2 * o;
     doc.setFont("DV", "normal"); doc.setFontSize(7.6 * o); doc.setTextColor(...PDF.koyu);
@@ -2813,7 +2842,8 @@ async function pdfIs(doc, j, bol){
   PDF.yazi9 = { devam: !!bol.devam, biten: !!bol.biten };
   // Devam Eden / Biten yazısı KM Bilgileri seçilmese de basılabilir (kendi başlığıyla)
   const yazi = !!((bol.devam && String(j.devam || "").trim()) || (bol.biten && String(j.biten || "").trim()));
-  const dikey = bol.bilgi || (bol.par && parVar(j)) || yazi;
+  const kmB = !!bol.bilgi && kmVar9(j);
+  const dikey = kmB || (bol.par && parVar(j)) || yazi;
   let kutuYazildi = false;
   if(dikey){
     yeniSayfa(doc, false);
@@ -2822,14 +2852,14 @@ async function pdfIs(doc, j, bol){
     let y = pdfKutu(doc, j, PDF.ust);
     kutuYazildi = true;
     const W = doc.internal.pageSize.getWidth(), gen = W - 2 * PDF.k, Hs = doc.internal.pageSize.getHeight() - PDF.alt;
-    const par = bol.par && parVar(j), bil = bol.bilgi || yazi;
+    const par = bol.par && parVar(j), bil = kmB || yazi;
     // Harita: işe bağlı harita resmi (yoksa KMZ) — İhale Bilgileri olmasa da basılır
     const harV = bol.harita !== false && (!!j.hr || !!(j.hat && j.hat.cizgi && j.hat.cizgi.some(c => c.p && c.p.length > 1)));
     // Sütunlar: solda İhale Bilgileri, sağda KM Bilgileri (biri yoksa tam genişlik)
-    const ara = 7, solG = par && bil ? (gen - ara) * 0.535 : gen;
+    const ara = 7, solG = par ? (gen - ara) * 0.535 : gen;
     const ciz = (d, yy) => {
       let yK = yy, yI = yy;
-      if(bil){ PDF.x0 = par ? PDF.k + solG + ara : PDF.k; PDF.x1 = W - PDF.k; yK = bol.bilgi ? pdfBilgi(d, j, yy) : pdfYazi9(d, j, pdfBolumBaslik(d, pdfYer(d, yy, 24 * PDF.a), `${D.yil} Çalışmalar`) - 2.5 * PDF.a) + 3 * PDF.a; }
+      if(bil){ PDF.x0 = par ? PDF.k + solG + ara : PDF.k; PDF.x1 = W - PDF.k; yK = yy; if(kmB) yK = pdfBilgi(d, j, yK); if(yazi) yK = pdfCalismalar9(d, j, yK); }
       if(par){ const ilk = d.getNumberOfPages ? d.getNumberOfPages() : 0; PDF.x0 = PDF.k; PDF.x1 = PDF.k + solG; yI = pdfParasal(d, j, yy); }
       pdfTam(doc);
       return Math.max(yK, yI);
@@ -3661,7 +3691,11 @@ function dosyaSec(){
         // Şifreli dosya: kayıtlı oturumla ya da giriş ekranıyla açılır
         if(o && o.format === "istakip-mobil" && o.sifreli){
           if(!(o.kul && o.veri)) throw new Error("bicim");
-          const ac = async K => { const v = await GIRIS.veriCoz(o, K); await kilitYaz({ kul: o.kul, olusturma: o.olusturma }); await veriYukle(v); };
+          const ac = async K => {
+            const v = await GIRIS.veriCoz(o, K);
+            if(o.tur === "degisiklik" || (v && v.tur === "degisiklik")){ await degisiklikUygula9(o, v); return; }
+            await kilitYaz({ kul: o.kul, olusturma: o.olusturma, temel: o.temel || null }); await veriYukle(v);
+          };
           const r = await GIRIS.oturumlaAc(o.kul);
           if(r) await ac(r.K);
           else GIRIS.ekran(o.kul, ac, D ? "Yeni veri dosyası için giriş yapın." : "");
@@ -3723,21 +3757,36 @@ const GIRIS = (() => {
   // Kullanıcının bu telefondaki kendi şifresi: programdaki anahtarı onun şifresiyle kilitli saklar
   const yereller = () => okuLS("istakip-yerel-sifre") || {};
 
+  // v7 dosyalarda kullanıcı adı açık yazılmaz (geri çözülemeyen kod); eski dosyalarda açık
+  async function kulKod(kadi){
+    const h = new Uint8Array(await crypto.subtle.digest("SHA-256", enc.encode("istakip-kul:" + norm(kadi))));
+    return Array.from(h.subarray(0, 16), b => b.toString(16).padStart(2, "0")).join("");
+  }
+  async function kulBul(kul, kadi){
+    const n = norm(kadi), h = await kulKod(n);
+    return (kul || []).find(x => x.k === h || x.k === n) || null;
+  }
   // kul listesinden K (veri anahtarı) çıkar; kek: kullanıcının (programdaki şifresinden) anahtarı
+  // ad soyad v7'de kişinin kendi anahtarıyla kilitli
   async function anahtarAc(kul, kadi, kekRaw){
-    const e = (kul || []).find(x => x.k === kadi); if(!e) return null;
-    try{ return { K: await coz(kekRaw, e.w), e }; }catch(_){ return null; }
+    const e = await kulBul(kul, kadi); if(!e) return null;
+    try{
+      const K = await coz(kekRaw, e.w);
+      let ad = e.ad || "";
+      if(e.a){ try{ ad = dec.decode(await coz(kekRaw, e.a)); }catch(_){} }
+      return { K, e, ad };
+    }catch(_){ return null; }
   }
   // kayıtlı oturumla aç (yoksa / geçersizse null)
   async function oturumlaAc(kul){
     const o = oturum(); if(!o) return null;
-    const e = (kul || []).find(x => x.k === o.k);
+    const e = await kulBul(kul, o.k);
     if(!e || Number(e.v) !== Number(o.v)) return null;     // silinmiş ya da şifresi programda değişmiş
     return await anahtarAc(kul, o.k, unb64(o.kek));
   }
   // kullanıcı adı + şifreyle aç: telefonda kendi şifresi varsa yalnız o geçerli
   async function sifreyleAc(kul, kadiH, sifre){
-    const kadi = norm(kadiH), e = (kul || []).find(x => x.k === kadi); if(!e) return null;
+    const kadi = norm(kadiH), e = await kulBul(kul, kadi); if(!e) return null;
     const y = yereller()[kadi];
     if(y && Number(y.v) === Number(e.v)){
       try{ const kek = await coz(await turet("istakip-yerel:" + kadi, sifre), y.wk); const r = await anahtarAc(kul, kadi, kek); return r ? { ...r, kek } : null; }catch(_){ return null; }
@@ -3784,8 +3833,8 @@ const GIRIS = (() => {
       const kadi = document.getElementById("gkadi").value, sif = document.getElementById("gsifre").value;
       const r = await sifreyleAc(kul, kadi, sif);
       if(!r){ btn.disabled = false; btn.textContent = "Giriş"; h.textContent = "Kullanıcı adı veya şifre hatalı."; h.hidden = false; return; }
-      oturumYaz({ k: r.e.k, v: r.e.v, ad: r.e.ad, kek: b64(r.kek) }, document.getElementById("ghatirla").checked);
-      if(yol5 && !azHareket && girisAnimGun()){ yol5.hizlan(); f.classList.add("git"); const gc = document.getElementById("gecis5"); if(gc){ gc.querySelector("b").textContent = "Hoş geldiniz" + (r.e.ad ? ", " + r.e.ad.split(/\s+/)[0] : ""); setTimeout(() => gc.classList.add("ac"), 650); } await new Promise(ok => setTimeout(ok, 1150)); }
+      oturumYaz({ k: norm(kadi), v: r.e.v, ad: r.ad, kek: b64(r.kek) }, document.getElementById("ghatirla").checked);
+      if(yol5 && !azHareket && girisAnimGun()){ yol5.hizlan(); f.classList.add("git"); const gc = document.getElementById("gecis5"); if(gc){ gc.querySelector("b").textContent = "Hoş geldiniz" + (r.ad ? ", " + r.ad.split(/\s+/)[0] : ""); setTimeout(() => gc.classList.add("ac"), 650); } await new Promise(ok => setTimeout(ok, 1150)); }
       document.getElementById("tabs").style.display = "";
       await devam(r.K, r.e);
     });
@@ -3794,7 +3843,7 @@ const GIRIS = (() => {
   // Şifre değiştir (anahtar ikonu)
   function sifreDegistir(kul){
     const o = oturum(); if(!o) return;
-    const e = (kul || []).find(x => x.k === o.k) || { ad: o.ad, k: o.k };
+    const e = { ad: o.ad, k: o.k };
     const bs = altSayfa(IK("anahtar"), "Şifre Değiştir", "Yalnız bu telefonda geçerli", `<form class="sform" id="sform" method="post" action="#">
 <div class="skul"><em>${esc((e.ad || o.k).split(/\s+/).map(x => x[0]).slice(0, 2).join("").toLocaleUpperCase("tr-TR"))}</em><div><b>${esc(e.ad || o.k)}</b><small>${esc(o.k)}</small></div></div>
 <input type="text" name="username" autocomplete="username" value="${esc(o.k)}" hidden readonly>
@@ -4222,9 +4271,9 @@ function adaBitir(ok){
 }
 async function pdfYap(){
   const d = pdfDurum, isler = pdfSecili();
-  const bol = { bilgi: d.bol.bilgi, par: d.bol.par && isler.some(parVar), iti: d.bol.iti && isler.some(itiVar), devam: !!d.bol.devam, biten: !!d.bol.biten };
+  const bol = { bilgi: d.bol.bilgi && isler.some(kmVar9), par: d.bol.par && isler.some(parVar), iti: d.bol.iti && isler.some(itiVar), devam: !!d.bol.devam, biten: !!d.bol.biten };
   if(!isler.length){ pdfDurumYaz("En az bir iş seçin."); return; }
-  if(!bol.bilgi && !bol.par && !bol.iti && !bol.devam && !bol.biten){ pdfDurumYaz("En az bir bölüm seçin."); return; }
+  if(!bol.bilgi && !bol.par && !bol.iti && !(bol.devam && isler.some(x => String(x.devam || "").trim())) && !(bol.biten && isler.some(x => String(x.biten || "").trim()))){ pdfDurumYaz("En az bir bölüm seçin."); return; }
   const btn = document.querySelector("[data-pdfyap]"); if(btn){ btn.disabled = true; btn.textContent = "Hazırlanıyor…"; }
   try{
     adaYaz("PDF hazırlanıyor", .04);
@@ -4725,10 +4774,10 @@ function galeriAc(j, anahtar){
 // ---------- KMZ ve İtinerer: yalnız sol kenardan kaydırarak kapatma ----------
 (() => {
   let g = null, ip = null;
-  const ekran = () => document.getElementById("hatv") || document.getElementById("itiv");
+  const ekran = () => document.getElementById("pon") || document.getElementById("hatv") || document.getElementById("itiv");
   window.addEventListener("touchstart", e => {
     const v = ekran(); g = null;
-    if(!v || e.touches.length !== 1 || olc || document.getElementById("bsov") || document.getElementById("gal6") || document.getElementById("bk6")?.contains(e.target)) return;
+    if(!v || e.touches.length !== 1 || (v.id !== "pon" && (olc || document.getElementById("bsov"))) || document.getElementById("gal6") || document.getElementById("bk6")?.contains(e.target)) return;
     const t = e.touches[0]; if(t.clientX > 18) return;
     g = { v, x: t.clientX, y: t.clientY, akt: false, px: t.clientX, pt: performance.now(), hiz: 0 };
     e.stopPropagation();
@@ -4758,7 +4807,8 @@ function galeriAc(j, anahtar){
       const v = g.v, kim = v.id; ip && ip.remove(); ip = null; g = null;
       v.animate([{ transform: v.style.transform }, { transform: "translateX(100%)" }], { duration: 220, easing: "ease-out", fill: "forwards" }).onfinish = () => {
         v.style.visibility = "hidden";
-        if(kim === "hatv"){ if(history.state && history.state.hat) history.back(); else hatKapat(); }
+        if(kim === "pon"){ v.remove(); }
+        else if(kim === "hatv"){ if(history.state && history.state.hat) history.back(); else hatKapat(); }
         else { if(history.state && history.state.iti) history.back(); else itiKapat(); }
       };
     } else geri();
@@ -4793,7 +4843,10 @@ async function boyKesit(j){
   hv.appendChild(p);
   p.querySelector("[data-bkkapat]").addEventListener("click", () => { p.remove(); bkTemizle9(); });
   const ana = bkZincir9(j) || (anaCizgiler(j)[0] || j.hat.cizgi.slice().sort((a, b) => b.p.length - a.p.length)[0]); if(!ana || ana.p.length < 2){ p.querySelector("#bk6yk").textContent = "Bu işin çizgisi boy kesit için yetersiz."; return; }
-  const cum = [0]; for(let i = 1; i < ana.p.length; i++) cum.push(cum[i - 1] + mesafe6(ana.p[i - 1], ana.p[i]));
+  const kop = ana.kop || new Set();
+  const cum = [0]; for(let i = 1; i < ana.p.length; i++) cum.push(cum[i - 1] + (kop.has(i) ? 0 : mesafe6(ana.p[i - 1], ana.p[i])));
+  bkHat9 = { p: ana.p, kop };
+  const sinirlar = [...kop].map(i => cum[i]).sort((a, b) => a - b);
   const top = cum[cum.length - 1], N = Math.max(20, Math.min(400, Math.round(top / 40))), S = [];
   let k = 0; for(let s = 0; s <= N; s++){ const d = top * s / N; while(k < cum.length - 2 && cum[k + 1] < d) k++; const t = (d - cum[k]) / Math.max(1e-9, cum[k + 1] - cum[k]), a = ana.p[k], b = ana.p[k + 1]; S.push({ d, p: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t] }); }
   try{ for(const s of S) s.h = await yukseklik(s.p[0], s.p[1]); }
@@ -4818,6 +4871,7 @@ async function boyKesit(j){
     for(let i = 0; i <= 3; i++){ const h = lo + (hi - lo) * i / 3, y = Y(h); g.beginPath(); g.moveTo(L, y); g.lineTo(W - R, y); g.stroke(); g.fillText(Math.round(h) + "", 2, y + 3); }
     const sec = km.length > 6 ? km.filter((_, i) => i % Math.ceil(km.length / 5) === 0) : km; let sx = -99;
     sec.forEach(([d, t]) => { const x = X(d); if(x - sx < 46) return; sx = x; g.fillText(t, Math.min(x - 14, W - 44), H - 4); g.beginPath(); g.moveTo(x, H - B); g.lineTo(x, H - B + 4); g.stroke(); });
+    if(sinirlar.length){ g.save(); g.strokeStyle = koyu ? "rgba(226,232,240,.45)" : "rgba(15,23,42,.35)"; g.lineWidth = 1; g.setLineDash([2, 3]); sinirlar.forEach(d => { const x = Math.round(X(d)) + .5; g.beginPath(); g.moveTo(x, T); g.lineTo(x, H - B); g.stroke(); }); g.restore(); }
     const gr = g.createLinearGradient(0, T, 0, H - B); gr.addColorStop(0, "rgba(234,88,12,.35)"); gr.addColorStop(1, "rgba(234,88,12,.02)");
     g.beginPath(); g.moveTo(X(0), H - B); S.forEach(s => g.lineTo(X(s.d), Y(s.h))); g.lineTo(X(top), H - B); g.closePath(); g.fillStyle = gr; g.fill();
     g.beginPath(); S.forEach((s, i) => i ? g.lineTo(X(s.d), Y(s.h)) : g.moveTo(X(s.d), Y(s.h))); g.strokeStyle = "#ea580c"; g.lineWidth = 2; g.stroke();
@@ -5024,13 +5078,13 @@ if(location.hash === "#masaustu-pdf"){
         kur(m.veri); D._agirTam = true;
         if(m.yil && yillar().includes(m.yil) && m.yil !== secYil){ secYil = m.yil; yilUygula(m.yil); }
         const j = ISLER.find(x => String(x.id) === String(m.isId));
-        cevap({ ok: !!j, hata: j ? "" : "İş telefon verisinde bulunamadı", par: !!j && parVar(j), iti: !!j && itiVar(j), devam: !!j && !!String(j.devam || "").trim(), biten: !!j && !!String(j.biten || "").trim(), hr: !!j && !!j.hr, harita: !!j && (!!j.hr || !!(j.hat && j.hat.cizgi && j.hat.cizgi.some(c => c.p && c.p.length > 1))) });
+        cevap({ ok: !!j, hata: j ? "" : "İş telefon verisinde bulunamadı", km: !!j && kmVar9(j), par: !!j && parVar(j), iti: !!j && itiVar(j), devam: !!j && !!String(j.devam || "").trim(), biten: !!j && !!String(j.biten || "").trim(), hr: !!j && !!j.hr, harita: !!j && (!!j.hr || !!(j.hat && j.hat.cizgi && j.hat.cizgi.some(c => c.p && c.p.length > 1))) });
         kutuphaneMasa();
         return;
       }
       if(m.tur === "istaakip-pdf-uret"){
         const j = ISLER.find(x => String(x.id) === String(m.isId)); if(!j) throw new Error("İş bulunamadı");
-        const bol = { bilgi: !!m.bol.bilgi, par: !!m.bol.par && parVar(j), iti: !!m.bol.iti && itiVar(j), harita: m.bol.harita !== false, devam: !!m.bol.devam, biten: !!m.bol.biten };
+        const bol = { bilgi: !!m.bol.bilgi && kmVar9(j), par: !!m.bol.par && parVar(j), iti: !!m.bol.iti && itiVar(j), harita: m.bol.harita !== false, devam: !!m.bol.devam, biten: !!m.bol.biten };
         if(!bol.bilgi && !bol.par && !bol.iti && !bol.devam && !bol.biten) throw new Error("En az bir bölüm seçin");
         const font = await kutuphaneMasa();
         const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
@@ -5057,7 +5111,7 @@ if(location.hash === "#masaustu-pdf"){
   let g = null;
   window.addEventListener("touchstart", e => {
     g = null;
-    const ov = document.getElementById("bsov"); if(!ov || e.touches.length !== 1) return;
+    const ov = document.getElementById("bsov"); if(!ov || e.touches.length !== 1 || document.getElementById("pon")) return;
     const t = e.touches[0]; if(t.clientX > 18) return;
     const el = ov.querySelector(".bs"); if(!el) return;
     g = { el, x: t.clientX, y: t.clientY, akt: false };
@@ -5173,7 +5227,7 @@ haritaUst = function(){
     h = i >= 0 ? h.slice(0, i) + sat + h.slice(i) : h.replace('<div class="hozet"', sat + '<div class="hozet"');
   }
   const n = filtreSay9();
-  return h.replace('<div class="hust">', `<div class="hust"><button class="hfd9" data-hfd9>${IK("ara")}Ara · Filtre<i id="hfdn9">${n ? ` (${n})` : ""}</i></button>`);
+  return h.replace('<div class="hust">', `<div class="hust"><span class="hfd9"><button data-hfdara9>${IK("ara")}Ara</button><em></em><button data-hfd9>Filtre<i id="hfdn9">${n ? ` (${n})` : ""}</i></button></span>`);
 };
 vurguUygula = function(){
   const aktif = hIl.size > 0 || hStd.size > 0 || hBirim.size > 0, A = hAraSet, say = new Set();
@@ -5297,7 +5351,7 @@ function bkZincir9(j){
   let kal = anaCizgiler(j).filter(c => c && c.p && c.p.length >= 2).map(c => c.p.map(q => [q[0], q[1]]));
   if(!kal.length) return null;
   kal.sort((a, b) => uz(b) - uz(a));
-  let z = kal.shift();
+  let z = kal.shift(), kop = [];
   const yakin = (p, liste) => { let m = 1e18; for(let i = 0; i < liste.length; i += Math.max(1, Math.floor(liste.length / 400))) m = Math.min(m, mesafe6(p, liste[i])); return m; };
   // üst üste binen kopya çizgileri ayıkla
   kal = kal.filter(q => { const ornek = [0, .25, .5, .75, 1].map(f => q[Math.min(q.length - 1, Math.round(f * (q.length - 1)))]); return ornek.filter(p => yakin(p, z) < 60).length < 4; });
@@ -5310,23 +5364,40 @@ function bkZincir9(j){
     });
     if(!en || en[0] > 5000) break;
     let q = kal.splice(en[1], 1)[0]; if(en[3]) q = q.slice().reverse();
-    z = en[2] === "son" ? z.concat(q) : q.concat(z);
+    // parça sınırları (kop: yeni parçanın başladığı nokta) — aradaki boşluk hat sayılmaz
+    if(en[2] === "son"){ kop.push(z.length); z = z.concat(q); }
+    else { kop = kop.map(i => i + q.length); kop.push(q.length); z = q.concat(z); }
   }
-  return { p: z };
+  return { p: z, kop: new Set(kop) };
 }
 
 // Boy kesitteki işaret: 2B'de ve 3B'de grafikle birlikte gezer; işarete dokununca
 // harita oraya yakınlaşır (KM noktaları okunacak kadar)
 let bk3b = null;
-function bkTemizle9(){ try{ bkIsaret && bkIsaret.remove(); }catch(_){} bkIsaret = null; try{ bk3b && bk3b.remove(); }catch(_){} bk3b = null; }
+function bkTemizle9(){ bkHat9 = null; try{ bkIsaret && bkIsaret.remove(); }catch(_){} bkIsaret = null; try{ bk3b && bk3b.remove(); }catch(_){} bk3b = null; }
+let bkHat9 = null;
+function bkYapistir9(p){
+  const h = bkHat9; if(!h || !h.p || h.p.length < 2) return p;
+  const cl = Math.cos(p[0] * Math.PI / 180); let en = p, bd = Infinity;
+  for(let i = 1; i < h.p.length; i++){
+    if(h.kop && h.kop.has(i)) continue;
+    const a = h.p[i - 1], b = h.p[i], ax = a[1] * cl, ay = a[0], bx = b[1] * cl, by = b[0], px = p[1] * cl, py = p[0];
+    const dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy;
+    const t = L2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / L2)) : 0;
+    const qx = ax + dx * t, qy = ay + dy * t, d = (qx - px) ** 2 + (qy - py) ** 2;
+    if(d < bd){ bd = d; en = [qy, qx / cl]; }
+  }
+  return en;
+}
 function bkIsaretKoy9(p, et){
+  p = bkYapistir9(p);
   if(uc && uc.map && hatMod !== "2b" && window.maplibregl){
     try{ bkIsaret && bkIsaret.remove(); }catch(_){} bkIsaret = null;
     if(bk3b && bk3b._map !== uc.map){ try{ bk3b.remove(); }catch(_){} bk3b = null; }
     if(!bk3b){
       const el = document.createElement("div"); el.className = "bk9m"; el.innerHTML = "<i></i><span></span>";
       el.addEventListener("click", ev => { ev.stopPropagation(); const ll = bk3b.getLngLat(); uc.map.flyTo({ center: ll, zoom: Math.max(uc.map.getZoom(), 16.5), duration: 900 }); });
-      bk3b = new window.maplibregl.Marker({ element: el, anchor: "bottom" }).setLngLat([p[1], p[0]]).addTo(uc.map);
+      bk3b = new window.maplibregl.Marker({ element: el, anchor: "center" }).setLngLat([p[1], p[0]]).addTo(uc.map);
     }else bk3b.setLngLat([p[1], p[0]]);
     const sp = bk3b.getElement().querySelector("span"); if(sp) sp.textContent = et;
     return;
@@ -5429,6 +5500,156 @@ function sessizGuncelle9(){
   };
   setTimeout(dene, 0);
 })();
+
+
+// ---------- v43: KMZ "işin hattına dön" düğmesi ----------
+// Basınca turuncu yanar (harita hatta döner); Konumum'a basınca ya da harita elle
+// kaydırılınca / yakınlaştırılınca / uzaklaştırılınca söner. Düğmenin kendi uçuşu söndürmez.
+let yolaAcik9 = false, yolaZam9 = 0, yolaDok9 = null;
+function yolaYak9(on){ yolaAcik9 = on; const b = document.querySelector("#hatv [data-yola]"); if(b) b.classList.toggle("on", !!on); }
+document.addEventListener("click", e => {
+  if(!e.target.closest) return;
+  if(e.target.closest("#hatv [data-yola]")){ yolaZam9 = Date.now(); setTimeout(() => yolaYak9(true), 0); return; }
+  if(e.target.closest("#hatv [data-konumum]")) yolaYak9(false);
+}, true);
+const haritaAlani9 = t => t && t.closest && t.closest("#hatv") && !t.closest(".sagk, .hatbar, .hb2, .bk6p, .katman, .konumkart, .pus, button, input, .bs, .bsov");
+document.addEventListener("pointerdown", e => { if(!yolaAcik9 || !haritaAlani9(e.target)) return; yolaDok9 = { x: e.clientX, y: e.clientY, n: (yolaDok9 && yolaDok9.n || 0) + 1 }; if(yolaDok9.n > 1) yolaYak9(false); }, true);
+document.addEventListener("pointermove", e => { if(!yolaAcik9 || !yolaDok9) return; if(Math.hypot(e.clientX - yolaDok9.x, e.clientY - yolaDok9.y) > 8) yolaYak9(false); }, true);
+document.addEventListener("pointerup", () => { yolaDok9 = null; }, true);
+document.addEventListener("pointercancel", () => { yolaDok9 = null; }, true);
+document.addEventListener("wheel", e => { if(yolaAcik9 && haritaAlani9(e.target) && Date.now() - yolaZam9 > 300) yolaYak9(false); }, { capture: true, passive: true });
+const _hatGoster43 = hatGoster;
+hatGoster = async function(){ yolaYak9(false); return _hatGoster43.apply(this, arguments); };
+
+
+// ===================== v45 =====================
+// --- PDF önizleme: iki parmakla yakınlaştırma yalnız sayfaya uygulanır; üst (Kapat) ve
+// alt (Paylaş) çubuklar sabit kalır. Sol kenardan sağa kaydırınca kapanır.
+document.addEventListener("gesturestart", e => { if(document.getElementById("pon")) e.preventDefault(); }, { passive: false });
+(() => {
+  let pz = null;
+  const govde = () => document.getElementById("pon-govde");
+  document.addEventListener("touchstart", e => {
+    const g = govde(); if(!g || !g.contains(e.target) || e.touches.length !== 2) return;
+    const [a, b] = e.touches, kap = g.querySelector(".pon-sayfalar"); if(!kap) return;
+    const r = g.getBoundingClientRect();
+    pz = { g, kap, d0: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), cx: (a.clientX + b.clientX) / 2 - r.left, cy: (a.clientY + b.clientY) / 2 - r.top, k: 1 };
+    kap.style.transformOrigin = `${g.scrollLeft + pz.cx}px ${g.scrollTop + pz.cy}px`;
+  }, { capture: true, passive: true });
+  document.addEventListener("touchmove", e => {
+    if(!pz || e.touches.length !== 2) return;
+    e.preventDefault();
+    const [a, b] = e.touches, d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    const ol = (pz.g._olcek || 1);
+    pz.k = Math.max(1 / ol, Math.min(4 / ol, d / pz.d0));
+    pz.kap.style.transform = `scale(${pz.k})`;
+  }, { capture: true, passive: false });
+  document.addEventListener("touchend", e => {
+    if(!pz || e.touches.length >= 2) return;
+    const z = pz; pz = null;
+    const ol = z.g._olcek || 1, yeni = Math.max(1, Math.min(4, ol * z.k));
+    if(Math.abs(yeni - ol) < .02){ z.kap.style.transform = ""; return; }
+    // odak noktası yerinde kalsın
+    const fx = (z.g.scrollLeft + z.cx) / ol, fy = (z.g.scrollTop + z.cy) / ol;
+    z.g._hedef = { x: fx * yeni - z.cx, y: fy * yeni - z.cy };
+    z.g._yakinlas && z.g._yakinlas(yeni);
+  }, { capture: true, passive: true });
+})();
+// --- Harita sekmesi: yakınlaştırılmamışken aşağı çekince arama açılır
+let hCek9 = null;
+document.addEventListener("touchstart", e => {
+  hCek9 = null;
+  if(tab !== "map" || detay || !D || D.yetki === "kmz" || e.touches.length !== 1) return;
+  const w = document.getElementById("mapwrap"); if(!w || !w.contains(e.target) || e.target.closest(".hust, .sheet, .zoom, .ket6")) return;
+  if(!mz || mz.s > 1.02) return;
+  hCek9 = { y: e.touches[0].clientY, x: e.touches[0].clientX, d: 0 };
+}, { capture: true, passive: true });
+document.addEventListener("touchmove", e => {
+  const c = hCek9; if(!c) return;
+  if(e.touches.length !== 1){ hCek9 = null; cekGizle9(); return; }
+  const dy = e.touches[0].clientY - c.y, dx = Math.abs(e.touches[0].clientX - c.x);
+  if(!c.d && (dy < 8 || dx > dy)){ if(dy < -4 || dx > 10) hCek9 = null; return; }
+  e.preventDefault(); e.stopPropagation();
+  c.d = Math.max(0, dy); cekGoster9(c.d);
+}, { capture: true, passive: false });
+document.addEventListener("touchend", e => {
+  const c = hCek9; hCek9 = null; if(!c || !c.d) return;
+  e.stopPropagation(); cekGizle9();
+  if(c.d > 70){ try{ navigator.vibrate && navigator.vibrate(8); }catch(_){} hustAcik9 = true; hustKucult9(); const a = document.getElementById("hAra"); if(a){ a.focus(); a.select && a.select(); } }
+}, { capture: true, passive: false });
+// --- Yakınlaşınca küçülen düğme ikiye: "Ara" klavyeyle, "Filtre (n)" klavyesiz
+document.addEventListener("click", e => {
+  if(!e.target.closest || !e.target.closest("[data-hfdara9]")) return;
+  e.stopPropagation(); e.preventDefault();
+  hustAcik9 = true; hustKucult9();
+  const a = document.getElementById("hAra"); if(a) a.focus();
+  ketOlcek();
+}, true);
+// arama yazılırken İL · BİRİM · STD çiplerine dokunmak klavyeyi kapatmasın
+document.addEventListener("mousedown", e => {
+  const a = document.activeElement; if(!a || a.id !== "hAra" || !e.target.closest) return;
+  if(e.target.closest("#mapwrap .hust button")) e.preventDefault();
+}, true);
+// haritaya dokununca klavye de kapanır
+document.addEventListener("touchstart", e => {
+  const a = document.activeElement; if(!a || a.id !== "hAra" || !e.target.closest) return;
+  if(e.target.closest("#mapwrap") && !e.target.closest(".hust")) a.blur();
+}, { capture: true, passive: true });
+
+
+// ---------- v46: değişiklik dosyası ----------
+// Program her seferinde bütün veri yerine yalnız son tam dosyadan bu yana
+// değişenleri gönderebilir. Telefon elindeki veriyi parçalara ayırır, gelen
+// parçaları yerine koyar, birleştirip saklar. (Parça kuralları programdakiyle
+// aynı: modules/mobil-kullanici.js → parcala.)
+function parcala9(v){
+  const P = {};
+  const c = { ...v, harita: null, iti: null, katman: null, hResim: null, hResimOrtak: null };
+  c.isler = (v.isler || []).map(j => { if(j && j.hat){ P["h:" + j.id] = j.hat; return { ...j, hat: "#h" }; } return j; });
+  if(v.harita) P.harita = v.harita;
+  if(v.katman) P.katman = v.katman;
+  if(v.iti){ const { projeler, ...kalan } = v.iti; P.iti = kalan; Object.keys(projeler || {}).forEach(k => { P["i:" + k] = projeler[k]; }); }
+  Object.keys(v.hResim || {}).forEach(k => { P["r:" + k] = v.hResim[k]; });
+  Object.keys(v.hResimOrtak || {}).forEach(k => { P["o:" + k] = v.hResimOrtak[k]; });
+  P.c = c;
+  return P;
+}
+function birlestir9(P){
+  const v = { ...P.c };
+  v.isler = (v.isler || []).map(j => j && j.hat === "#h" ? { ...j, hat: P["h:" + j.id] || null } : j);
+  v.harita = P.harita || ""; v.katman = P.katman || null;
+  const proj = {}, r = {}, o = {};
+  Object.keys(P).forEach(k => { if(k.startsWith("i:")) proj[k.slice(2)] = P[k]; else if(k.startsWith("r:")) r[k.slice(2)] = P[k]; else if(k.startsWith("o:")) o[k.slice(2)] = P[k]; });
+  v.iti = P.iti ? { ...P.iti, projeler: proj } : null;
+  v.hResim = Object.keys(r).length ? r : null; v.hResimOrtak = Object.keys(o).length ? o : null;
+  return v;
+}
+async function tamOku9(){
+  const son = await idbOku("son"); if(!son) return null;
+  const agir = await idbOku("agir");
+  const v = { ...son, ...(agir || {}) };
+  delete v._parcali; delete v.itiKodlar; delete v.haritaVar; delete v.katmanVar; delete v._agirTam;
+  return v;
+}
+async function degisiklikUygula9(o, g){
+  const tarihYaz = t => { try{ const d = new Date(t); return `${p2(d.getDate())}.${p2(d.getMonth() + 1)}.${d.getFullYear()}`; }catch(_){ return ""; } };
+  const dur = m => { if(D) bildir(m); else hosgeldin(m); };
+  if(!KILIT || !KILIT.temel || KILIT.temel !== g.temel){ dur("Bu güncelleme için önce tam veri dosyası gerekiyor. Programdan tam dosya isteyin."); return; }
+  if(D && D.olusturma && g.olusturma && D.olusturma > g.olusturma){ dur("Bu dosya elinizdeki veriden eski (" + tarihYaz(g.olusturma) + "); yüklenmedi."); return; }
+  const eski = await tamOku9(); if(!eski){ dur("Bu güncelleme için önce tam veri dosyası gerekiyor."); return; }
+  const P = parcala9(eski);
+  Object.keys(g.parca || {}).forEach(k => { P[k] = g.parca[k]; });
+  (g.sil || []).forEach(k => { if(k !== "c") delete P[k]; });
+  const eksik = (P.c && P.c.isler || []).some(j => j && j.hat === "#h" && !P["h:" + j.id]);
+  if(eksik){ dur("Bu güncelleme için önce tam veri dosyası gerekiyor (telefondaki veri eksik)."); return; }
+  const v = birlestir9(P);
+  await kilitYaz({ kul: o.kul, olusturma: o.olusturma, temel: KILIT.temel });
+  agirSoz = null;
+  await veriYukle(v);
+  const oz = g.ozet || {};
+  const parca = [oz.is ? oz.is + " işte değişiklik" : "", oz.agir ? oz.agir + " harita / KMZ / itinerer" : ""].filter(Boolean).join(" · ");
+  bildir("Güncellendi" + (parca ? " · " + parca : "") + " · " + veriTarih());
+}
 
 function bildir(m){
   document.querySelectorAll(".bildir").forEach(x => x.remove());

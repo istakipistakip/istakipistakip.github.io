@@ -1268,6 +1268,7 @@ html.dark .dz9k .yz{ border-color:#222d41; }
 .kf9 input:not([type=checkbox]), .kf9 textarea, .ss9 select{ width:100%; box-sizing:border-box; border:1px solid #d6dbe3; border-radius:11px; padding:10px 11px; font:inherit; font-size:16px; background:#fff; color:#0f172a; }
 .kf9 textarea{ resize:vertical; min-height:70px; line-height:1.4; }
 .kf9 .ch{ display:flex; flex-wrap:wrap; gap:6px; }
+.kf9 .ch button, .kf9 .seg button{ touch-action:manipulation; -webkit-tap-highlight-color:transparent; cursor:pointer; }
 .kf9 .ch button{ border:1px solid #d6dbe3; background:#fff; border-radius:9px; padding:7px 10px; font-size:12.5px; font-weight:800; color:#475569; }
 .kf9 .ch button.is{ border-color:#fdba74; }
 .kf9 .ch button.on, .kf9 .seg button.on{ background:#ea580c; border-color:#ea580c; color:#fff; }
@@ -6115,7 +6116,7 @@ function kmForm9(id, idx){
   const t = k && /^\d{4}-\d{2}-\d{2}/.test(k.t || "") ? k.t.slice(0, 10) : bugun9();
   const govde = `<form class="kf9" id="kf9" autocomplete="off">
 <label>Standart</label><div class="ch" id="kf9s">${stdler.map(s => `<button type="button" class="${s === sec ? "on" : ""}${j.cats.some(c => c.ad === s) ? " is" : ""}" data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>
-<div class="ik2"><div><label for="kf9a">Başlangıç KM</label><input id="kf9a" inputmode="decimal" placeholder="12+500" value="${esc(k ? k.a : "")}"></div><div><label for="kf9e">Bitiş KM</label><input id="kf9e" inputmode="decimal" placeholder="14+000" value="${esc(k ? k.e : "")}"></div></div>
+<div class="ik2"><div><label for="kf9a">Başlangıç KM</label><input id="kf9a" inputmode="numeric" pattern="[0-9+]*" placeholder="12500 → 12+500" value="${esc(k ? k.a : "")}"></div><div><label for="kf9e">Bitiş KM</label><input id="kf9e" inputmode="numeric" pattern="[0-9+]*" placeholder="14000 → 14+000" value="${esc(k ? k.e : "")}"></div></div>
 <div class="uz" id="kf9u"></div>
 <label>Oran</label><div class="seg" id="kf9o"><button type="button" class="${yarim ? "" : "on"}" data-o="0">Tamamı</button><button type="button" class="${yarim ? "on" : ""}" data-o="1">Yarısı</button></div>
 <label for="kf9t">Tarih</label><input id="kf9t" type="date" value="${esc(t)}">
@@ -6130,12 +6131,25 @@ ${k ? `<button type="button" class="sil" data-kf9sil>${IK("cop")}Bu aralığı s
   let std = sec, oran = yarim ? 1 : 0;
   const uzGoster = () => { const x = { a: $("#kf9a").value, e: $("#kf9e").value, y: oran }; const s = kmSayi(x.a), e = kmSayi(x.e);
     $("#kf9u").innerHTML = s !== null && e !== null && $("#kf9a").value.trim() && $("#kf9e").value.trim() ? `Uzunluk <b>${f2(kmUz9(x))} km</b>${oran ? " (yarısı)" : ""}` : ""; };
+  // seçim dokununca hemen (iPhone'da tıklama gecikmesi / kaçması olmasın)
+  const sec9 = ev => {
+    const s = ev.target.closest("#kf9s [data-s]"); if(s){ std = s.dataset.s; ov.querySelectorAll("#kf9s button").forEach(b => b.classList.toggle("on", b === s)); return true; }
+    const o = ev.target.closest("#kf9o [data-o]"); if(o){ oran = +o.dataset.o; ov.querySelectorAll("#kf9o button").forEach(b => b.classList.toggle("on", b === o)); uzGoster(); return true; }
+    return false;
+  };
+  ov.addEventListener("pointerup", ev => { sec9(ev); });
   ov.addEventListener("click", ev => {
+    if(sec9(ev)) return;
     const s = ev.target.closest("#kf9s [data-s]"); if(s){ std = s.dataset.s; ov.querySelectorAll("#kf9s button").forEach(b => b.classList.toggle("on", b === s)); return; }
     const o = ev.target.closest("#kf9o [data-o]"); if(o){ oran = +o.dataset.o; ov.querySelectorAll("#kf9o button").forEach(b => b.classList.toggle("on", b === o)); uzGoster(); return; }
     if(ev.target.closest("[data-kf9sil]")){ kapatAlt(); kmSilSor9(id, idx); }
   });
-  ["#kf9a", "#kf9e"].forEach(s => $(s).addEventListener("input", uzGoster)); uzGoster();
+  // KM yazımı: rakam yazılır, "+" kendiliğinden konur (12500 → 12+500); virgüllü (4,5) olduğu gibi kalır
+  const kmBicim = inp => { const v = inp.value, d = v.replace(/\D/g, "");
+    if(/[,.]/.test(v) || !d) return;
+    const yeni = d.length >= 4 ? d.slice(0, -3).replace(/^0+(?=\d)/, "") + "+" + d.slice(-3) : d;
+    if(yeni !== v){ inp.value = yeni; try{ inp.setSelectionRange(yeni.length, yeni.length); }catch(_){} } };
+  ["#kf9a", "#kf9e"].forEach(s => $(s).addEventListener("input", () => { kmBicim($(s)); uzGoster(); })); uzGoster();
   $("#kf9").addEventListener("submit", async ev => {
     ev.preventDefault();
     const a = $("#kf9a").value.trim(), e = $("#kf9e").value.trim(), tt = $("#kf9t").value, h = $("#kf9h");

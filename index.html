@@ -6393,48 +6393,51 @@ function bul9(rows){
   }
   return null;
 }
-// Kontrol Şefi sütunu: başlığından (genelde İşin Adı'nın solunda)
-function sefSutun9(rows, s){
+// Kontrol Şefi sütunu: başlığından; bulunamazsa iş adı hücrelerinin hemen solundaki sütun
+function sefSutun9(rows, s, mer){
+  const birlesik = (r, c) => (mer || []).find(m => r >= m.r1 && r <= m.r2 && c >= m.c1 && c <= m.c2);
+  // iş adı hücrelerinin kapladığı sütunlar (başlık ya da hücreler birleştirilmiş olabilir)
+  let sol = s.a, sag = s.a;
+  [birlesik(s.ra ?? s.r, s.a)].concat(rows.slice(s.r + 1, s.r + 40).map((_, i) => birlesik(s.r + 1 + i, s.a))).forEach(m => { if(m){ sol = Math.min(sol, m.c1); sag = Math.max(sag, m.c2); } });
   for(let q = Math.max(0, (s.ra ?? s.r) - 3); q <= Math.min(rows.length - 1, s.r + 1); q++){
-    const n = (rows[q] || []).map(hnrm9), L = n.map((x, i) => /kontrol sef|kont sef|ksef|^sef$|^sefi$/.test(x) && i !== s.a ? i : -1).filter(i => i >= 0);
-    if(L.length) return L.sort((x, y) => ((x < s.a ? 0 : 1) - (y < s.a ? 0 : 1)) || (Math.abs(x - s.a) - Math.abs(y - s.a)))[0];
+    const n = (rows[q] || []).map(hnrm9), L = n.map((x, i) => /kontrol sef|kont sef|ksef|^sef$|^sefi$/.test(x) && (i < sol || i > sag) ? i : -1).filter(i => i >= 0);
+    if(L.length) return L.sort((x, y) => ((x < sol ? 0 : 1) - (y < sol ? 0 : 1)) || (Math.abs(x - sol) - Math.abs(y - sol)))[0];
   }
-  // başlığı farklı yazılmışsa: İşin Adı'nın hemen solundaki sütun
-  return s.a > 0 ? s.a - 1 : -1;
+  // başlıksız soldaki sütunda hiç isim yoksa (ör. sıra no) şef sütunu yok sayılır
+  if(sol > 0 && rows.slice(s.r + 1).some(x => !AD_BAS9.test(hnrm9((x || [])[s.a])) && /[A-Za-zÇĞİÖŞÜçğıöşü]/.test(hucre9((x || [])[sol - 1])))) return sol - 1;
+  return -1;
 }
-// "İşin Adı" altındaki işler. Kontrol Şefi sütunu varsa şefin (birleştirilmiş hücresinin)
-// kapladığı her satırdaki iş alınır; şefi olmayan satırlar (TOPLAM, ara başlık) iş sayılmaz.
+// "İşin Adı" altındaki işler. Kontrol Şefi sütunu varsa: şefin (birleştirilmiş) hücresinin
+// kapladığı satırlarda, İşin Adı sütununu kesen her ayrı hücre (tek ya da birleştirilmiş,
+// çizgiyle bölünmüş) bir iştir. Solunda şef adı olmayan (boş ya da sayı) satırlar alınmaz.
 function kayitlar9(rows, s, mer){
   mer = mer || [];
-  const sf = s.sf !== undefined ? s.sf : sefSutun9(rows, s);
+  const sf = s.sf !== undefined ? s.sf : sefSutun9(rows, s, mer);
   const birlesik = (r, c) => mer.find(m => r >= m.r1 && r <= m.r2 && c >= m.c1 && c <= m.c2);
-  const deger = (r, c) => { if(c < 0) return ""; const v = hucre9((rows[r] || [])[c]); if(v) return v; const m = birlesik(r, c); return m ? hucre9((rows[m.r1] || [])[m.c1]) : ""; };
-  const sfBirlesik = sf >= 0 && mer.some(m => m.c1 <= sf && m.c2 >= sf && m.r2 > m.r1);
-  const out = []; let son = null, sonSef = "";
-  const basMi = x => AD_BAS9.test(hnrm9((x || [])[s.a]));      // tekrar eden "İşin Adı" başlığı
+  // hücre değeri: birleştirilmiş hücrede yazı sol üst köşededir
+  const deger = (r, c) => { if(c < 0) return ""; const m = birlesik(r, c); return m ? hucre9((rows[m.r1] || [])[m.c1]) : hucre9((rows[r] || [])[c]); };
+  const out = []; let son = null, sonHucre = null;
   for(let r = s.r + 1; r < rows.length; r++){
-    const x = rows[r] || [];
-    if(basMi(x)){ son = null; sonSef = ""; continue; }      // tekrar eden başlık satırı
-    // iş adı hücresi birden çok satırı kaplıyorsa alttaki satırlar aynı işin devamıdır
-    const adM = birlesik(r, s.a), devam = adM && adM.r1 < r;
-    const ad = devam ? "" : hucre9(x[s.a]), c = s.c >= 0 ? hucre9(x[s.c]) : "", b = s.b >= 0 ? hucre9(x[s.b]) : "";
-    let sef = "";
-    if(sf >= 0){
-      // kendi hücresi ya da üstünden birleştirilmiş şef hücresi; boşsa üstteki şefin işi sayılır
-      // (şefin adı yalnız ilk işinin yanında yazar). Sayı yazıyorsa (sıra no vb.) iş değil.
-      const v = deger(r, sf);
-      if(/[A-Za-zÇĞİÖŞÜçğıöşü]/.test(v)) sonSef = v;
-      else if(v) sonSef = "";
-      else if(!ad && !c && !b) sonSef = "";          // tamamen boş satır: blok bitti
-      sef = sonSef;
+    if(AD_BAS9.test(hnrm9(deger(r, s.a)))){ son = null; sonHucre = null; continue; }      // tekrar eden başlık satırı
+    const hm = birlesik(r, s.a), hucre = hm ? hm.r1 + ":" + hm.c1 : r + ":" + s.a;
+    const ilkSatir = !hm || hm.r1 === r;
+    // aynı birleştirilmiş iş hücresinin alt satırlarındaki yazılar aynı işe eklenir
+    const c = s.c >= 0 && !(birlesik(r, s.c) && birlesik(r, s.c).r1 < r) ? hucre9((rows[r] || [])[s.c]) || (birlesik(r, s.c) ? deger(r, s.c) : "") : "";
+    const b = s.b >= 0 && !(birlesik(r, s.b) && birlesik(r, s.b).r1 < r) ? hucre9((rows[r] || [])[s.b]) || (birlesik(r, s.b) ? deger(r, s.b) : "") : "";
+    if(!ilkSatir){
+      if(son && hucre === sonHucre){ if(c && !son.c.includes(c)) son.c = son.c ? son.c + "\n" + c : c; if(b && !son.b.includes(b)) son.b = son.b ? son.b + "\n" + b : b; }
+      continue;
     }
-    if(ad){
-      const n = nrm9(ad);
-      if(/^\d+$/.test(n) || /^(genel |ara )?toplam( |$)/.test(n)){ son = null; sonSef = ""; continue; }
-      if(sf >= 0 && !sef){ son = null; continue; }               // şefi olmayan satır iş değil
-      // bir hücre = bir iş (hücre içinde alt satıra geçmiş uzun adlar birleştirilir)
-      son = { ad: ad.replace(/\s*\n\s*/g, " "), c, b, sef }; out.push(son);
-    }else if(son && (c || b)){ if(c) son.c = son.c ? son.c + "\n" + c : c; if(b) son.b = son.b ? son.b + "\n" + b : b; }
+    const ad = deger(r, s.a).replace(/\s*\n\s*/g, " ");
+    if(!ad){ if(son && (c || b)){ if(c) son.c = son.c ? son.c + "\n" + c : c; if(b) son.b = son.b ? son.b + "\n" + b : b; } continue; }
+    const n = nrm9(ad);
+    if(/^\d+$/.test(n) || /^(genel |ara )?toplam( |$)/.test(n)){ son = null; sonHucre = null; continue; }
+    if(sf >= 0){
+      const sef = deger(r, sf);           // kendi hücresi ya da birleştirilmiş şef hücresi
+      if(!/[A-Za-zÇĞİÖŞÜçğıöşü]/.test(sef)){ son = null; sonHucre = null; continue; }   // boş ya da sayı: iş değil
+      son = { ad, c, b, sef };
+    }else son = { ad, c, b, sef: "" };
+    sonHucre = hucre; out.push(son);
   }
   return out;
 }

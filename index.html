@@ -6390,7 +6390,11 @@ function bul9(rows){
     if(a < 0) continue;
     // Çalışmalar / Biten başlığı aynı satırda ya da birleştirilmiş başlıkta birkaç satır yakında olabilir
     const C = [], B = [];
-    for(let q = Math.max(0, r - 3); q <= Math.min(rows.length - 1, r + 3); q++) hn(q).forEach((x, i) => { if(i === a) return; if(C_BAS9(x)) C.push({ q, i, y: x.includes(yil) }); else if(B_BAS9(x)) B.push({ q, i, y: x.includes(yil) }); });
+    // yalnız başlık satırları: İşin Adı satırı, üstü ve (birleştirilmiş başlıkta) adı boş alt satırlar.
+    // İş satırlarındaki yazılar ("çalışma", "biten" geçse de) başlık sayılmaz; başlıklar kısadır.
+    const basSatir = q => q <= r || !hucre9((rows[q] || [])[a]);
+    let sonBas = r; for(let q = r + 1; q <= Math.min(rows.length - 1, r + 3) && basSatir(q); q++) sonBas = q;
+    for(let q = Math.max(0, r - 3); q <= sonBas; q++) hn(q).forEach((x, i) => { if(i === a || !x || x.length > 70) return; if(C_BAS9(x)) C.push({ q, i, y: x.includes(yil) }); else if(B_BAS9(x)) B.push({ q, i, y: x.includes(yil) }); });
     const sec = L => (L.find(o => o.y) || L[0] || null);
     const c = sec(C), b = sec(B);
     const son = Math.max(r, c ? c.q : r, b ? b.q : r);

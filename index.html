@@ -1403,6 +1403,11 @@ html.dark .exr9 .eblk.ayni .ayt{ color:#94a3b8; }
 .hs2 .h{ position:relative; }
 .hs2 .h .hx9{ position:absolute; top:-4px; right:-2px; width:22px; height:22px; border-radius:50%; background:#dc2626; color:#fff; display:grid; place-items:center; box-shadow:0 2px 6px rgba(0,0,0,.3); z-index:2; }
 .hs2 .h .hx9 svg{ width:13px; height:13px; stroke-width:3; }
+
+.exr9 .eslg{ font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.03em; margin:6px 2px 0; }
+.exr9 .eslr.ok{ border-color:#bbf7d0; }
+.exr9 .eslr.atl{ opacity:.6; }
+.exr9 .eslr small i{ font-style:normal; color:#c2410c; font-weight:700; }
 </style>
 </head>
 <body>
@@ -6474,17 +6479,32 @@ async function excelOku9(fs){
     }
   }
   if(!kay.length){ bildir("Excel'lerde İşin Adı altında iş bulunamadı"); return; }
-  // işlerle eşleştir
-  const esl = new Map(), bos = [];
-  kay.forEach(k => {
-    const m = isEsle9(k.ad, k.sef);
-    if(m && m.yok) return;
-    if(m && m.j){ const x = esl.get(m.j.id) || { id: m.j.id, c: "", b: "", kaynak: new Set(), sef: k.sef || "" }; if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(m.j.id, x); }
-    else bos.push(k);
-  });
-  EX9 = { kay, esl, bos, i: 0, filtre: false, degisen: new Set(), toplam: esl.size + bos.length };
+  EX9 = { kay, ...eslesKur9(kay), i: 0, filtre: false, degisen: new Set(), toplam: kay.length };
   anlik9();
-  exAc9(bos.length ? "esle" : "isler");
+  exAc9(EX9.bos.length ? "esle" : "isler");
+}
+// Excel satırlarını işlerle eşleştir. Elle bağlananlar hatırlanır. Aynı işe birden çok satır
+// kendiliğinden eşleşirse yalnız en benzeri eşleşir, diğerleri elle bağlanmayı bekler.
+function eslesKur9(kay){
+  const bag = lsOku9(BAG9, {});
+  const sat = kay.map(k => {
+    const n = nrm9(k.ad);
+    if(bag[n] === "-") return { k, id: "-", elle: 1 };
+    if(bag[n] && ISLER.some(j => j.id === bag[n])) return { k, id: bag[n], elle: 1 };
+    const m = isEsle9(k.ad, k.sef);
+    return { k, id: m && m.j ? m.j.id : "", p: m && m.j ? puan9(k, m.j) : 0 };
+  });
+  const sahip = {};
+  sat.forEach((x, i) => { if(!x.id || x.id === "-") return; const o = sahip[x.id]; if(o === undefined || (!sat[o].elle && (x.elle || sat[o].p < x.p))) sahip[x.id] = i; });
+  sat.forEach((x, i) => { if(x.id && x.id !== "-" && !x.elle && sahip[x.id] !== i){ x.id = ""; x.cakisti = 1; } });
+  const esl = new Map(), bos = [];
+  sat.forEach(({ k, id }) => {
+    if(id === "-") return;
+    if(!id){ bos.push(k); return; }
+    const x = esl.get(id) || { id, c: "", b: "", kaynak: new Set(), sef: k.sef || "" };
+    if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(id, x);
+  });
+  return { sat, esl, bos };
 }
 // "Geçen haftadan beri değişenler": her yüklemede kısa bir iz saklanır
 const iz9 = s => { let h = 5381; const t = nrm9(s); for(let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
@@ -6548,9 +6568,11 @@ function exYenile9(){ if(EX9 && document.getElementById("exr9")) exCiz9(); }
 function exCiz9(){
   const ov = document.getElementById("exr9"); if(!ov || !EX9) return;
   if(EX9.mod === "esle"){
-    const secenek = k => { const s = ISLER.map(j => ({ j, s: puan9(k, j) })).sort((a, b) => b.s - a.s); return `<option value="">Seçin…</option><option value="-">Bu satırı her zaman atla</option>${s.map(x => `<option value="${esc(x.j.id)}">${esc(x.j.ad)}</option>`).join("")}`; };
-    ov.innerHTML = `<div class="eh"><button data-ex9kapat>${IK("geri")}</button><div class="et"><b>Eşleşmeyen işler</b><small>Excel'de ${EX9.toplam} iş · ${EX9.esl.size} eşleşti · ${EX9.bos.length} bekliyor</small></div></div>
-<div class="eb">${EX9.bos.map((k, i) => `<div class="eslr"><b>${esc(k.ad)}</b><small>${k.sef ? "Şef: " + esc(k.sef) + " · " : ""}${esc(k.kaynak)}${(k.c || k.b) ? " · " + esc((k.c || k.b).slice(0, 80)) : " · yazı yok"}</small><select data-ex9bag="${i}">${secenek(k)}</select></div>`).join("")}</div>
+    const secenek = (k, id) => { const L = ISLER.map(j => ({ j, s: puan9(k, j) })).sort((a, b) => b.s - a.s); return `<option value=""${id ? "" : " selected"}>Seçin…</option><option value="-"${id === "-" ? " selected" : ""}>Bu satırı her zaman atla</option>${L.map(x => `<option value="${esc(x.j.id)}"${x.j.id === id ? " selected" : ""}>${esc(x.j.ad)}</option>`).join("")}`; };
+    const satir = i => { const { k, id, cakisti } = EX9.sat[i]; return `<div class="eslr${id && id !== "-" ? " ok" : id === "-" ? " atl" : ""}"><b>${esc(k.ad)}</b><small>${k.sef ? "Şef: " + esc(k.sef) + " · " : ""}${esc(k.kaynak)}${(k.c || k.b) ? " · " + esc((k.c || k.b).slice(0, 80)) : " · yazı yok"}${cakisti ? " · <i>başka satır aynı işe eşleşti</i>" : ""}</small><select data-ex9bag="${i}">${secenek(k, id)}</select></div>`; };
+    const grup = (ad, f) => { const ix = EX9.sat.map((x, i) => i).filter(i => f(EX9.sat[i].id)); return ix.length ? `<div class="eslg">${ad} (${ix.length})</div>` + ix.map(satir).join("") : ""; };
+    ov.innerHTML = `<div class="eh"><button data-ex9kapat>${IK("geri")}</button><div class="et"><b>Excel'deki işler</b><small>${EX9.toplam} iş · ${EX9.esl.size} eşleşti · ${EX9.bos.length} bekliyor</small></div></div>
+<div class="eb">${grup("Eşleşmeyen", id => !id)}${grup("Eşleşen", id => id && id !== "-")}${grup("Atlanan", id => id === "-")}</div>
 <div class="ef"><button class="ana" data-ex9devam>Karşılaştırmaya geç ›</button></div>`;
     return;
   }
@@ -6573,7 +6595,7 @@ function exCiz9(){
 <div class="ex"><small>${exAd}<button data-ex9tum="${alan}">Tümünü al</button></small><div class="ep">${P.map((p, i) => `<button class="pc${uN.includes(nrm9(p)) ? " on" : ""}" data-ex9p="${alan}:${i}">${esc(p)}</button>`).join("")}</div></div></div></div>`;
   };
   const yeniMi = EX9.degisen.has(id);
-  ov.innerHTML = `<div class="eh"><button data-ex9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.i + 1} / ${L.length} · Excel'de ${EX9.toplam} iş${EX9.bos.length ? ` · <u data-ex9esle>${EX9.bos.length} eşleşmeyen</u>` : ""}</small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
+  ov.innerHTML = `<div class="eh"><button data-ex9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.i + 1} / ${L.length} · Excel'de ${EX9.toplam} iş · <u data-ex9esle>${EX9.bos.length ? EX9.bos.length + " eşleşmeyen" : "Eşleşmeler"}</u></small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
 <div class="eb" id="ex9b"><div class="ead"><b>${esc(j.ad)}</b><small>${x.sef ? "Şef: " + esc(x.sef) + " · " : ""}${esc([...x.kaynak].join(", "))}${yeniMi && EX9.onceTarih ? " · <i>geçen haftadan beri değişti</i>" : ""}</small></div>
 ${blok("devam", "Devam Eden", "Excel · Çalışmalar", j.devam || "", x.c)}
 ${blok("biten", D.yil + " Biten", "Excel · Biten", j.biten || "", x.b)}</div>
@@ -6600,14 +6622,11 @@ function exOlay9(ov){
     if(t.closest("[data-ex9esle]")){ await exKaydet9(); EX9.mod = "esle"; exCiz9(); return; }
     if(t.closest("[data-ex9devam]")){
       const bag = lsOku9(BAG9, {});
-      ov.querySelectorAll("[data-ex9bag]").forEach(s => { if(!s.value) return; const k = EX9.bos[+s.dataset.ex9bag]; bag[nrm9(k.ad)] = s.value; });
+      // değiştirilen seçimler hatırlanır ("Seçin…" seçilirse hatırlanan bağ silinir)
+      ov.querySelectorAll("[data-ex9bag]").forEach(sl => { const x = EX9.sat[+sl.dataset.ex9bag]; if(sl.value === x.id) return; const n = nrm9(x.k.ad); if(sl.value) bag[n] = sl.value; else delete bag[n]; });
       lsYaz9(BAG9, bag);
-      // eşleşmeleri yeniden kur
-      const kay = EX9.kay, f = EX9.filtre; EX9 = null;
-      const esl = new Map(), bos = [];
-      kay.forEach(k => { const m = isEsle9(k.ad, k.sef); if(m && m.yok) return;
-        if(m && m.j){ const x = esl.get(m.j.id) || { id: m.j.id, c: "", b: "", kaynak: new Set(), sef: k.sef || "" }; if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(m.j.id, x); } else bos.push(k); });
-      EX9 = { kay, esl, bos, i: 0, filtre: f, degisen: new Set(), toplam: esl.size + bos.length }; anlik9(); EX9.mod = "isler"; exCiz9(); return;
+      const kay = EX9.kay, f = EX9.filtre;
+      EX9 = { kay, ...eslesKur9(kay), i: 0, filtre: f, degisen: new Set(), toplam: kay.length }; anlik9(); EX9.mod = "isler"; exCiz9(); return;
     }
     if(t.closest("[data-ex9onc]")){ exGit9(-1); return; }
     if(t.closest("[data-ex9son]")){ exGit9(1); return; }

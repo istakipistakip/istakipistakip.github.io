@@ -1214,6 +1214,189 @@ html, body{ touch-action:manipulation; }
 .bk9m{ position:relative; width:16px; height:16px; display:block !important; }
 .bk9m i{ position:absolute; inset:0; box-sizing:border-box; }
 .bk9m span{ position:absolute; bottom:calc(100% + 4px); left:50%; transform:translateX(-50%); margin:0 !important; }
+
+/* ===== v47: yönetici düzenleme modu ===== */
+.h5 .ci.kl9.on{ background:#ea580c; border-color:#fb923c; }
+.dz9s{ background:linear-gradient(135deg,#fff7ed,#ffedd5); border:1px solid #fed7aa; border-radius:16px; padding:11px 12px; margin-bottom:12px; }
+.dz9s .t{ display:flex; align-items:center; gap:10px; }
+.dz9s .t .i{ width:32px; height:32px; border-radius:10px; background:#ea580c; color:#fff; display:grid; place-items:center; flex:none; }
+.dz9s .t .i svg{ width:17px; height:17px; }
+.dz9s .t > div{ flex:1; min-width:0; }
+.dz9s .t b{ display:block; font-size:14px; color:#9a3412; }
+.dz9s .t small{ display:block; font-size:12px; color:#9a3412; opacity:.8; }
+.dz9s .kp{ width:30px; height:30px; border-radius:50%; border:none; background:rgba(154,52,18,.1); color:#9a3412; display:grid; place-items:center; padding:0; }
+.dz9s .kp svg{ width:15px; height:15px; }
+.dz9s .b{ display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-top:10px; }
+.dz9s .b button{ display:flex; align-items:center; justify-content:center; gap:6px; height:38px; border-radius:11px; border:1px solid #fdba74; background:#fff; color:#9a3412; font-weight:800; font-size:12.5px; position:relative; }
+.dz9s .b svg{ width:16px; height:16px; }
+.dz9s .b i{ font-style:normal; background:#ea580c; color:#fff; border-radius:9px; padding:0 6px; font-size:11px; line-height:17px; }
+html.dark .dz9s{ background:linear-gradient(135deg,#2a1708,#1f1209); border-color:#7c2d12; }
+html.dark .dz9s .t b, html.dark .dz9s .t small{ color:#fdba74; }
+html.dark .dz9s .b button{ background:#141c2b; border-color:#7c2d12; color:#fdba74; }
+html.dark .dz9s .kp{ background:rgba(253,186,116,.12); color:#fdba74; }
+
+.dz9k{ margin-top:12px; border:1.5px dashed #fdba74; }
+.dz9h{ display:flex; align-items:center; gap:7px; color:#c2410c; margin-bottom:8px; }
+.dz9h svg{ width:16px; height:16px; }
+.dz9h b{ font-size:14px; flex:1; }
+.dz9h span{ font-size:12px; font-weight:800; background:#ffedd5; color:#c2410c; padding:2px 8px; border-radius:8px; }
+.dz9l{ display:flex; flex-direction:column; gap:6px; }
+.dz9l .bos{ font-size:12.5px; color:#94a3b8; padding:4px 0 2px; }
+.dz9r{ display:flex; align-items:stretch; gap:6px; }
+.dz9r .m{ flex:1; min-width:0; text-align:left; border:1px solid #e5e7eb; background:#f8fafc; border-radius:11px; padding:8px 10px; font:inherit; color:inherit; }
+.dz9r .m b{ display:block; font-size:13.5px; }
+.dz9r .m b em{ font-style:normal; font-size:11px; font-weight:800; color:#c2410c; background:#ffedd5; border-radius:6px; padding:1px 6px; margin-right:6px; }
+.dz9r .m b u{ text-decoration:none; font-size:11.5px; color:#64748b; font-weight:700; }
+.dz9r .m small{ display:block; font-size:11.5px; color:#64748b; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dz9r .x{ width:40px; flex:none; border:1px solid #fecaca; background:#fef2f2; color:#dc2626; border-radius:11px; display:grid; place-items:center; padding:0; }
+.dz9r .x svg{ width:16px; height:16px; }
+.dz9e{ display:flex; align-items:center; justify-content:center; gap:6px; width:100%; height:42px; margin:9px 0 10px; border:none; border-radius:12px; background:#ea580c; color:#fff; font-weight:800; font-size:14px; }
+.dz9e svg{ width:18px; height:18px; }
+.dz9k .yz{ display:flex; align-items:center; gap:8px; width:100%; text-align:left; border:none; border-top:1px solid #eef1f5; background:none; padding:10px 2px; font:inherit; color:inherit; }
+.dz9k .yz span{ flex:1; min-width:0; }
+.dz9k .yz b{ display:block; font-size:13px; }
+.dz9k .yz small{ display:block; font-size:12px; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dz9k .yz svg{ width:16px; height:16px; color:#c2410c; flex:none; }
+html.dark .dz9r .m{ background:#0f1726; border-color:#222d41; }
+html.dark .dz9r .x{ background:#2a1215; border-color:#5b1d22; color:#f87171; }
+html.dark .dz9h span, html.dark .dz9r .m b em{ background:#3b1d0c; color:#fdba74; }
+html.dark .dz9k .yz{ border-color:#222d41; }
+
+/* form */
+.kf9{ display:flex; flex-direction:column; gap:6px; }
+.kf9 label{ font-size:12px; font-weight:800; color:#475569; margin-top:6px; }
+.kf9 input:not([type=checkbox]), .kf9 textarea, .ss9 select{ width:100%; box-sizing:border-box; border:1px solid #d6dbe3; border-radius:11px; padding:10px 11px; font:inherit; font-size:16px; background:#fff; color:#0f172a; }
+.kf9 textarea{ resize:vertical; min-height:70px; line-height:1.4; }
+.kf9 .ch{ display:flex; flex-wrap:wrap; gap:6px; }
+.kf9 .ch button{ border:1px solid #d6dbe3; background:#fff; border-radius:9px; padding:7px 10px; font-size:12.5px; font-weight:800; color:#475569; }
+.kf9 .ch button.is{ border-color:#fdba74; }
+.kf9 .ch button.on, .kf9 .seg button.on{ background:#ea580c; border-color:#ea580c; color:#fff; }
+.kf9 .ik2{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.kf9 .ik2 label{ display:block; margin-bottom:5px; }
+.kf9 .uz{ font-size:12.5px; color:#475569; min-height:16px; }
+.kf9 .uz b{ color:#c2410c; }
+.kf9 .seg{ display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.kf9 .seg button{ height:40px; border:1px solid #d6dbe3; background:#fff; border-radius:11px; font-weight:800; font-size:13.5px; color:#475569; }
+.kf9 .sw{ display:flex; align-items:center; gap:10px; font-size:14px; font-weight:700; color:#0f172a; margin:10px 0 4px; }
+.kf9 .sw input{ position:absolute; opacity:0; width:0; height:0; }
+.kf9 .sw span{ width:44px; height:26px; border-radius:13px; background:#cbd5e1; position:relative; flex:none; transition:background .15s; }
+.kf9 .sw span::after{ content:""; position:absolute; left:3px; top:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .15s; }
+.kf9 .sw input:checked + span{ background:#16a34a; }
+.kf9 .sw input:checked + span::after{ transform:translateX(18px); }
+.kf9 .hata{ background:#fef2f2; color:#b91c1c; border-radius:10px; padding:8px 10px; font-size:13px; }
+.kf9 .btn{ margin-top:8px; }
+.kf9 .sil{ display:flex; align-items:center; justify-content:center; gap:6px; height:42px; border:none; background:none; color:#dc2626; font-weight:800; font-size:13.5px; }
+.kf9 .sil svg{ width:16px; height:16px; }
+html.dark .kf9 label{ color:#94a3b8; }
+html.dark .kf9 input:not([type=checkbox]), html.dark .kf9 textarea, html.dark .ss9 select, html.dark .kf9 .ch button, html.dark .kf9 .seg button{ background:#0f1726; border-color:#2a3650; color:#e6ebf3; }
+html.dark .kf9 .sw{ color:#e6ebf3; }
+html.dark .kf9 .sw span{ background:#334155; }
+
+/* onay */
+.on9{ position:fixed; inset:0; z-index:85; background:rgba(15,23,42,.55); display:flex; align-items:center; justify-content:center; padding:22px; }
+.on9 .kut{ background:#fff; border-radius:18px; width:100%; max-width:400px; max-height:86vh; overflow:auto; padding:18px 16px 14px; box-shadow:0 20px 50px rgba(0,0,0,.35); animation:bsUp .18s ease; }
+.on9 .kut > b{ display:block; font-size:16.5px; color:#0f172a; }
+.on9 .kut p{ font-size:13.5px; color:#475569; line-height:1.45; margin:7px 0 0; }
+.on9 .dg{ display:flex; gap:8px; margin-top:16px; }
+.on9 .dg button{ flex:1; height:44px; border-radius:12px; border:1px solid #d6dbe3; background:#fff; font-weight:800; font-size:14px; color:#334155; }
+.on9 .dg button.ana{ background:#ea580c; border-color:#ea580c; color:#fff; }
+.on9 .dg button.ana.teh{ background:#dc2626; border-color:#dc2626; }
+.ss9 label{ display:block; font-size:12px; font-weight:800; color:#475569; margin:10px 0 4px; }
+.ss9 select{ font-size:14px; padding:9px; }
+html.dark .on9 .kut{ background:#141c2b; }
+html.dark .on9 .kut > b{ color:#e6ebf3; }
+html.dark .on9 .kut p, html.dark .ss9 label{ color:#94a3b8; }
+html.dark .on9 .dg button{ background:#0f1726; border-color:#2a3650; color:#e6ebf3; }
+.gn9{ position:fixed; left:50%; bottom:calc(86px + env(safe-area-inset-bottom)); transform:translateX(-50%); z-index:90; display:flex; align-items:center; gap:12px; background:#111827; color:#fff; padding:6px 6px 6px 16px; border-radius:14px; font-size:13.5px; box-shadow:0 8px 20px rgba(0,0,0,.3); white-space:nowrap; }
+.gn9 button{ display:flex; align-items:center; gap:5px; border:none; background:#ea580c; color:#fff; font-weight:800; font-size:13px; border-radius:10px; padding:8px 12px; }
+.gn9 svg{ width:15px; height:15px; }
+
+/* liste ve aktar */
+.dl9{ display:flex; flex-direction:column; }
+.dl9 .r{ display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #eef1f5; }
+.dl9 .r > div{ flex:1; min-width:0; }
+.dl9 .r b{ display:block; font-size:13.5px; }
+.dl9 .r small{ display:block; font-size:12px; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.dl9 .r small.t{ color:#94a3b8; font-size:11px; }
+.dl9 .r button{ flex:none; display:flex; align-items:center; gap:5px; border:1px solid #d6dbe3; background:#fff; border-radius:10px; padding:7px 10px; font-weight:800; font-size:12.5px; color:#334155; }
+.dl9 .r button svg{ width:14px; height:14px; }
+.dl9t{ width:100%; margin-top:14px; height:42px; border:1px solid #fecaca; background:#fef2f2; color:#dc2626; font-weight:800; border-radius:12px; }
+.dl9n{ font-size:12px; color:#64748b; text-align:center; margin:10px 4px 0; line-height:1.4; }
+html.dark .dl9 .r{ border-color:#222d41; }
+html.dark .dl9 .r button{ background:#0f1726; border-color:#2a3650; color:#e6ebf3; }
+.ak9{ display:flex; flex-direction:column; gap:12px; }
+.ak9 .blk{ border:1px solid #e5e7eb; border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px; }
+.ak9 .blk > b{ font-size:14.5px; }
+.ak9 .blk > small{ font-size:12.5px; color:#64748b; line-height:1.4; }
+.ak9 .rd{ display:flex; gap:10px; align-items:flex-start; border:1px solid #e5e7eb; border-radius:11px; padding:9px 10px; }
+.ak9 .rd input{ width:18px; height:18px; margin:1px 0 0; flex:none; accent-color:#ea580c; }
+.ak9 .rd b{ display:block; font-size:13.5px; }
+.ak9 .rd small{ display:block; font-size:12px; color:#64748b; }
+.ak9 .rd:has(input:disabled){ opacity:.55; }
+.ak9 .btn.ikinci{ background:#0f172a; }
+.ak9 .btn:disabled{ opacity:.5; }
+.ak9 .dos{ display:flex; align-items:center; gap:10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:8px 8px 8px 12px; }
+.ak9 .dos span{ flex:1; min-width:0; font-size:12.5px; font-weight:700; word-break:break-all; }
+.ak9 .dos small{ display:block; font-weight:600; color:#16a34a; }
+.ak9 .dos .btn{ width:auto; flex:none; padding:10px 14px; gap:6px; align-items:center; }
+.ak9 .dos .btn svg{ width:16px; height:16px; }
+.ak9 .hata{ background:#fef2f2; color:#b91c1c; border-radius:10px; padding:8px 10px; font-size:13px; }
+.ak9 .not{ font-size:12px; color:#64748b; text-align:center; margin:0 6px; line-height:1.4; }
+html.dark .ak9 .blk, html.dark .ak9 .rd{ border-color:#2a3650; }
+html.dark .ak9 .dos{ background:#0c2416; border-color:#14532d; }
+html.dark .ak9 .btn.ikinci{ background:#334155; }
+
+/* Excel karşılaştırma */
+.exr9{ position:fixed; inset:0; z-index:58; background:#f1f5f9; display:flex; flex-direction:column; animation:bsUp .2s ease; }
+.exr9 .eh{ flex:none; display:flex; align-items:center; gap:10px; padding:calc(10px + env(safe-area-inset-top)) 12px 10px; background:#0f172a; color:#fff; }
+.exr9 .eh > button:first-child{ width:38px; height:38px; border-radius:50%; border:none; background:rgba(255,255,255,.12); color:#fff; display:grid; place-items:center; padding:0; flex:none; }
+.exr9 .eh svg{ width:20px; height:20px; }
+.exr9 .et{ flex:1; min-width:0; }
+.exr9 .et b{ display:block; font-size:15.5px; }
+.exr9 .et small{ display:block; font-size:12px; opacity:.75; }
+.exr9 .et small u{ text-decoration:underline; cursor:pointer; color:#fdba74; }
+.exr9 .fl{ flex:none; height:34px; padding:0 12px; border-radius:17px; border:1px solid rgba(255,255,255,.25); background:none; color:#fff; font-weight:800; font-size:12.5px; }
+.exr9 .fl.on{ background:#ea580c; border-color:#ea580c; }
+.exr9 .eb{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; padding:12px 12px 16px; display:flex; flex-direction:column; gap:10px; }
+.exr9 .ead b{ display:block; font-size:16px; color:#0f172a; line-height:1.3; }
+.exr9 .ead small{ display:block; font-size:12px; color:#64748b; margin-top:2px; }
+.exr9 .ead i{ font-style:normal; color:#c2410c; font-weight:800; }
+.exr9 .eblk{ display:block; width:100%; text-align:left; font:inherit; color:inherit; background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:10px; }
+.exr9 .ebh{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px; }
+.exr9 .ebh b{ font-size:14px; }
+.exr9 .ebh span{ font-size:11.5px; font-weight:800; color:#16a34a; background:#dcfce7; padding:2px 8px; border-radius:8px; }
+.exr9 .ebh span.g{ color:#64748b; background:#f1f5f9; }
+.exr9 .eblk.ayni{ opacity:.55; }
+.exr9 .eblk.ayni .ayt{ font-size:12.5px; color:#475569; white-space:pre-line; max-height:4.2em; overflow:hidden; }
+.exr9 .eiki{ display:grid; grid-template-columns:1fr; gap:10px; }
+.exr9 .eiki small{ display:flex; align-items:center; justify-content:space-between; font-size:11.5px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.02em; margin-bottom:5px; }
+.exr9 .eiki small button{ text-transform:none; letter-spacing:0; border:none; background:#ea580c; color:#fff; font-weight:800; font-size:12px; border-radius:8px; padding:5px 10px; }
+.exr9 textarea{ width:100%; box-sizing:border-box; border:1px solid #d6dbe3; border-radius:11px; padding:9px 10px; font:inherit; font-size:15px; line-height:1.4; resize:vertical; background:#fff; color:#0f172a; min-height:96px; }
+.exr9 .ep{ display:flex; flex-direction:column; gap:6px; }
+.exr9 .pc{ text-align:left; border:1px dashed #94a3b8; background:#f8fafc; border-radius:10px; padding:8px 10px; font-size:13.5px; line-height:1.35; color:#0f172a; }
+.exr9 .pc.on{ border-style:solid; border-color:#86efac; background:#f0fdf4; color:#166534; }
+.exr9 .ef{ flex:none; display:grid; grid-template-columns:1fr 1.2fr 1fr; gap:8px; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:#fff; border-top:1px solid #e5e7eb; }
+.exr9 .ef button{ height:44px; border-radius:12px; border:1px solid #d6dbe3; background:#fff; font-weight:800; font-size:13.5px; color:#334155; display:flex; align-items:center; justify-content:center; gap:5px; }
+.exr9 .ef button:disabled{ opacity:.4; }
+.exr9 .ef button.km, .exr9 .ef button.ana{ background:#ea580c; border-color:#ea580c; color:#fff; }
+.exr9 .ef button.ana{ grid-column:1 / -1; }
+.exr9 .ef svg{ width:17px; height:17px; }
+.exr9 .bos{ text-align:center; color:#64748b; font-size:13.5px; margin:30px 10px 14px; }
+.exr9 .eslr{ background:#fff; border:1px solid #e5e7eb; border-radius:14px; padding:10px; display:flex; flex-direction:column; gap:4px; }
+.exr9 .eslr b{ font-size:13.5px; }
+.exr9 .eslr small{ font-size:12px; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.exr9 .eslr select{ margin-top:4px; width:100%; border:1px solid #d6dbe3; border-radius:10px; padding:9px; font-size:14px; background:#fff; color:#0f172a; }
+@media (orientation:landscape) and (min-width:560px){
+  .exr9 .eiki{ grid-template-columns:1fr 1fr; }
+  .exr9 .eb{ padding-left:calc(12px + env(safe-area-inset-left)); padding-right:calc(12px + env(safe-area-inset-right)); }
+}
+html.dark .exr9{ background:#0b1220; }
+html.dark .exr9 .ead b{ color:#e6ebf3; }
+html.dark .exr9 .eblk, html.dark .exr9 .eslr, html.dark .exr9 .ef{ background:#141c2b; border-color:#222d41; }
+html.dark .exr9 textarea, html.dark .exr9 .eslr select, html.dark .exr9 .ef button{ background:#0f1726; border-color:#2a3650; color:#e6ebf3; }
+html.dark .exr9 .pc{ background:#0f1726; border-color:#475569; color:#e6ebf3; }
+html.dark .exr9 .pc.on{ background:#0c2416; border-color:#166534; color:#86efac; }
+html.dark .exr9 .eblk.ayni .ayt{ color:#94a3b8; }
 </style>
 </head>
 <body>
@@ -3693,8 +3876,8 @@ function dosyaSec(){
           if(!(o.kul && o.veri)) throw new Error("bicim");
           const ac = async K => {
             const v = await GIRIS.veriCoz(o, K);
-            if(o.tur === "degisiklik" || (v && v.tur === "degisiklik")){ await degisiklikUygula9(o, v); return; }
-            await kilitYaz({ kul: o.kul, olusturma: o.olusturma, temel: o.temel || null }); await veriYukle(v);
+            if(v && v.tur === "degisiklik"){ if(await degisiklikUygula9(o, v)) await dosyaSonrasi9(o, v); return; }
+            await kilitYaz({ kul: o.kul, olusturma: o.olusturma, temel: o.temel || null }); await veriYukle(v); await dosyaSonrasi9(o, v);
           };
           const r = await GIRIS.oturumlaAc(o.kul);
           if(r) await ac(r.K);
@@ -5649,6 +5832,737 @@ async function degisiklikUygula9(o, g){
   const oz = g.ozet || {};
   const parca = [oz.is ? oz.is + " işte değişiklik" : "", oz.agir ? oz.agir + " harita / KMZ / itinerer" : ""].filter(Boolean).join(" · ");
   bildir("Güncellendi" + (parca ? " · " + parca : "") + " · " + veriTarih());
+  return true;
+}
+
+
+// ===================== v47: Yönetici düzenleme modu (yalnız bu telefonda) =====================
+// Yalnız yönetici oturumunda anasayfada kalem ikonu görünür; onay verilince
+// düzenleme modu açılır. KM aralığı eklenir / düzenlenir / silinir, Devam Eden ve
+// Biten yazıları değiştirilir, haftalık Excel'ler yan yana karşılaştırılır.
+// Değişiklikler bir listede tutulur (geri alınabilir), "Veri Aktar" ile diğer
+// telefonlara dosya ve ileride programa aktarılacak şifreli dosya hazırlanır.
+// İş silme yalnız programda.
+Object.assign(IKP, {
+  kalem: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  cop: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  arti: '<path d="M12 5v14M5 12h14"/>',
+  tablo: '<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 9.5v10"/>',
+  aktar: '<path d="M12 3v12M7.5 10.5L12 15l4.5-4.5"/><path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/>',
+  geriAl: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+  liste: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>'
+});
+const YON9_KOD = "ac7f8b76500fa86210538cfa2a919f85";
+const STD9 = ["BY-BSK", "BY-BSK-ON", "BY-SK", "BY-SK-BSK", "TY-BSK", "TY-BSK-ON", "TY-SK", "TY-SK-BSK"];
+let YON9 = false, yonAnah9 = null;
+let DUZ9 = (() => { try{ return sessionStorage.getItem("istakip-duzen9") === "1"; }catch(_){ return false; } })();
+let GUN9 = [], FARK9 = null, HAMK9 = null, HAM9 = null;
+const enc9 = new TextEncoder(), dec9 = new TextDecoder();
+const r2_9 = n => Math.round((Number(n) || 0) * 100) / 100;
+const r3_9 = n => Math.round((Number(n) || 0) * 1000) / 1000;
+const bugun9 = () => { const d = new Date(); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`; };
+const saat9 = t => { const d = new Date(t); return `${p2(d.getDate())}.${p2(d.getMonth() + 1)}.${d.getFullYear()} ${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+async function idbYaz9(k, v){
+  try{ const db = await idb(); await new Promise(ok => { const t = db.transaction(DEPO, "readwrite"); v === null ? t.objectStore(DEPO).delete(k) : t.objectStore(DEPO).put(v, k); t.oncomplete = ok; t.onerror = ok; }); }catch(_){}
+}
+const hazir9 = (async () => {
+  try{ const g = await idbOku("duzen9"); GUN9 = (g && Array.isArray(g.liste)) ? g.liste : []; }catch(_){}
+  try{ FARK9 = await idbOku("fark9"); }catch(_){}
+  try{ HAMK9 = await idbOku("hamk9"); }catch(_){}
+})();
+const gunKaydet9 = () => idbYaz9("duzen9", { liste: GUN9 });
+
+// ---------- yönetici mi? (kullanıcı adının geri çözülemeyen kodu) ----------
+function yonBak9(){
+  const o = oturumBilgi(), anah = o && o.k && KILIT && KILIT.kul ? o.k : "";
+  if(anah === yonAnah9) return;
+  yonAnah9 = anah;
+  if(!anah || !(crypto && crypto.subtle)){ if(YON9){ YON9 = false; DUZ9 = false; } return; }
+  crypto.subtle.digest("SHA-256", enc9.encode("istakip-yonetici:" + GIRIS.norm(anah))).then(b => {
+    const y = Array.from(new Uint8Array(b).subarray(0, 16), x => x.toString(16).padStart(2, "0")).join("") === YON9_KOD && !(D && D.yetki === "kmz");
+    if(y !== YON9){ YON9 = y; if(!y) duzenAyarla9(false); if(D && document.getElementById("tabs").style.display !== "none") yenidenCiz9(); }
+  }).catch(() => {});
+}
+function duzenAyarla9(v){ DUZ9 = !!v; try{ v ? sessionStorage.setItem("istakip-duzen9", "1") : sessionStorage.removeItem("istakip-duzen9"); }catch(_){} }
+function yenidenCiz9(){ const m = document.getElementById("main"), sc = m.scrollTop; ciz(); m.scrollTop = sc; }
+
+// ---------- Onay penceresi ----------
+function onay9(baslik, metin, dugmeler){
+  dugmeler = dugmeler || [{ t: "Vazgeç", v: false }, { t: "Evet", v: true, ana: 1 }];
+  return new Promise(ok => {
+    document.getElementById("on9")?.remove();
+    const ov = document.createElement("div"); ov.className = "on9"; ov.id = "on9";
+    ov.innerHTML = `<div class="kut"><b>${esc(baslik)}</b>${metin ? `<p>${metin}</p>` : ""}<div class="dg">${dugmeler.map((d, i) => `<button class="${d.ana ? "ana" : ""}${d.tehlike ? " teh" : ""}" data-on9="${i}">${esc(d.t)}</button>`).join("")}</div></div>`;
+    ov.addEventListener("click", e => {
+      const b = e.target.closest("[data-on9]");
+      if(b){ ov.remove(); ok(dugmeler[+b.dataset.on9].v); return; }
+      if(e.target === ov){ ov.remove(); ok(dugmeler[0].v); }
+    });
+    document.body.appendChild(ov);
+  });
+}
+function geriNot9(m, id){
+  document.querySelectorAll(".bildir, .gn9").forEach(x => x.remove());
+  const t = document.createElement("div"); t.className = "gn9";
+  t.innerHTML = `<span>${esc(m)}</span><button data-gn9="${esc(id)}">${IK("geriAl")}Geri al</button>`;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 6000);
+}
+
+// ---------- Ham veri ve yıl kapları ----------
+// Değişiklikler telefonda saklanan ham veriye ("son") uygulanır; ekran ondan yeniden kurulur.
+async function hamAl9(){ if(!HAM9) HAM9 = await idbOku("son"); if(!HAM9) throw new Error("Veri bulunamadı"); return HAM9; }
+const yilOf9 = (R, t) => { const m = String(t || "").match(/^(\d{4})/); return m ? +m[1] : (+R.yil || new Date().getFullYear()); };
+const kmUz9 = k => { const s = kmSayi(k.a), e = kmSayi(k.e); if(s === null || e === null) return 0; return Math.abs(e - s) / (k.y ? 2 : 1); };
+const kmEsit9 = (x, y) => !!(x && y) && x.s === y.s && String(x.a) === String(y.a) && String(x.e) === String(y.e) && String(x.t || "") === String(y.t || "") && (x.y ? 1 : 0) === (y.y ? 1 : 0) && String(x.ac || "").trim() === String(y.ac || "").trim() && (!x.g || !y.g || +x.g === +y.g);
+function yeniYil9(R, j, Y){
+  const onceki = Object.keys(j.yillik || {}).map(Number).filter(y => y < Y).sort((a, b) => b - a)[0];
+  const P = onceki ? j.yillik[onceki] : null;
+  const onc = (P && Array.isArray(P.onc) ? P.onc : []).map(x => ({ ...x }));
+  (P && P.cats || []).forEach(c => { if(!(c.b > 0)) return; const x = onc.find(o => o.ad === c.ad); if(x) x.o = r2_9(x.o + c.b); else onc.push({ ad: c.ad, o: r2_9(c.b) }); });
+  const uz = (P ? P.uz || [] : j.uz || []).map(r => ({ ...r, o: r3_9((+r.o || 0) + (+r.y || 0)), h: 0, y: 0 }));
+  if(Array.isArray(R.yillar) && !R.yillar.includes(Y)){ R.yillar.push(Y); R.yillar.sort((a, b) => a - b); }
+  return { cats: (P ? P.cats : j.cats || []).map(c => ({ ad: c.ad, h: 0, b: 0 })), kmler: [], biten: "", uz, onc };
+}
+// Y yılının verisini tutan nesneler: yillik[Y] ve (dosyanın yılıysa) işin kendisi
+function kaplar9(R, j, Y, olustur){
+  const L = [];
+  if(j.yillik){ if(!j.yillik[Y] && olustur) j.yillik[Y] = yeniYil9(R, j, Y); if(j.yillik[Y]) L.push(j.yillik[Y]); }
+  if(!j.yillik || Y === +R.yil) L.push(j);
+  L.forEach(o => { if(!Array.isArray(o.kmler)) o.kmler = []; if(!Array.isArray(o.cats)) o.cats = []; });
+  return L.filter((o, i) => L.findIndex(x => x.kmler === o.kmler) === i);
+}
+// KM aralığının yapılan / öncesi toplamlarına etkisi (program gibi: |bitiş − başlangıç|, yarısıysa ½)
+function etki9(R, j, km, isaret){
+  const d = kmUz9(km) * isaret; if(!d) return;
+  const Y = yilOf9(R, km.t);
+  kaplar9(R, j, Y, true).forEach(o => {
+    let c = o.cats.find(c => c.ad === km.s);
+    if(!c){ c = { ad: km.s, h: 0, b: 0 }; o.cats.push(c); o.cats.sort((a, b) => (STD9.indexOf(a.ad) + 1 || 99) - (STD9.indexOf(b.ad) + 1 || 99)); }
+    c.b = Math.max(0, r2_9(c.b + d));
+    if(!(c.h > 0) && !(c.b > 0.004)) o.cats.splice(o.cats.indexOf(c), 1);
+    (o.uz || []).forEach(r => { if(!r.s || r.s === km.s) r.y = Math.max(0, r3_9((+r.y || 0) + d)); });
+  });
+  if(j.yillik) Object.keys(j.yillik).map(Number).filter(y => y > Y).forEach(y => {
+    [j.yillik[y]].concat(y === +R.yil ? [j] : []).forEach(o => {
+      if(!o) return;
+      o.onc = Array.isArray(o.onc) ? o.onc : [];
+      let x = o.onc.find(x => x.ad === km.s); if(!x){ x = { ad: km.s, o: 0 }; o.onc.push(x); }
+      x.o = r2_9(x.o + d); if(!(x.o > 0.004)) o.onc.splice(o.onc.indexOf(x), 1);
+      (o.uz || []).forEach(r => { if(!r.s || r.s === km.s) r.o = Math.max(0, r3_9((+r.o || 0) + d)); });
+    });
+  });
+}
+const isBul9 = (R, id) => (R.isler || []).find(j => j && String(j.id) === String(id));
+function kmVar9b(R, j, km){ return kaplar9(R, j, yilOf9(R, km.t), false).some(o => o.kmler.some(k => kmEsit9(k, km))); }
+function kmEkle9(R, id, km){
+  const j = isBul9(R, id); if(!j) return false;
+  kaplar9(R, j, yilOf9(R, km.t), true).forEach(o => { o.kmler.push({ ...km }); o.kmler.sort((a, b) => String(b.t).localeCompare(String(a.t))); });
+  etki9(R, j, km, 1); return true;
+}
+function kmSil9(R, id, km){
+  const j = isBul9(R, id); if(!j) return false;
+  let var_ = false;
+  kaplar9(R, j, yilOf9(R, km.t), false).forEach(o => { const i = o.kmler.findIndex(k => kmEsit9(k, km)); if(i >= 0){ o.kmler.splice(i, 1); var_ = true; } });
+  if(var_) etki9(R, j, km, -1);
+  return var_;
+}
+function yaziAl9(R, id, alan, yil){
+  const j = isBul9(R, id); if(!j) return "";
+  if(alan === "devam") return j.devam || "";
+  const L = kaplar9(R, j, +yil, false); return L.length ? (L[0].biten || "") : "";
+}
+function yaziYaz9(R, id, alan, yil, metin){
+  const j = isBul9(R, id); if(!j) return false;
+  if(alan === "devam"){ j.devam = metin; return true; }
+  kaplar9(R, j, +yil, true).forEach(o => { o.biten = metin; });
+  return true;
+}
+// Liste kaydını uygula (ters: geri al)
+function uygula9(R, e, ters){
+  if(e.tip === "ekle") return ters ? kmSil9(R, e.is, e.km) : kmEkle9(R, e.is, e.km);
+  if(e.tip === "sil") return ters ? kmEkle9(R, e.is, e.km) : kmSil9(R, e.is, e.km);
+  if(e.tip === "duz"){ const [a, b] = ters ? [e.yeni, e.eski] : [e.eski, e.yeni]; if(!kmSil9(R, e.is, a)) return false; return kmEkle9(R, e.is, b); }
+  if(e.tip === "yazi") return yaziYaz9(R, e.is, e.alan, e.yil, ters ? e.onceki : e.sonraki);
+  return false;
+}
+// Programdan yeni dosya gelince: telefondaki değişiklik dosyada yoksa tekrar uygula (iki kez uygulanmaz)
+function tekrar9(R, e){
+  const j = isBul9(R, e.is); if(!j) return false;
+  if(e.tip === "ekle") return kmVar9b(R, j, e.km) ? false : kmEkle9(R, e.is, e.km);
+  if(e.tip === "sil") return kmVar9b(R, j, e.km) ? kmSil9(R, e.is, e.km) : false;
+  if(e.tip === "duz"){ if(!kmVar9b(R, j, e.eski) || kmVar9b(R, j, e.yeni)) return false; kmSil9(R, e.is, e.eski); return kmEkle9(R, e.is, e.yeni); }
+  if(e.tip === "yazi"){ if(yaziAl9(R, e.is, e.alan, e.yil) === e.sonraki) return false; return yaziYaz9(R, e.is, e.alan, e.yil, e.sonraki); }
+  return false;
+}
+async function hamKaydet9(){
+  const db = await idb();
+  await new Promise((ok, no) => { const t = db.transaction(DEPO, "readwrite"); t.objectStore(DEPO).put(HAM9, "son"); t.oncomplete = ok; t.onerror = () => no(t.error); });
+}
+// Ekranı ham veriden yeniden kur (açık sekme, iş, yıl ve kaydırma yerinde kalır)
+function yenidenKur9(){
+  const m = document.getElementById("main"), sc = m.scrollTop;
+  const dur = { tab, detay, kmAcik, durumAcik, secYil, aramaAcik, isAra };
+  const agir = D && D._agirTam ? { harita: D.harita, iti: D.iti, katman: D.katman, hResim: D.hResim, hResimOrtak: D.hResimOrtak } : null;
+  kur(JSON.parse(JSON.stringify(HAM9)));
+  if(agir){ Object.assign(D, agir); D._agirTam = true; }
+  tab = dur.tab; detay = dur.detay && ISLER.some(j => j.id === dur.detay.id) ? dur.detay : null; kmAcik = dur.kmAcik; durumAcik = dur.durumAcik; aramaAcik = dur.aramaAcik; isAra = dur.isAra;
+  if(dur.secYil && yillar().includes(dur.secYil) && dur.secYil !== secYil){ secYil = dur.secYil; yilUygula(secYil); }
+  ciz(); m.scrollTop = sc;
+}
+// Bir değişiklik: ham veriye uygula, listeye yaz, kaydet, ekranı yenile
+async function degistir9(e){
+  await hazir9; await hamAl9();
+  if(!uygula9(HAM9, e, false)) throw new Error("Değişiklik uygulanamadı (kayıt bulunamadı)");
+  e.id = e.id || ("d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)); e.t = e.t || Date.now();
+  GUN9.push(e);
+  HAM9.telDuzen = { t: Date.now(), n: GUN9.length };
+  await hamKaydet9(); await gunKaydet9();
+  yenidenKur9(); exYenile9();
+  return e;
+}
+async function geriAl9(id){
+  await hazir9; await hamAl9();
+  const i = GUN9.findIndex(x => x.id === id); if(i < 0) return;
+  const e = GUN9[i];
+  if(!uygula9(HAM9, e, true)){ bildir("Geri alınamadı: kayıt sonradan değişmiş"); return; }
+  GUN9.splice(i, 1);
+  await hamKaydet9(); await gunKaydet9();
+  yenidenKur9(); exYenile9();
+  bildir("Geri alındı");
+}
+const tanim9 = e => {
+  const km = k => `${k.s} ${k.a} – ${k.e}${k.y ? " (yarısı)" : ""}`;
+  if(e.tip === "ekle") return ["KM eklendi", km(e.km)];
+  if(e.tip === "sil") return ["KM silindi", km(e.km)];
+  if(e.tip === "duz") return ["KM düzenlendi", km(e.eski) + " → " + km(e.yeni)];
+  if(e.tip === "yazi") return [e.alan === "devam" ? "Devam Eden yazısı" : e.yil + " Biten yazısı", (e.sonraki || "").slice(0, 70) || "(boş)"];
+  return ["Değişiklik", ""];
+};
+
+// ---------- Anasayfa: kalem ikonu ve düzenleme şeridi ----------
+const _anaUst9 = anaUst;
+anaUst = function(){
+  let h = _anaUst9.apply(this, arguments);
+  yonBak9();
+  if(YON9) h = h.replace('<button class="av" data-avatar', `<button class="ci kl9${DUZ9 ? " on" : ""}" data-duzen9 aria-label="Düzenleme modu">${IK("kalem")}</button><button class="av" data-avatar`);
+  return h;
+};
+const _anasayfa9 = anasayfa;
+anasayfa = function(){
+  let h = _anasayfa9.apply(this, arguments);
+  if(YON9 && DUZ9) h = h.replace('<div class="pad ana5">', '<div class="pad ana5">' + serit9());
+  return h;
+};
+function serit9(){
+  const n = GUN9.length;
+  return `<div class="dz9s"><div class="t"><span class="i">${IK("kalem")}</span><div><b>Düzenleme modu</b><small>${n ? n + " değişiklik bu telefonda" : "İşe girip KM ve yazıları düzenleyin"}</small></div><button class="kp" data-duzen9 aria-label="Düzenleme modunu kapat">${IK("x")}</button></div>
+<div class="b"><button data-dz9excel>${IK("tablo")}Excel</button><button data-dz9aktar>${IK("aktar")}Veri Aktar</button><button data-dz9liste>${IK("liste")}Liste${n ? `<i>${n}</i>` : ""}</button></div></div>`;
+}
+async function duzenDegis9(){
+  if(!YON9) return;
+  if(!DUZ9){
+    const ok = await onay9("Düzenleme modu açılsın mı?", "KM aralıkları ve Devam Eden / Biten yazıları bu telefonda değiştirilebilir. İş silme yalnız programda.", [{ t: "Vazgeç", v: false }, { t: "Aç", v: true, ana: 1 }]);
+    if(!ok) return;
+    await hazir9; duzenAyarla9(true); yenidenCiz9(); bildir("Düzenleme modu açık");
+  }else{
+    const ok = await onay9("Düzenleme modu kapatılsın mı?", GUN9.length ? `Yaptığınız ${GUN9.length} değişiklik kaybolmaz.` : "", [{ t: "Vazgeç", v: false }, { t: "Kapat", v: true, ana: 1 }]);
+    if(!ok) return;
+    duzenAyarla9(false); yenidenCiz9();
+  }
+}
+
+// ---------- İş detayı: düzenleme kartı ----------
+const _detay9 = detaySayfa;
+detaySayfa = function(j, from){
+  let h = _detay9.apply(this, arguments);
+  if(YON9 && DUZ9 && j) h = h.replace(/<\/div>\s*<div class="dalt">/, m => kart9(j) + m);
+  return h;
+};
+function kart9(j){
+  const cok = new Set(j.kmler.map(k => k.s)).size > 1 || j.cats.length > 1;
+  const sat = j.kmler.map((k, i) => `<div class="dz9r"><button class="m" data-dz9km="${i}"><b>${cok ? `<em>${esc(k.s)}</em>` : ""}${esc(k.a)} – ${esc(k.e)}${k.y ? " <u>yarısı</u>" : ""}</b><small>${[tarih(k.t), f2(kmUz9(k)) + " km", k.gz === 0 ? "anasayfada gizli" : "", (k.ac || "").trim()].filter(Boolean).map(esc).join(" · ")}</small></button><button class="x" data-dz9sil="${i}" aria-label="Sil">${IK("x")}</button></div>`).join("");
+  const yz = (alan, ad) => { const v = (j[alan] || "").trim(); return `<button class="yz" data-dz9yazi="${alan}"><span><b>${ad}</b><small>${v ? esc(v.slice(0, 90)) + (v.length > 90 ? "…" : "") : "Boş"}</small></span>${IK("kalem")}</button>`; };
+  return `<div class="card dz9k"><div class="dz9h">${IK("kalem")}<b>Düzenle</b><span>${D.yil}</span></div>
+<div class="dz9l">${sat || '<div class="bos">Bu yıl KM aralığı yok</div>'}</div>
+<button class="dz9e" data-dz9ekle>${IK("arti")}KM Ekle</button>
+${yz("devam", "Devam Eden")}${yz("biten", D.yil + " Biten")}</div>`;
+}
+
+// ---------- KM formu ----------
+function kmForm9(id, idx){
+  const j = ISLER.find(x => x.id === id); if(!j) return;
+  const k = idx === undefined || idx === null ? null : j.kmler[idx];
+  const stdler = [...new Set(j.cats.map(c => c.ad).concat(j.kmler.map(x => x.s)).concat(STD9))];
+  const sec = k ? k.s : (j.cats[0] && j.cats[0].ad) || (j.kmler[0] && j.kmler[0].s) || "BY-BSK";
+  const yarim = k ? !!k.y : false, goster = k ? k.gz !== 0 : true;
+  const t = k && /^\d{4}-\d{2}-\d{2}/.test(k.t || "") ? k.t.slice(0, 10) : bugun9();
+  const govde = `<form class="kf9" id="kf9" autocomplete="off">
+<label>Standart</label><div class="ch" id="kf9s">${stdler.map(s => `<button type="button" class="${s === sec ? "on" : ""}${j.cats.some(c => c.ad === s) ? " is" : ""}" data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>
+<div class="ik2"><div><label for="kf9a">Başlangıç KM</label><input id="kf9a" inputmode="decimal" placeholder="12+500" value="${esc(k ? k.a : "")}"></div><div><label for="kf9e">Bitiş KM</label><input id="kf9e" inputmode="decimal" placeholder="14+000" value="${esc(k ? k.e : "")}"></div></div>
+<div class="uz" id="kf9u"></div>
+<label>Oran</label><div class="seg" id="kf9o"><button type="button" class="${yarim ? "" : "on"}" data-o="0">Tamamı</button><button type="button" class="${yarim ? "on" : ""}" data-o="1">Yarısı</button></div>
+<label for="kf9t">Tarih</label><input id="kf9t" type="date" value="${esc(t)}">
+<label for="kf9c">Açıklama</label><textarea id="kf9c" rows="3" placeholder="İsteğe bağlı">${esc(k ? k.ac || "" : "")}</textarea>
+<label class="sw"><input type="checkbox" id="kf9g"${goster ? " checked" : ""}><span></span>Anasayfada göster</label>
+<div class="hata" id="kf9h" hidden></div>
+<button class="btn" type="submit">${k ? "Kaydet" : "KM Ekle"}</button>
+${k ? `<button type="button" class="sil" data-kf9sil>${IK("cop")}Bu aralığı sil</button>` : ""}
+</form>`;
+  const ov = altSayfa(IK("kalem"), k ? "KM Aralığını Düzenle" : "KM Ekle", j.ad, govde, null, "kf9s");
+  const $ = s => ov.querySelector(s);
+  let std = sec, oran = yarim ? 1 : 0;
+  const uzGoster = () => { const x = { a: $("#kf9a").value, e: $("#kf9e").value, y: oran }; const s = kmSayi(x.a), e = kmSayi(x.e);
+    $("#kf9u").innerHTML = s !== null && e !== null && $("#kf9a").value.trim() && $("#kf9e").value.trim() ? `Uzunluk <b>${f2(kmUz9(x))} km</b>${oran ? " (yarısı)" : ""}` : ""; };
+  ov.addEventListener("click", ev => {
+    const s = ev.target.closest("#kf9s [data-s]"); if(s){ std = s.dataset.s; ov.querySelectorAll("#kf9s button").forEach(b => b.classList.toggle("on", b === s)); return; }
+    const o = ev.target.closest("#kf9o [data-o]"); if(o){ oran = +o.dataset.o; ov.querySelectorAll("#kf9o button").forEach(b => b.classList.toggle("on", b === o)); uzGoster(); return; }
+    if(ev.target.closest("[data-kf9sil]")){ kapatAlt(); kmSilSor9(id, idx); }
+  });
+  ["#kf9a", "#kf9e"].forEach(s => $(s).addEventListener("input", uzGoster)); uzGoster();
+  $("#kf9").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const a = $("#kf9a").value.trim(), e = $("#kf9e").value.trim(), tt = $("#kf9t").value, h = $("#kf9h");
+    const hata = m => { h.textContent = m; h.hidden = false; };
+    if(kmSayi(a) === null || kmSayi(e) === null || !a || !e) return hata("Başlangıç ve bitiş KM'yi girin (ör. 12+500).");
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(tt)) return hata("Tarihi seçin.");
+    if(kmSayi(a) === kmSayi(e)) return hata("Başlangıç ve bitiş aynı olamaz.");
+    const yeni = { s: std, a, e, t: tt, y: oran, ac: $("#kf9c").value.trim(), g: k ? (Number(k.g) || 0) : Date.now(), ...($("#kf9g").checked ? {} : { gz: 0 }) };
+    try{
+      if(k){ const eski = { ...k }; if(kmEsit9(eski, yeni) && (eski.gz === 0) === (yeni.gz === 0)){ kapatAlt(); return; }
+        await degistir9({ tip: "duz", is: id, ad: j.ad, eski, yeni }); kapatAlt(); bildir("KM aralığı güncellendi"); }
+      else{ await degistir9({ tip: "ekle", is: id, ad: j.ad, km: yeni }); kapatAlt(); bildir("KM eklendi · " + f2(kmUz9(yeni)) + " km"); }
+    }catch(err){ hata(err.message || "Kaydedilemedi"); }
+  });
+}
+async function kmSilSor9(id, idx){
+  const j = ISLER.find(x => x.id === id); const k = j && j.kmler[idx]; if(!k) return;
+  const ok = await onay9("KM aralığı silinsin mi?", `<b>${esc(k.s)} ${esc(k.a)} – ${esc(k.e)}</b>${k.y ? " (yarısı)" : ""} · ${esc(tarih(k.t))}<br>Değişiklik listesinden geri alabilirsiniz.`, [{ t: "Vazgeç", v: false }, { t: "Sil", v: true, ana: 1, tehlike: 1 }]);
+  if(!ok) return;
+  try{ const e = await degistir9({ tip: "sil", is: id, ad: j.ad, km: { ...k } }); geriNot9("Silindi", e.id); }
+  catch(err){ bildir(err.message || "Silinemedi"); }
+}
+function yaziForm9(id, alan){
+  const j = ISLER.find(x => x.id === id); if(!j) return;
+  const yil = D.yil, eski = j[alan] || "";
+  const ov = altSayfa(IK("kalem"), alan === "devam" ? "Devam Eden" : yil + " Biten", j.ad, `<form class="kf9" id="yf9"><textarea id="yf9t" rows="10">${esc(eski)}</textarea><button class="btn" type="submit">Kaydet</button></form>`, null, "kf9s");
+  ov.querySelector("#yf9").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const yeni = ov.querySelector("#yf9t").value.replace(/\s+$/, "");
+    if(yeni === eski.replace(/\s+$/, "")){ kapatAlt(); return; }
+    try{ await degistir9({ tip: "yazi", is: id, ad: j.ad, alan, yil, onceki: eski, sonraki: yeni }); kapatAlt(); bildir("Kaydedildi"); }
+    catch(err){ bildir(err.message || "Kaydedilemedi"); }
+  });
+}
+
+// ---------- Değişiklik listesi ----------
+function listeSayfa9(){
+  const L = GUN9.slice().reverse();
+  const govde = L.length ? `<div class="dl9">${L.map(e => { const [a, b] = tanim9(e); return `<div class="r"><div><b>${esc(a)}</b><small>${esc(e.ad || "")}</small><small>${esc(b)}</small><small class="t">${saat9(e.t)}</small></div><button data-dl9geri="${esc(e.id)}">${IK("geriAl")}Geri al</button></div>`; }).join("")}</div>
+<button class="dl9t" data-dl9temizle>Listeyi temizle</button><p class="dl9n">Listeyi temizlemek veriyi değiştirmez; yalnız geri alma ve aktarma için tutulan kayıtları siler.</p>` : `<p class="dl9n">Henüz değişiklik yok.</p>`;
+  const ov = altSayfa(IK("liste"), "Değişiklikler", L.length + " kayıt · bu telefonda", govde);
+  ov.addEventListener("click", async ev => {
+    const g = ev.target.closest("[data-dl9geri]");
+    if(g){ kapatAlt(); await geriAl9(g.dataset.dl9geri); listeSayfa9(); return; }
+    if(ev.target.closest("[data-dl9temizle]")){
+      const ok = await onay9("Liste temizlensin mi?", "Programa aktarılmamış değişiklikler varsa önce aktarım dosyasını alın.", [{ t: "Vazgeç", v: false }, { t: "Temizle", v: true, ana: 1, tehlike: 1 }]);
+      if(!ok) return;
+      GUN9 = []; await gunKaydet9(); kapatAlt(); yenidenCiz9(); bildir("Liste temizlendi");
+    }
+  });
+}
+
+// ---------- Dosya yükleme sonrası: parçalar, KMZ kısmı, telefondaki değişiklikler ----------
+const _veriYukle9 = veriYukle;
+veriYukle = async function(v){ HAM9 = null; return _veriYukle9.apply(this, arguments); };
+async function dosyaSonrasi9(o, g){
+  await hazir9;
+  HAMK9 = { veriKmz: o.veriKmz || null, z: o.z || "" }; await idbYaz9("hamk9", HAMK9);
+  if(g && g.tur === "degisiklik") FARK9 = { temel: g.temel, keys: Object.keys(g.parca || {}).filter(k => k !== "c"), sil: g.sil || [] };
+  else FARK9 = { temel: o.temel || null, keys: [], sil: [] };
+  await idbYaz9("fark9", FARK9);
+  if(!GUN9.length) return;
+  // telefonda yapılan değişiklikler bu dosyada yoksa sor
+  await hamAl9();
+  const deneme = JSON.parse(JSON.stringify(HAM9));
+  const n = GUN9.filter(e => { try{ return tekrar9(deneme, e); }catch(_){ return false; } }).length;
+  if(!n) return;
+  const ok = await onay9("Telefondaki değişiklikler", `Bu telefonda yaptığınız <b>${n}</b> değişiklik yüklenen dosyada yok (program henüz almamış).`, [{ t: "Uygulama", v: false }, { t: "Tekrar uygula", v: true, ana: 1 }]);
+  if(!ok) return;
+  GUN9.forEach(e => { try{ tekrar9(HAM9, e); }catch(_){} });
+  HAM9.telDuzen = { t: Date.now(), n: GUN9.length };
+  await hamKaydet9(); yenidenKur9(); bildir(n + " değişiklik tekrar uygulandı");
+}
+
+// ---------- Veri Aktar ----------
+const b64_9 = buf => { const a = new Uint8Array(buf); let s = ""; for(let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64_9 = s => { const b = atob(s), a = new Uint8Array(b.length); for(let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; };
+async function paketle9(obj, K){
+  if(!window.CompressionStream) throw new Error("Bu telefonun tarayıcısı eski; dosya hazırlanamıyor.");
+  const duz = new Uint8Array(await new Response(new Blob([enc9.encode(JSON.stringify(obj))]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
+  const k = await crypto.subtle.importKey("raw", K, "AES-GCM", false, ["encrypt"]);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, k, duz));
+  const o = new Uint8Array(12 + ct.length); o.set(iv); o.set(ct, 12); return b64_9(o);
+}
+const dosyaAdi9 = ek => { const d = new Date(); return `IsTakip-${p2(d.getDate())}.${p2(d.getMonth() + 1)}.${d.getFullYear()}-${p2(d.getHours())}${p2(d.getMinutes())}${ek}.istakip`; };
+const boyut9 = n => n > 1048576 ? (n / 1048576).toLocaleString("tr-TR", { maximumFractionDigits: 1 }) + " MB" : Math.max(1, Math.round(n / 1024)) + " KB";
+async function telefonDosyasi9(tur){
+  await hazir9;
+  if(!KILIT || !KILIT.kul) throw new Error("Şifreli veri dosyası yüklü değil.");
+  const r = await GIRIS.oturumlaAc(KILIT.kul); if(!r || !r.K) throw new Error("Oturum doğrulanamadı; çıkış yapıp tekrar giriş yapın.");
+  const v = await tamOku9(); if(!v) throw new Error("Veri bulunamadı");
+  const ek = { format: "istakip-mobil", v: 7, sifreli: 1, z: "gzip", olusturma: v.olusturma, kul: KILIT.kul };
+  let ic;
+  if(tur === "degisiklik"){
+    const P = parcala9(v), parca = { c: P.c };
+    (FARK9.keys || []).forEach(k => { if(P[k] !== undefined) parca[k] = P[k]; });
+    const isler = new Set(GUN9.map(e => e.is));
+    ic = { tur: "degisiklik", temel: KILIT.temel, olusturma: v.olusturma, parca, sil: FARK9.sil || [], ozet: { is: isler.size, agir: Object.keys(parca).length - 1, silinen: (FARK9.sil || []).length }, telefon: 1 };
+    Object.assign(ek, { tur: "degisiklik", temel: KILIT.temel });
+  }else{
+    ic = v; Object.assign(ek, { tur: "tam", ...(KILIT.temel ? { temel: KILIT.temel } : {}) });
+  }
+  const dosya = { ...ek, veri: await paketle9(ic, r.K), ...(HAMK9 && HAMK9.veriKmz && HAMK9.z === "gzip" ? { veriKmz: HAMK9.veriKmz } : {}) };
+  return { metin: JSON.stringify(dosya), ad: dosyaAdi9(tur === "degisiklik" ? "-degisiklik" : "") };
+}
+async function aktarimDosyasi9(){
+  await hazir9;
+  const o = oturumBilgi(); if(!o || !o.kek) throw new Error("Oturum bulunamadı; tekrar giriş yapın.");
+  if(!GUN9.length) throw new Error("Aktarılacak değişiklik yok.");
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", enc9.encode("istakip-kul:" + GIRIS.norm(o.k))));
+  const k = Array.from(h.subarray(0, 16), b => b.toString(16).padStart(2, "0")).join("");
+  const ic = { format: "istakip-aktarim-ic", v: 1, olusturma: Date.now(), temel: KILIT && KILIT.temel || null, veriTarih: D && D.olusturma, liste: GUN9 };
+  const dosya = { format: "istakip-aktarim", v: 1, k, z: "gzip", veri: await paketle9(ic, unb64_9(o.kek)) };
+  return { metin: JSON.stringify(dosya), ad: dosyaAdi9("-aktarim") };
+}
+async function paylas9(d){
+  const f = new File([d.metin], d.ad, { type: "application/octet-stream" });
+  if(navigator.canShare && navigator.canShare({ files: [f] })){
+    try{ await navigator.share({ files: [f] }); return; }catch(e){ if(e && e.name === "AbortError") return; }
+  }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = d.ad; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+}
+function aktarSayfa9(){
+  const degOlur = !!(KILIT && KILIT.temel && FARK9 && FARK9.temel === KILIT.temel);
+  const govde = `<div class="ak9">
+<div class="blk"><b>Diğer telefonlar için</b><small>WhatsApp'tan gönderin; alan kişi <b>Veri Yükle</b> ile açar. Kullanıcı adları ve şifreler aynıdır.</small>
+<label class="rd"><input type="radio" name="ak9t" value="degisiklik"${degOlur ? " checked" : " disabled"}><span><b>Değişiklik dosyası</b>${degOlur ? "<small>Küçük; programın son tam dosyası yüklü telefonlarda açılır</small>" : "<small>Önce programın dosyasını bu telefona bir kez yeniden yükleyin</small>"}</span></label>
+<label class="rd"><input type="radio" name="ak9t" value="tam"${degOlur ? "" : " checked"}><span><b>Tam dosya</b><small>Bütün veri; her telefonda açılır</small></span></label>
+<button class="btn" data-ak9haz>Hazırla</button><div class="sonuc" id="ak9s"></div></div>
+<div class="blk"><b>Program için aktarım dosyası</b><small>${GUN9.length} değişiklik şifreli olarak tek dosyada. Program bunu ileride <b>Veriyi Programa Aktar</b> ile alacak.</small>
+<button class="btn ikinci" data-ak9akt${GUN9.length ? "" : " disabled"}>Hazırla</button><div class="sonuc" id="ak9a"></div></div>
+<p class="not">Programdan sonra gelen dosyada bu değişiklikler olmaz; yükleyince telefon sorar ve tekrar uygular.</p></div>`;
+  const ov = altSayfa(IK("aktar"), "Veri Aktar", GUN9.length + " değişiklik · " + veriTarih(), govde);
+  let hazirD = null, hazirA = null;
+  ov.addEventListener("click", async ev => {
+    const b = ev.target.closest("button"); if(!b) return;
+    if(b.hasAttribute("data-ak9haz") || b.hasAttribute("data-ak9akt")){
+      const akt = b.hasAttribute("data-ak9akt"), yer = ov.querySelector(akt ? "#ak9a" : "#ak9s");
+      b.disabled = true; const eskiYazi = b.textContent; b.textContent = "Hazırlanıyor…";
+      try{
+        const d = akt ? await aktarimDosyasi9() : await telefonDosyasi9(ov.querySelector('input[name="ak9t"]:checked').value);
+        if(akt) hazirA = d; else hazirD = d;
+        yer.innerHTML = `<div class="dos"><span>${esc(d.ad)}<small>${boyut9(d.metin.length)}</small></span><button class="btn" data-ak9pay="${akt ? "a" : "d"}">${IK("paylas")}Paylaş</button></div>`;
+      }catch(err){ yer.innerHTML = `<div class="hata">${esc(err.message || "Hazırlanamadı")}</div>`; }
+      b.disabled = false; b.textContent = eskiYazi;
+      return;
+    }
+    if(b.dataset.ak9pay){ const d = b.dataset.ak9pay === "a" ? hazirA : hazirD; if(d) paylas9(d); }
+  });
+  ov.addEventListener("change", ev => { if(ev.target.name === "ak9t"){ hazirD = null; ov.querySelector("#ak9s").innerHTML = ""; } });
+}
+
+// ---------- Tıklamalar ----------
+document.addEventListener("click", e => {
+  if(!e.target.closest) return;
+  const t = e.target;
+  if(t.closest("[data-duzen9]")){ e.stopPropagation(); duzenDegis9(); return; }
+  const gn = t.closest("[data-gn9]"); if(gn){ e.stopPropagation(); gn.closest(".gn9")?.remove(); geriAl9(gn.dataset.gn9); return; }
+  if(!YON9 || !DUZ9) return;
+  let b;
+  if(t.closest("[data-dz9excel]")){ e.stopPropagation(); excelSec9(); return; }
+  if(t.closest("[data-dz9aktar]")){ e.stopPropagation(); hazir9.then(aktarSayfa9); return; }
+  if(t.closest("[data-dz9liste]")){ e.stopPropagation(); listeSayfa9(); return; }
+  if(!detay) return;
+  if(t.closest("[data-dz9ekle]")){ e.stopPropagation(); kmForm9(detay.id); return; }
+  if((b = t.closest("[data-dz9km]"))){ e.stopPropagation(); kmForm9(detay.id, +b.dataset.dz9km); return; }
+  if((b = t.closest("[data-dz9sil]"))){ e.stopPropagation(); kmSilSor9(detay.id, +b.dataset.dz9sil); return; }
+  if((b = t.closest("[data-dz9yazi]"))){ e.stopPropagation(); yaziForm9(detay.id, b.dataset.dz9yazi); return; }
+}, true);
+const _mesgul9b = mesgul9;
+mesgul9 = function(){ return _mesgul9b.apply(this, arguments) || !!document.querySelector("#exr9, #kf9, #yf9, #on9, .ak9"); };
+
+// ===================== Haftalık Excel karşılaştırma =====================
+// 1–3 Excel seçilir. Başlıklar ("2026 Yılı Çalışmalar", "2026 Biten Çalışmalar"
+// ve benzerleri) ve iş adı sütunu kendiliğinden bulunur; emin olunamazsa bir kez
+// sorulur ve hatırlanır. İşler adlarından eşleşir; eşleşmeyenler bir kez elle
+// bağlanır ve hatırlanır.
+let xlsxSoz9 = null;
+function xlsxHazir9(){
+  if(window.XLSX) return Promise.resolve();
+  if(!xlsxSoz9) xlsxSoz9 = new Promise((ok, no) => { const s = document.createElement("script"); s.src = "xlsx.full.min.js"; s.onload = ok; s.onerror = () => { xlsxSoz9 = null; no(new Error("Excel bileşeni yüklenemedi (ilk seferde internet gerekir)")); }; document.head.appendChild(s); });
+  return xlsxSoz9;
+}
+const nrm9 = s => fold(s).replace(/[^a-z0-9]+/g, " ").trim();
+const lsOku9 = (k, v) => { try{ return JSON.parse(localStorage.getItem(k) || "null") || v; }catch(_){ return v; } };
+const lsYaz9 = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(_){} };
+const ESLE9 = "istakip-excel9-sutun", BAG9 = "istakip-excel9-bag", ANLIK9 = "istakip-excel9-anlik";
+function benzer9(a, b){
+  const A = nrm9(a), B = nrm9(b); if(!A || !B) return 0; if(A === B) return 1;
+  const ta = new Set(A.split(" ").filter(x => x.length > 1)), tb = new Set(B.split(" ").filter(x => x.length > 1));
+  if(!ta.size || !tb.size) return 0;
+  let k = 0; ta.forEach(x => { if(tb.has(x)) k++; });
+  let d = 2 * k / (ta.size + tb.size);
+  if(A.includes(B) || B.includes(A)) d = Math.max(d, .8);
+  return d;
+}
+function isEsle9(ad){
+  const bag = lsOku9(BAG9, {}), n = nrm9(ad);
+  if(bag[n] === "-") return { yok: 1 };
+  if(bag[n] && ISLER.some(j => j.id === bag[n])) return { j: ISLER.find(j => j.id === bag[n]) };
+  let en = null, ikinci = 0;
+  ISLER.forEach(j => { const s = benzer9(ad, j.ad); if(!en || s > en.s){ if(en) ikinci = Math.max(ikinci, en.s); en = { j, s }; } else ikinci = Math.max(ikinci, s); });
+  if(en && en.s >= .55 && (en.s >= .85 || en.s - ikinci >= .08)) return { j: en.j };
+  return null;
+}
+const hucre9 = v => v === null || v === undefined ? "" : String(v).replace(/\r\n?/g, "\n").trim();
+const harf9 = i => { let s = ""; i++; while(i > 0){ const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+// Bir sayfada başlık satırı ve sütunlar
+function bul9(rows){
+  const hat = lsOku9(ESLE9, []);
+  const yil = String(new Date().getFullYear());
+  for(let r = 0; r < Math.min(rows.length, 40); r++){
+    const n = (rows[r] || []).map(nrm9);
+    // daha önce seçilen başlıklar
+    for(const h of hat){ const c = n.indexOf(h.c), b = n.indexOf(h.b), a = n.indexOf(h.a); if(c >= 0 && b >= 0 && a >= 0) return { r, a, c, b, emin: 1 }; }
+  }
+  let iyi = null;
+  for(let r = 0; r < Math.min(rows.length, 40); r++){
+    const n = (rows[r] || []).map(nrm9);
+    let C = n.map((x, i) => /calisma/.test(x) && !/biten/.test(x) ? i : -1).filter(i => i >= 0);
+    let B = n.map((x, i) => /biten/.test(x) ? i : -1).filter(i => i >= 0);
+    if(!C.length && !B.length) continue;
+    const yilli = L => { const y = L.filter(i => n[i].includes(yil)); return y.length ? y : L; };
+    C = yilli(C); B = yilli(B);
+    const aday = { r, c: C.length ? C[0] : -1, b: B.length ? B[0] : -1, emin: C.length === 1 && B.length === 1 };
+    // iş adı sütunu: başlığından ya da içeriği işlere en çok benzeyen sütun
+    let a = n.findIndex(x => /(^| )(isin adi|is adi|isin ismi|is ismi|proje adi|projenin adi|ihale adi|isin tanimi|is tanimi)( |$)/.test(x));
+    if(a < 0){
+      let en = -1, enS = 0;
+      const W = Math.max(...rows.slice(r, r + 60).map(x => (x || []).length), 0);
+      for(let i = 0; i < W; i++){
+        if(i === aday.c || i === aday.b) continue;
+        let s = 0; rows.slice(r + 1, r + 80).forEach(x => { const v = hucre9(x && x[i]); if(v.length > 4 && ISLER.some(j => benzer9(v, j.ad) >= .55)) s++; });
+        if(s > enS){ enS = s; en = i; }
+      }
+      a = en; if(a < 0) aday.emin = false;
+    }
+    aday.a = a;
+    if(aday.c >= 0 && aday.b >= 0 && a >= 0){ if(!iyi || (aday.emin && !iyi.emin)) iyi = aday; if(aday.emin) break; }
+    else if(!iyi) iyi = { ...aday, emin: false };
+  }
+  return iyi;
+}
+function kayitlar9(rows, s){
+  const out = []; let son = null;
+  for(let r = s.r + 1; r < rows.length; r++){
+    const x = rows[r] || [], ad = hucre9(x[s.a]), c = s.c >= 0 ? hucre9(x[s.c]) : "", b = s.b >= 0 ? hucre9(x[s.b]) : "";
+    if(ad){ son = { ad, c, b }; out.push(son); }
+    else if(son && (c || b)){ if(c) son.c = son.c ? son.c + "\n" + c : c; if(b) son.b = son.b ? son.b + "\n" + b : b; }
+  }
+  return out.filter(k => k.c || k.b);
+}
+function excelSec9(){
+  let inp = document.getElementById("ex9sec");
+  if(!inp){
+    inp = document.createElement("input"); inp.type = "file"; inp.id = "ex9sec"; inp.multiple = true; inp.style.display = "none";
+    inp.accept = ".xlsx,.xls,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel";
+    inp.addEventListener("change", async () => {
+      const fs = [...(inp.files || [])].slice(0, 3); inp.value = "";
+      if(!fs.length) return;
+      if((inp.files || []).length > 3) bildir("En çok 3 Excel; ilk üçü alındı");
+      try{ bildir("Excel okunuyor…"); await xlsxHazir9(); await excelOku9(fs); }
+      catch(err){ bildir(err.message || "Excel okunamadı"); }
+    });
+    document.body.appendChild(inp);
+  }
+  inp.click();
+}
+async function excelOku9(fs){
+  const kay = [];
+  for(const f of fs){
+    const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type: "array", cellDates: false });
+    const sayfalar = wb.SheetNames.map(ad => ({ ad, rows: XLSX.utils.sheet_to_json(wb.Sheets[ad], { header: 1, defval: "", raw: false, blankrows: true }) }));
+    let bulundu = false;
+    for(const sf of sayfalar){
+      const s = bul9(sf.rows);
+      if(s && s.emin){ kayitlar9(sf.rows, s).forEach(k => kay.push({ ...k, kaynak: f.name })); bulundu = true; }
+    }
+    if(!bulundu){
+      const s = await sutunSor9(f.name, sayfalar);
+      if(s){ kayitlar9(s.rows, s).forEach(k => kay.push({ ...k, kaynak: f.name })); }
+    }
+  }
+  if(!kay.length){ bildir("Excel'lerde Çalışmalar / Biten yazısı bulunamadı"); return; }
+  // işlerle eşleştir
+  const esl = new Map(), bos = [];
+  kay.forEach(k => {
+    const m = isEsle9(k.ad);
+    if(m && m.yok) return;
+    if(m && m.j){ const x = esl.get(m.j.id) || { id: m.j.id, c: "", b: "", kaynak: new Set() }; if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(m.j.id, x); }
+    else bos.push(k);
+  });
+  EX9 = { kay, esl, bos, i: 0, filtre: false, degisen: new Set() };
+  anlik9();
+  exAc9(bos.length ? "esle" : "isler");
+}
+// "Geçen haftadan beri değişenler": her yüklemede kısa bir iz saklanır
+const iz9 = s => { let h = 5381; const t = nrm9(s); for(let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+function anlik9(){
+  const L = lsOku9(ANLIK9, []), simdi = Date.now();
+  const once = L.filter(x => simdi - x.t > 2 * 864e5).sort((a, b) => b.t - a.t)[0] || null;
+  const yeni = {}; EX9.esl.forEach((x, id) => { yeni[id] = iz9(x.c) + "." + iz9(x.b); });
+  EX9.degisen = new Set([...EX9.esl.keys()].filter(id => !once || once.k[id] !== yeni[id]));
+  EX9.onceTarih = once ? once.t : null;
+  const gun = d => new Date(d).toDateString();
+  const L2 = L.filter(x => gun(x.t) !== gun(simdi)).concat([{ t: simdi, k: yeni }]).sort((a, b) => b.t - a.t).slice(0, 6);
+  lsYaz9(ANLIK9, L2);
+}
+// Sütunlar bulunamadıysa bir kez sor
+function sutunSor9(dosya, sayfalar){
+  return new Promise(ok => {
+    let si = 0, r = 0;
+    const ilkSatir = rows => { let en = 0, enN = -1; rows.slice(0, 25).forEach((x, i) => { const n = (x || []).filter(v => hucre9(v)).length; if(n > enN){ enN = n; en = i; } }); return en; };
+    r = ilkSatir(sayfalar[0].rows);
+    const ov = document.createElement("div"); ov.className = "on9"; ov.id = "on9";
+    const ciz9 = () => {
+      const rows = sayfalar[si].rows, bas = rows[r] || [], o = bul9(rows) || {};
+      const sec = (id, ad, v) => `<label>${ad}</label><select id="${id}"><option value="-1">—</option>${bas.map((h, i) => `<option value="${i}"${i === v ? " selected" : ""}>${harf9(i)} · ${esc(hucre9(h).slice(0, 40) || "(boş)")}</option>`).join("")}</select>`;
+      ov.innerHTML = `<div class="kut ss9"><b>Sütunları seçin</b><p>${esc(dosya)} — başlıklar tanınamadı. Seçiminiz hatırlanır.</p>
+${sayfalar.length > 1 ? `<label>Sayfa</label><select id="ss9s">${sayfalar.map((s, i) => `<option value="${i}"${i === si ? " selected" : ""}>${esc(s.ad)}</option>`).join("")}</select>` : ""}
+<label>Başlık satırı</label><select id="ss9r">${rows.slice(0, 30).map((x, i) => `<option value="${i}"${i === r ? " selected" : ""}>${i + 1}. ${esc((x || []).map(hucre9).filter(Boolean).join(" | ").slice(0, 60) || "(boş)")}</option>`).join("")}</select>
+${sec("ss9a", "İş adı", o.r === r ? o.a : -1)}${sec("ss9c", "Çalışmalar (Devam Eden)", o.r === r ? o.c : -1)}${sec("ss9b", "Biten", o.r === r ? o.b : -1)}
+<div class="dg"><button data-ss9="atla">Bu dosyayı atla</button><button class="ana" data-ss9="tamam">Devam</button></div></div>`;
+    };
+    ov.addEventListener("change", e => {
+      if(e.target.id === "ss9s"){ si = +e.target.value; r = ilkSatir(sayfalar[si].rows); ciz9(); }
+      else if(e.target.id === "ss9r"){ r = +e.target.value; ciz9(); }
+    });
+    ov.addEventListener("click", e => {
+      const b = e.target.closest("[data-ss9]"); if(!b) return;
+      if(b.dataset.ss9 === "atla"){ ov.remove(); ok(null); return; }
+      const a = +ov.querySelector("#ss9a").value, c = +ov.querySelector("#ss9c").value, bb = +ov.querySelector("#ss9b").value;
+      if(a < 0 || (c < 0 && bb < 0)){ bildir("İş adı ve en az bir yazı sütununu seçin"); return; }
+      const rows = sayfalar[si].rows, n = (rows[r] || []).map(nrm9);
+      if(c >= 0 && bb >= 0 && n[a] && n[c] && n[bb]){ const L = lsOku9(ESLE9, []).filter(x => !(x.c === n[c] && x.b === n[bb])); L.unshift({ a: n[a], c: n[c], b: n[bb] }); lsYaz9(ESLE9, L.slice(0, 10)); }
+      ov.remove(); ok({ rows, r, a, c, b: bb });
+    });
+    ciz9(); document.body.appendChild(ov);
+  });
+}
+let EX9 = null;
+function exListe9(){
+  if(!EX9) return [];
+  const ids = ISLER.map(j => j.id).filter(id => EX9.esl.has(id));
+  return EX9.filtre ? ids.filter(id => EX9.degisen.has(id)) : ids;
+}
+const parca9 = s => String(s || "").split(/\n+/).flatMap(l => l.length > 160 ? l.replace(/\.\s+(?=[A-ZÇĞİÖŞÜ0-9])/g, ".\u0001").split("\u0001") : [l]).flatMap(l => l.split(/;\s*/)).map(x => x.replace(/^[\s•\-–*·]+/, "").trim()).filter(Boolean);
+function exAc9(mod){
+  let ov = document.getElementById("exr9");
+  if(!ov){ ov = document.createElement("div"); ov.id = "exr9"; ov.className = "exr9"; document.body.appendChild(ov); exOlay9(ov); }
+  EX9.mod = mod; exCiz9();
+}
+function exKapat9(){ exKaydet9().finally(() => { document.getElementById("exr9")?.remove(); EX9 = null; }); }
+function exYenile9(){ if(EX9 && document.getElementById("exr9")) exCiz9(); }
+function exCiz9(){
+  const ov = document.getElementById("exr9"); if(!ov || !EX9) return;
+  if(EX9.mod === "esle"){
+    const secenek = k => { const s = ISLER.map(j => ({ j, s: benzer9(k.ad, j.ad) })).sort((a, b) => b.s - a.s); return `<option value="">Seçin…</option><option value="-">Bu satırı her zaman atla</option>${s.map(x => `<option value="${esc(x.j.id)}">${esc(x.j.ad)}</option>`).join("")}`; };
+    ov.innerHTML = `<div class="eh"><button data-ex9kapat>${IK("geri")}</button><div class="et"><b>Eşleşmeyen satırlar</b><small>${EX9.bos.length} satır · seçiminiz hatırlanır</small></div></div>
+<div class="eb">${EX9.bos.map((k, i) => `<div class="eslr"><b>${esc(k.ad)}</b><small>${esc(k.kaynak)} · ${esc((k.c || k.b).slice(0, 80))}</small><select data-ex9bag="${i}">${secenek(k)}</select></div>`).join("")}</div>
+<div class="ef"><button class="ana" data-ex9devam>Karşılaştırmaya geç ›</button></div>`;
+    return;
+  }
+  const L = exListe9();
+  if(!L.length){
+    ov.innerHTML = `<div class="eh"><button data-ex9kapat>${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.esl.size} iş eşleşti</small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
+<div class="eb"><p class="bos">${EX9.filtre ? "Geçen haftadan beri değişen iş yok." : "Excel'deki işler uygulamadaki işlerle eşleşmedi."}</p>${EX9.bos.length ? `<button class="btn ikinci" data-ex9esle>Eşleşmeyen ${EX9.bos.length} satırı bağla</button>` : ""}</div>`;
+    return;
+  }
+  EX9.i = Math.max(0, Math.min(EX9.i, L.length - 1));
+  const id = L[EX9.i], j = ISLER.find(x => x.id === id), x = EX9.esl.get(id);
+  EX9.cur = { id, yil: D.yil, devam: j.devam || "", biten: j.biten || "" };
+  const blok = (alan, baslik, exAd, uyg, ex) => {
+    const ayni = ex && nrm9(uyg) === nrm9(ex);
+    if(!ex) return `<div class="eblk"><div class="ebh"><b>${baslik}</b><span class="g">Excel'de yazı yok</span></div><textarea data-ex9ta="${alan}" rows="4">${esc(uyg)}</textarea></div>`;
+    if(ayni && !(EX9.ac && EX9.ac[alan])) return `<button class="eblk ayni" data-ex9ac="${alan}"><div class="ebh"><b>${baslik}</b><span>Aynı</span></div><div class="ayt">${esc(ex)}</div></button>`;
+    const P = parca9(ex), uN = nrm9(uyg);
+    return `<div class="eblk"><div class="ebh"><b>${baslik}</b></div><div class="eiki">
+<div class="ea"><small>Uygulamada</small><textarea data-ex9ta="${alan}" rows="6" placeholder="Boş">${esc(uyg)}</textarea></div>
+<div class="ex"><small>${exAd}<button data-ex9tum="${alan}">Tümünü al</button></small><div class="ep">${P.map((p, i) => `<button class="pc${uN.includes(nrm9(p)) ? " on" : ""}" data-ex9p="${alan}:${i}">${esc(p)}</button>`).join("")}</div></div></div></div>`;
+  };
+  const yeniMi = EX9.degisen.has(id);
+  ov.innerHTML = `<div class="eh"><button data-ex9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.i + 1} / ${L.length}${EX9.bos.length ? ` · <u data-ex9esle>${EX9.bos.length} eşleşmeyen</u>` : ""}</small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
+<div class="eb" id="ex9b"><div class="ead"><b>${esc(j.ad)}</b><small>${esc([...x.kaynak].join(", "))}${yeniMi && EX9.onceTarih ? " · <i>geçen haftadan beri değişti</i>" : ""}</small></div>
+${blok("devam", "Devam Eden", "Excel · Çalışmalar", j.devam || "", x.c)}
+${blok("biten", D.yil + " Biten", "Excel · Biten", j.biten || "", x.b)}</div>
+<div class="ef"><button data-ex9onc${EX9.i ? "" : " disabled"}>‹ Önceki</button><button class="km" data-ex9km>${IK("arti")}KM Ekle</button><button data-ex9son${EX9.i < L.length - 1 ? "" : " disabled"}>Sonraki ›</button></div>`;
+  ov.querySelector("#ex9b").scrollTop = 0;
+}
+async function exKaydet9(){
+  const ov = document.getElementById("exr9"); if(!ov || !EX9 || !EX9.cur || EX9.mod === "esle") return;
+  const c = EX9.cur, j = ISLER.find(x => x.id === c.id); if(!j) return;
+  const deger = {}; ["devam", "biten"].forEach(alan => { const ta = ov.querySelector(`[data-ex9ta="${alan}"]`); if(ta) deger[alan] = ta.value; });
+  for(const alan of Object.keys(deger)){
+    const yeni = deger[alan].replace(/\s+$/, ""), eski = c[alan];
+    if(yeni === eski.replace(/\s+$/, "")) continue;
+    try{ await degistir9({ tip: "yazi", is: c.id, ad: j.ad, alan, yil: c.yil, onceki: eski, sonraki: yeni }); bildir("Kaydedildi"); }
+    catch(err){ bildir(err.message || "Kaydedilemedi"); }
+  }
+}
+async function exGit9(d){ await exKaydet9(); EX9.i += d; EX9.ac = null; exCiz9(); }
+function exOlay9(ov){
+  ov.addEventListener("click", async e => {
+    const t = e.target; let b;
+    if(t.closest("[data-ex9kapat]")){ exKapat9(); return; }
+    if(t.closest("[data-ex9filtre]")){ await exKaydet9(); EX9.filtre = !EX9.filtre; EX9.i = 0; exCiz9(); return; }
+    if(t.closest("[data-ex9esle]")){ await exKaydet9(); EX9.mod = "esle"; exCiz9(); return; }
+    if(t.closest("[data-ex9devam]")){
+      const bag = lsOku9(BAG9, {});
+      ov.querySelectorAll("[data-ex9bag]").forEach(s => { if(!s.value) return; const k = EX9.bos[+s.dataset.ex9bag]; bag[nrm9(k.ad)] = s.value; });
+      lsYaz9(BAG9, bag);
+      // eşleşmeleri yeniden kur
+      const kay = EX9.kay, f = EX9.filtre; EX9 = null;
+      const esl = new Map(), bos = [];
+      kay.forEach(k => { const m = isEsle9(k.ad); if(m && m.yok) return;
+        if(m && m.j){ const x = esl.get(m.j.id) || { id: m.j.id, c: "", b: "", kaynak: new Set() }; if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(m.j.id, x); } else bos.push(k); });
+      EX9 = { kay, esl, bos, i: 0, filtre: f, degisen: new Set() }; anlik9(); EX9.mod = "isler"; exCiz9(); return;
+    }
+    if(t.closest("[data-ex9onc]")){ exGit9(-1); return; }
+    if(t.closest("[data-ex9son]")){ exGit9(1); return; }
+    if(t.closest("[data-ex9km]")){ await exKaydet9(); if(EX9 && EX9.cur) kmForm9(EX9.cur.id); return; }
+    if((b = t.closest("[data-ex9ac]"))){ EX9.ac = { ...(EX9.ac || {}), [b.dataset.ex9ac]: 1 }; const ta = {}; ov.querySelectorAll("[data-ex9ta]").forEach(x => { ta[x.dataset.ex9ta] = x.value; }); exCiz9(); Object.keys(ta).forEach(k => { const x = ov.querySelector(`[data-ex9ta="${k}"]`); if(x) x.value = ta[k]; }); return; }
+    if((b = t.closest("[data-ex9tum]"))){ const alan = b.dataset.ex9tum, ta = ov.querySelector(`[data-ex9ta="${alan}"]`), x = EX9.esl.get(EX9.cur.id); if(ta){ ta.value = alan === "devam" ? x.c : x.b; ov.querySelectorAll(`[data-ex9p^="${alan}:"]`).forEach(p => p.classList.add("on")); } return; }
+    if((b = t.closest("[data-ex9p]"))){
+      const [alan, i] = b.dataset.ex9p.split(":"), ta = ov.querySelector(`[data-ex9ta="${alan}"]`), x = EX9.esl.get(EX9.cur.id);
+      const p = parca9(alan === "devam" ? x.c : x.b)[+i]; if(!ta || !p) return;
+      if(nrm9(ta.value).includes(nrm9(p))){ bildir("Bu kısım zaten var"); return; }
+      ta.value = ta.value.replace(/\s+$/, "") + (ta.value.trim() ? "\n" : "") + p; b.classList.add("on");
+      return;
+    }
+  });
+  // sağa / sola kaydırınca önceki / sonraki iş
+  let bas = null;
+  ov.addEventListener("touchstart", e => { if(e.target.closest("textarea, select") || e.touches.length !== 1){ bas = null; return; } bas = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
+  ov.addEventListener("touchend", e => {
+    if(!bas || !EX9 || EX9.mod === "esle") return;
+    const t = e.changedTouches[0], dx = t.clientX - bas.x, dy = t.clientY - bas.y; bas = null;
+    if(Math.abs(dx) < 70 || Math.abs(dy) > 45) return;
+    const L = exListe9();
+    if(dx < 0 && EX9.i < L.length - 1) exGit9(1);
+    else if(dx > 0 && EX9.i > 0) exGit9(-1);
+  }, { passive: true });
 }
 
 function bildir(m){

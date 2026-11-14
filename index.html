@@ -1408,6 +1408,31 @@ html.dark .exr9 .eblk.ayni .ayt{ color:#94a3b8; }
 .exr9 .eslr.ok{ border-color:#bbf7d0; }
 .exr9 .eslr.atl{ opacity:.6; }
 .exr9 .eslr small i{ font-style:normal; color:#c2410c; font-weight:700; }
+
+.exr9 .esb{ margin-top:4px; width:100%; display:flex; align-items:center; gap:8px; text-align:left; border:1px solid #d6dbe3; border-radius:10px; padding:10px; font-size:14px; font-weight:700; background:#fff; color:#0f172a; }
+.exr9 .esb span{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.exr9 .esb svg{ width:16px; height:16px; color:#64748b; flex:none; }
+.exr9 .esb.bos{ color:#c2410c; border-style:dashed; border-color:#fdba74; }
+.exr9 .esb.atl{ color:#64748b; }
+.sec9{ position:fixed; inset:0; z-index:75; background:rgba(15,23,42,.55); display:flex; align-items:flex-end; justify-content:center; }
+.sec9 .kut{ background:#fff; width:100%; max-width:640px; height:82vh; border-radius:20px 20px 0 0; display:flex; flex-direction:column; padding:14px 14px calc(10px + env(safe-area-inset-bottom)); animation:bsUp .2s ease; }
+.sec9 .ust{ display:flex; align-items:flex-start; gap:10px; }
+.sec9 .ust > div{ flex:1; min-width:0; }
+.sec9 .ust b{ display:block; font-size:15px; line-height:1.3; }
+.sec9 .ust small{ display:block; font-size:12px; color:#64748b; }
+.sec9 .ust button{ width:34px; height:34px; border-radius:50%; border:none; background:#f1f5f9; display:grid; place-items:center; padding:0; flex:none; }
+.sec9 .ust svg{ width:17px; height:17px; }
+.sec9 input{ margin:10px 0 8px; width:100%; box-sizing:border-box; border:1px solid #d6dbe3; border-radius:12px; padding:11px 12px; font-size:16px; background:#f8fafc; color:#0f172a; }
+.sec9 .lst{ flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; display:flex; flex-direction:column; gap:6px; }
+.sec9 .lst button{ text-align:left; border:1px solid #e5e7eb; background:#fff; border-radius:12px; padding:9px 11px; font:inherit; color:#0f172a; }
+.sec9 .lst button b{ display:block; font-size:14px; }
+.sec9 .lst button small{ display:block; font-size:12px; color:#64748b; margin-top:1px; }
+.sec9 .lst button.on{ border-color:#ea580c; background:#fff7ed; }
+.sec9 .lst button.oz{ font-weight:800; font-size:13.5px; color:#475569; background:#f8fafc; }
+.sec9 .lst p{ text-align:center; color:#64748b; font-size:13.5px; }
+html.dark .exr9 .esb, html.dark .sec9 .kut, html.dark .sec9 .lst button{ background:#141c2b; border-color:#2a3650; color:#e6ebf3; }
+html.dark .sec9 input, html.dark .sec9 .lst button.oz, html.dark .sec9 .ust button{ background:#0f1726; border-color:#2a3650; color:#e6ebf3; }
+html.dark .sec9 .lst button.on{ background:#2a1708; }
 </style>
 </head>
 <body>
@@ -6371,7 +6396,9 @@ const harf9 = i => { let s = ""; i++; while(i > 0){ const m = (i - 1) % 26; s = 
 // başlık metni: parantez içi (ör. tarih) ve büyük/küçük harf önemsiz
 const hnrm9 = v => nrm9(String(v ?? "").replace(/\([^)]*\)/g, " "));
 const AD_BAS9 = /^(isin adi|is adi|isin ismi|is ismi|isin tanimi|is tanimi|proje adi|projenin adi|ihale adi|isin adi ve yeri)( |$)/;
-const C_BAS9 = x => /calisma/.test(x) && !/biten/.test(x), B_BAS9 = x => /biten/.test(x);
+const C_BAS9 = x => /calis/.test(x) && !/biten/.test(x), B_BAS9 = x => /biten/.test(x);
+// hatırlanan başlıklar yılsız saklanır: "2026 Yılı Çalışılan" seçimi 2027'de de geçerli
+const hnrmY9 = v => hnrm9(v).replace(/(^| )(19|20)\d\d( |$)/g, " ").replace(/\s+/g, " ").trim();
 // Bir sayfada "İşin Adı" hücresi ve yakınındaki Çalışmalar / Biten başlıkları
 function bul9(rows){
   const hat = lsOku9(ESLE9, []), N = Math.min(rows.length, 60), yil = String(new Date().getFullYear());
@@ -6379,9 +6406,16 @@ function bul9(rows){
   // daha önce elle seçilen başlıklar
   for(let r = 0; r < N; r++){
     const n = hn(r);
-    for(const h of hat){ const a = n.indexOf(h.a); if(a < 0) continue;
-      let c = -1, b = -1, son = r;
-      for(let q = Math.max(0, r - 3); q <= Math.min(rows.length - 1, r + 3); q++){ const m = hn(q); if(c < 0 && h.c && m.indexOf(h.c) >= 0){ c = m.indexOf(h.c); son = Math.max(son, q); } if(b < 0 && h.b && m.indexOf(h.b) >= 0){ b = m.indexOf(h.b); son = Math.max(son, q); } }
+    const nY = (rows[r] || []).map(hnrmY9);
+    for(const h of hat){ const a = nY.indexOf(h.a); if(a < 0) continue;
+      let c = -1, b = -1, son = r, cY = false, bY = false;
+      for(let q = Math.max(0, r - 3); q <= Math.min(rows.length - 1, r + 3); q++){
+        if(q > r && hucre9((rows[q] || [])[a])) break;              // iş satırları başlık değil
+        const m = (rows[q] || []).map(hnrmY9), ham = hn(q);
+        m.forEach((x, i) => { const y = ham[i].includes(yil);
+          if(h.c && x === h.c && (c < 0 || (y && !cY))){ c = i; cY = y; son = Math.max(son, q); }
+          if(h.b && x === h.b && (b < 0 || (y && !bY))){ b = i; bY = y; son = Math.max(son, q); } });
+      }
       if(c >= 0 || b >= 0) return { r: son, ra: r, a, c, b, emin: 1 };
     }
   }
@@ -6450,6 +6484,33 @@ function kayitlar9(rows, s, mer){
   }
   return out;
 }
+// Eşleştirme: aramalı iş seçici
+const secDeger9 = i => (EX9.sec && i in EX9.sec) ? EX9.sec[i] : EX9.sat[i].id;
+function secAd9(i){ const v = secDeger9(i); if(v === "-") return ["Atlanacak", " atl"]; if(!v) return ["İş seçin…", " bos"]; const j = ISLER.find(x => x.id === v); return [j ? j.ad : "?", ""]; }
+function isSecici9(i){
+  const x = EX9.sat[i], k = x.k, cur = secDeger9(i);
+  document.getElementById("sec9")?.remove();
+  const ov = document.createElement("div"); ov.className = "sec9"; ov.id = "sec9";
+  ov.innerHTML = `<div class="kut"><div class="ust"><div><b>${esc(k.ad)}</b><small>${k.sef ? "Şef: " + esc(k.sef) : esc(k.kaynak)}</small></div><button data-sec9kapat aria-label="Kapat">${IK("x")}</button></div>
+<input type="search" id="sec9a" placeholder="İş, firma, şef ya da il ara…" autocomplete="off" autocorrect="off" spellcheck="false"><div class="lst" id="sec9l"></div></div>`;
+  const L = ISLER.map(j => ({ j, s: puan9(k, j), t: fold([j.ad, j.firma, j.sef, (j.il || []).join(" ")].join(" ")) })).sort((a, b) => b.s - a.s);
+  const liste = ov.querySelector("#sec9l");
+  const ciz = q => {
+    const p = fold(q).trim().split(/\s+/).filter(Boolean);
+    const r = p.length ? L.filter(o => p.every(w => o.t.includes(w))) : L;
+    liste.innerHTML = (p.length ? "" : `<button data-sec9="-" class="oz">Bu satırı her zaman atla</button>${cur ? `<button data-sec9="" class="oz">Eşleşmeyi kaldır</button>` : ""}`)
+      + (r.map(o => `<button data-sec9="${esc(o.j.id)}"${o.j.id === cur ? ' class="on"' : ""}><b>${esc(o.j.ad)}</b><small>${esc([o.j.sef, o.j.firma, (o.j.il || []).join(", ")].filter(Boolean).join(" · "))}</small></button>`).join("") || '<p>Bulunamadı</p>');
+  };
+  ov.querySelector("#sec9a").addEventListener("input", e => ciz(e.target.value));
+  ov.addEventListener("click", e => {
+    if(e.target === ov || e.target.closest("[data-sec9kapat]")){ ov.remove(); return; }
+    const b = e.target.closest("[data-sec9]"); if(!b) return;
+    EX9.sec = EX9.sec || {}; EX9.sec[i] = b.dataset.sec9; ov.remove();
+    const eb = document.querySelector("#exr9 .eb"), sc = eb ? eb.scrollTop : 0; exCiz9(); const eb2 = document.querySelector("#exr9 .eb"); if(eb2) eb2.scrollTop = sc;
+  });
+  ciz(""); document.body.appendChild(ov);
+}
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-ex9sec]"); if(!b) return; e.stopPropagation(); isSecici9(+b.dataset.ex9sec); }, true);
 function excelSec9(){
   let inp = document.getElementById("ex9sec");
   if(!inp){
@@ -6547,7 +6608,7 @@ ${sec("ss9a", "İş adı", o.r === r || o.ra === r ? o.a : -1)}${sec("ss9c", "Ç
       if(b.dataset.ss9 === "atla"){ ov.remove(); ok(null); return; }
       const a = +ov.querySelector("#ss9a").value, c = +ov.querySelector("#ss9c").value, bb = +ov.querySelector("#ss9b").value;
       if(a < 0 || (c < 0 && bb < 0)){ bildir("İş adı ve en az bir yazı sütununu seçin"); return; }
-      const rows = sayfalar[si].rows, n = (rows[r] || []).map(hnrm9);
+      const rows = sayfalar[si].rows, n = (rows[r] || []).map(hnrmY9);
       const hc = c >= 0 ? n[c] || "" : "", hb = bb >= 0 ? n[bb] || "" : "";
       if(n[a] && (hc || hb)){ const L = lsOku9(ESLE9, []).filter(x => !(x.a === n[a] && x.c === hc && x.b === hb)); L.unshift({ a: n[a], c: hc, b: hb }); lsYaz9(ESLE9, L.slice(0, 10)); }
       ov.remove(); ok({ rows, r, a, c, b: bb, mer: sayfalar[si].mer });
@@ -6573,7 +6634,7 @@ function exCiz9(){
   const ov = document.getElementById("exr9"); if(!ov || !EX9) return;
   if(EX9.mod === "esle"){
     const secenek = (k, id) => { const L = ISLER.map(j => ({ j, s: puan9(k, j) })).sort((a, b) => b.s - a.s); return `<option value=""${id ? "" : " selected"}>Seçin…</option><option value="-"${id === "-" ? " selected" : ""}>Bu satırı her zaman atla</option>${L.map(x => `<option value="${esc(x.j.id)}"${x.j.id === id ? " selected" : ""}>${esc(x.j.ad)}</option>`).join("")}`; };
-    const satir = i => { const { k, id, cakisti } = EX9.sat[i]; return `<div class="eslr${id && id !== "-" ? " ok" : id === "-" ? " atl" : ""}"><b>${esc(k.ad)}</b><small>${k.sef ? "Şef: " + esc(k.sef) + " · " : ""}${esc(k.kaynak)}${(k.c || k.b) ? " · " + esc((k.c || k.b).slice(0, 80)) : " · yazı yok"}${cakisti ? " · <i>başka satır aynı işe eşleşti</i>" : ""}</small><select data-ex9bag="${i}">${secenek(k, id)}</select></div>`; };
+    const satir = i => { const { k, id, cakisti } = EX9.sat[i]; return `<div class="eslr${id && id !== "-" ? " ok" : id === "-" ? " atl" : ""}"><b>${esc(k.ad)}</b><small>${k.sef ? "Şef: " + esc(k.sef) + " · " : ""}${esc(k.kaynak)}${(k.c || k.b) ? " · " + esc((k.c || k.b).slice(0, 80)) : " · yazı yok"}${cakisti ? " · <i>başka satır aynı işe eşleşti</i>" : ""}</small><button class="esb${secAd9(i)[1]}" data-ex9sec="${i}"><span>${esc(secAd9(i)[0])}</span>${IK("ara")}</button></div>`; };
     const grup = (ad, f) => { const ix = EX9.sat.map((x, i) => i).filter(i => f(EX9.sat[i].id)); return ix.length ? `<div class="eslg">${ad} (${ix.length})</div>` + ix.map(satir).join("") : ""; };
     ov.innerHTML = `<div class="eh"><button data-ex9kapat>${IK("geri")}</button><div class="et"><b>Excel'deki işler</b><small>${EX9.toplam} iş · ${EX9.esl.size} eşleşti · ${EX9.bos.length} bekliyor</small></div></div>
 <div class="eb">${grup("Eşleşmeyen", id => !id)}${grup("Eşleşen", id => id && id !== "-")}${grup("Atlanan", id => id === "-")}</div>
@@ -6627,7 +6688,7 @@ function exOlay9(ov){
     if(t.closest("[data-ex9devam]")){
       const bag = lsOku9(BAG9, {});
       // değiştirilen seçimler hatırlanır ("Seçin…" seçilirse hatırlanan bağ silinir)
-      ov.querySelectorAll("[data-ex9bag]").forEach(sl => { const x = EX9.sat[+sl.dataset.ex9bag]; if(sl.value === x.id) return; const n = nrm9(x.k.ad); if(sl.value) bag[n] = sl.value; else delete bag[n]; });
+      Object.keys(EX9.sec || {}).forEach(i => { const x = EX9.sat[+i], v = EX9.sec[i]; if(v === x.id) return; const n = nrm9(x.k.ad); if(v) bag[n] = v; else delete bag[n]; });
       lsYaz9(BAG9, bag);
       const kay = EX9.kay, f = EX9.filtre;
       EX9 = { kay, ...eslesKur9(kay), i: 0, filtre: f, degisen: new Set(), toplam: kay.length }; anlik9(); EX9.mod = "isler"; exCiz9(); return;

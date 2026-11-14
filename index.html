@@ -6419,7 +6419,9 @@ function kayitlar9(rows, s, mer){
     const adM = birlesik(r, s.a), devam = adM && adM.r1 < r;
     const ad = devam ? "" : hucre9(x[s.a]), c = s.c >= 0 ? hucre9(x[s.c]) : "", b = s.b >= 0 ? hucre9(x[s.b]) : "";
     let sef = "";
-    if(sf >= 0) sef = deger(r, sf);       // kendi hücresi ya da üstünden birleştirilmiş şef hücresi
+    if(sf >= 0){ sef = deger(r, sf);      // kendi hücresi ya da üstünden birleştirilmiş şef hücresi
+      if(!/[A-Za-zÇĞİÖŞÜçğıöşü]/.test(sef)) sef = "";   // sayı (sıra no vb.) yazıyorsa şef değil → iş alınmaz
+    }
     if(ad){
       const n = nrm9(ad);
       if(/^\d+$/.test(n) || /^(genel )?toplam( |$)/.test(n)){ son = null; continue; }

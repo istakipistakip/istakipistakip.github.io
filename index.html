@@ -6423,11 +6423,8 @@ function kayitlar9(rows, s, mer){
       const n = nrm9(ad);
       if(/^\d+$/.test(n) || /^(genel )?toplam( |$)/.test(n)){ son = null; continue; }
       if(sf >= 0 && !sef){ son = null; continue; }               // şefi olmayan satır iş değil
-      // bir hücrede alt alta birden çok iş adı
-      const adlar = ad.split(/\n+/).map(t => t.replace(/^[\s•\-–*·]+/, "").replace(/^\d+[.)-]\s*/, "").trim()).filter(t => t.length > 3);
-      const liste = adlar.length > 1 ? adlar : [ad];
-      liste.forEach(a => { son = { ad: a, c, b, sef }; out.push(son); });
-      if(liste.length > 1) son = null;
+      // bir hücre = bir iş (hücre içinde alt satıra geçmiş uzun adlar birleştirilir)
+      son = { ad: ad.replace(/\s*\n\s*/g, " "), c, b, sef }; out.push(son);
     }else if(son && (c || b)){ if(c) son.c = son.c ? son.c + "\n" + c : c; if(b) son.b = son.b ? son.b + "\n" + b : b; }
   }
   return out;

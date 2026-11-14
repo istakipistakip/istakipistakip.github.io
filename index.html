@@ -6348,12 +6348,15 @@ function benzer9(a, b){
   if(A.includes(B) || B.includes(A)) d = Math.max(d, .8);
   return d;
 }
-function isEsle9(ad){
+// aynı kontrol şefinin işleri öne çıkar (iş adları benzese de doğru iş seçilsin)
+const sefUy9 = (sef, j) => !!(sef && j.sef && benzer9(sef, j.sef) >= .6);
+const puan9 = (k, j) => benzer9(k.ad, j.ad) + (sefUy9(k.sef, j) ? .15 : 0);
+function isEsle9(ad, sef){
   const bag = lsOku9(BAG9, {}), n = nrm9(ad);
   if(bag[n] === "-") return { yok: 1 };
   if(bag[n] && ISLER.some(j => j.id === bag[n])) return { j: ISLER.find(j => j.id === bag[n]) };
   let en = null, ikinci = 0;
-  ISLER.forEach(j => { const s = benzer9(ad, j.ad); if(!en || s > en.s){ if(en) ikinci = Math.max(ikinci, en.s); en = { j, s }; } else ikinci = Math.max(ikinci, s); });
+  ISLER.forEach(j => { const s = Math.min(1, puan9({ ad, sef }, j)); if(!en || s > en.s){ if(en) ikinci = Math.max(ikinci, en.s); en = { j, s }; } else ikinci = Math.max(ikinci, s); });
   if(en && en.s >= .55 && (en.s >= .85 || en.s - ikinci >= .08)) return { j: en.j };
   return null;
 }
@@ -6390,18 +6393,41 @@ function bul9(rows){
   }
   return null;
 }
-// "İşin Adı" altındaki adı yazılı her satır bir iş (yazısı boş olsa da)
-function kayitlar9(rows, s){
-  const out = []; let son = null;
-  const basMi = x => { const n = (x || []).map(hnrm9); return AD_BAS9.test(n[s.a] || "") || (s.c >= 0 && C_BAS9(n[s.c] || "") && /calisma/.test(n[s.c])) || (s.b >= 0 && B_BAS9(n[s.b] || "") && /calisma/.test(n[s.b])); };
+// Kontrol Şefi sütunu: başlığından (genelde İşin Adı'nın solunda)
+function sefSutun9(rows, s){
+  for(let q = Math.max(0, (s.ra ?? s.r) - 3); q <= Math.min(rows.length - 1, s.r + 1); q++){
+    const n = (rows[q] || []).map(hnrm9), L = n.map((x, i) => /kontrol sef|kont sef|ksef|^sef$|^sefi$/.test(x) && i !== s.a ? i : -1).filter(i => i >= 0);
+    if(L.length) return L.sort((x, y) => ((x < s.a ? 0 : 1) - (y < s.a ? 0 : 1)) || (Math.abs(x - s.a) - Math.abs(y - s.a)))[0];
+  }
+  return -1;
+}
+// "İşin Adı" altındaki işler. Kontrol Şefi sütunu varsa şefin (birleştirilmiş hücresinin)
+// kapladığı her satırdaki iş alınır; şefi olmayan satırlar (TOPLAM, ara başlık) iş sayılmaz.
+function kayitlar9(rows, s, mer){
+  mer = mer || [];
+  const sf = s.sf !== undefined ? s.sf : sefSutun9(rows, s);
+  const birlesik = (r, c) => mer.find(m => r >= m.r1 && r <= m.r2 && c >= m.c1 && c <= m.c2);
+  const deger = (r, c) => { if(c < 0) return ""; const v = hucre9((rows[r] || [])[c]); if(v) return v; const m = birlesik(r, c); return m ? hucre9((rows[m.r1] || [])[m.c1]) : ""; };
+  const sfBirlesik = sf >= 0 && mer.some(m => m.c1 <= sf && m.c2 >= sf && m.r2 > m.r1);
+  const out = []; let son = null, sonSef = "";
+  const basMi = x => AD_BAS9.test(hnrm9((x || [])[s.a]));      // tekrar eden "İşin Adı" başlığı
   for(let r = s.r + 1; r < rows.length; r++){
     const x = rows[r] || [];
-    if(basMi(x)){ son = null; continue; }      // tekrar eden başlık satırı
-    const ad = hucre9(x[s.a]), c = s.c >= 0 ? hucre9(x[s.c]) : "", b = s.b >= 0 ? hucre9(x[s.b]) : "";
+    if(basMi(x)){ son = null; sonSef = ""; continue; }      // tekrar eden başlık satırı
+    // iş adı hücresi birden çok satırı kaplıyorsa alttaki satırlar aynı işin devamıdır
+    const adM = birlesik(r, s.a), devam = adM && adM.r1 < r;
+    const ad = devam ? "" : hucre9(x[s.a]), c = s.c >= 0 ? hucre9(x[s.c]) : "", b = s.b >= 0 ? hucre9(x[s.b]) : "";
+    let sef = "";
+    if(sf >= 0){ sef = deger(r, sf); if(!sef && !sfBirlesik && ad) sef = sonSef; if(sef) sonSef = sef; }
     if(ad){
       const n = nrm9(ad);
       if(/^\d+$/.test(n) || /^(genel )?toplam( |$)/.test(n)){ son = null; continue; }
-      son = { ad, c, b }; out.push(son);
+      if(sf >= 0 && !sef){ son = null; continue; }               // şefi olmayan satır iş değil
+      // bir hücrede alt alta birden çok iş adı
+      const adlar = ad.split(/\n+/).map(t => t.replace(/^[\s•\-–*·]+/, "").replace(/^\d+[.)-]\s*/, "").trim()).filter(t => t.length > 3);
+      const liste = adlar.length > 1 ? adlar : [ad];
+      liste.forEach(a => { son = { ad: a, c, b, sef }; out.push(son); });
+      if(liste.length > 1) son = null;
     }else if(son && (c || b)){ if(c) son.c = son.c ? son.c + "\n" + c : c; if(b) son.b = son.b ? son.b + "\n" + b : b; }
   }
   return out;
@@ -6426,24 +6452,25 @@ async function excelOku9(fs){
   const kay = [];
   for(const f of fs){
     const wb = XLSX.read(new Uint8Array(await f.arrayBuffer()), { type: "array", cellDates: false });
-    const sayfalar = wb.SheetNames.map(ad => ({ ad, rows: XLSX.utils.sheet_to_json(wb.Sheets[ad], { header: 1, defval: "", raw: false, blankrows: true }) }));
+    const sayfalar = wb.SheetNames.map(ad => { const ws = wb.Sheets[ad], bas = ws["!ref"] ? XLSX.utils.decode_range(ws["!ref"]).s : { r: 0, c: 0 };
+      return { ad, rows: XLSX.utils.sheet_to_json(ws, { header: 1, defval: "", raw: false, blankrows: true }), mer: (ws["!merges"] || []).map(m => ({ r1: m.s.r - bas.r, c1: m.s.c - bas.c, r2: m.e.r - bas.r, c2: m.e.c - bas.c })) }; });
     let bulundu = false;
     for(const sf of sayfalar){
       const s = bul9(sf.rows);
-      if(s && s.emin){ kayitlar9(sf.rows, s).forEach(k => kay.push({ ...k, kaynak: f.name })); bulundu = true; }
+      if(s && s.emin){ kayitlar9(sf.rows, s, sf.mer).forEach(k => kay.push({ ...k, kaynak: f.name })); bulundu = true; }
     }
     if(!bulundu){
       const s = await sutunSor9(f.name, sayfalar);
-      if(s){ kayitlar9(s.rows, s).forEach(k => kay.push({ ...k, kaynak: f.name })); }
+      if(s){ kayitlar9(s.rows, s, s.mer).forEach(k => kay.push({ ...k, kaynak: f.name })); }
     }
   }
   if(!kay.length){ bildir("Excel'lerde İşin Adı altında iş bulunamadı"); return; }
   // işlerle eşleştir
   const esl = new Map(), bos = [];
   kay.forEach(k => {
-    const m = isEsle9(k.ad);
+    const m = isEsle9(k.ad, k.sef);
     if(m && m.yok) return;
-    if(m && m.j){ const x = esl.get(m.j.id) || { id: m.j.id, c: "", b: "", kaynak: new Set() }; if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(m.j.id, x); }
+    if(m && m.j){ const x = esl.get(m.j.id) || { id: m.j.id, c: "", b: "", kaynak: new Set(), sef: k.sef || "" }; if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(m.j.id, x); }
     else bos.push(k);
   });
   EX9 = { kay, esl, bos, i: 0, filtre: false, degisen: new Set(), toplam: esl.size + bos.length };
@@ -6490,7 +6517,7 @@ ${sec("ss9a", "İş adı", o.r === r || o.ra === r ? o.a : -1)}${sec("ss9c", "Ç
       const rows = sayfalar[si].rows, n = (rows[r] || []).map(hnrm9);
       const hc = c >= 0 ? n[c] || "" : "", hb = bb >= 0 ? n[bb] || "" : "";
       if(n[a] && (hc || hb)){ const L = lsOku9(ESLE9, []).filter(x => !(x.a === n[a] && x.c === hc && x.b === hb)); L.unshift({ a: n[a], c: hc, b: hb }); lsYaz9(ESLE9, L.slice(0, 10)); }
-      ov.remove(); ok({ rows, r, a, c, b: bb });
+      ov.remove(); ok({ rows, r, a, c, b: bb, mer: sayfalar[si].mer });
     });
     ciz9(); document.body.appendChild(ov);
   });
@@ -6512,9 +6539,9 @@ function exYenile9(){ if(EX9 && document.getElementById("exr9")) exCiz9(); }
 function exCiz9(){
   const ov = document.getElementById("exr9"); if(!ov || !EX9) return;
   if(EX9.mod === "esle"){
-    const secenek = k => { const s = ISLER.map(j => ({ j, s: benzer9(k.ad, j.ad) })).sort((a, b) => b.s - a.s); return `<option value="">Seçin…</option><option value="-">Bu satırı her zaman atla</option>${s.map(x => `<option value="${esc(x.j.id)}">${esc(x.j.ad)}</option>`).join("")}`; };
+    const secenek = k => { const s = ISLER.map(j => ({ j, s: puan9(k, j) })).sort((a, b) => b.s - a.s); return `<option value="">Seçin…</option><option value="-">Bu satırı her zaman atla</option>${s.map(x => `<option value="${esc(x.j.id)}">${esc(x.j.ad)}</option>`).join("")}`; };
     ov.innerHTML = `<div class="eh"><button data-ex9kapat>${IK("geri")}</button><div class="et"><b>Eşleşmeyen işler</b><small>Excel'de ${EX9.toplam} iş · ${EX9.esl.size} eşleşti · ${EX9.bos.length} bekliyor</small></div></div>
-<div class="eb">${EX9.bos.map((k, i) => `<div class="eslr"><b>${esc(k.ad)}</b><small>${esc(k.kaynak)}${(k.c || k.b) ? " · " + esc((k.c || k.b).slice(0, 80)) : " · yazı yok"}</small><select data-ex9bag="${i}">${secenek(k)}</select></div>`).join("")}</div>
+<div class="eb">${EX9.bos.map((k, i) => `<div class="eslr"><b>${esc(k.ad)}</b><small>${k.sef ? "Şef: " + esc(k.sef) + " · " : ""}${esc(k.kaynak)}${(k.c || k.b) ? " · " + esc((k.c || k.b).slice(0, 80)) : " · yazı yok"}</small><select data-ex9bag="${i}">${secenek(k)}</select></div>`).join("")}</div>
 <div class="ef"><button class="ana" data-ex9devam>Karşılaştırmaya geç ›</button></div>`;
     return;
   }
@@ -6538,7 +6565,7 @@ function exCiz9(){
   };
   const yeniMi = EX9.degisen.has(id);
   ov.innerHTML = `<div class="eh"><button data-ex9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.i + 1} / ${L.length} · Excel'de ${EX9.toplam} iş${EX9.bos.length ? ` · <u data-ex9esle>${EX9.bos.length} eşleşmeyen</u>` : ""}</small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
-<div class="eb" id="ex9b"><div class="ead"><b>${esc(j.ad)}</b><small>${esc([...x.kaynak].join(", "))}${yeniMi && EX9.onceTarih ? " · <i>geçen haftadan beri değişti</i>" : ""}</small></div>
+<div class="eb" id="ex9b"><div class="ead"><b>${esc(j.ad)}</b><small>${x.sef ? "Şef: " + esc(x.sef) + " · " : ""}${esc([...x.kaynak].join(", "))}${yeniMi && EX9.onceTarih ? " · <i>geçen haftadan beri değişti</i>" : ""}</small></div>
 ${blok("devam", "Devam Eden", "Excel · Çalışmalar", j.devam || "", x.c)}
 ${blok("biten", D.yil + " Biten", "Excel · Biten", j.biten || "", x.b)}</div>
 <div class="ef"><button data-ex9onc${EX9.i ? "" : " disabled"}>‹ Önceki</button><button class="km" data-ex9km>${IK("arti")}KM Ekle</button><button data-ex9son${EX9.i < L.length - 1 ? "" : " disabled"}>Sonraki ›</button></div>`;
@@ -6569,8 +6596,8 @@ function exOlay9(ov){
       // eşleşmeleri yeniden kur
       const kay = EX9.kay, f = EX9.filtre; EX9 = null;
       const esl = new Map(), bos = [];
-      kay.forEach(k => { const m = isEsle9(k.ad); if(m && m.yok) return;
-        if(m && m.j){ const x = esl.get(m.j.id) || { id: m.j.id, c: "", b: "", kaynak: new Set() }; if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(m.j.id, x); } else bos.push(k); });
+      kay.forEach(k => { const m = isEsle9(k.ad, k.sef); if(m && m.yok) return;
+        if(m && m.j){ const x = esl.get(m.j.id) || { id: m.j.id, c: "", b: "", kaynak: new Set(), sef: k.sef || "" }; if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(m.j.id, x); } else bos.push(k); });
       EX9 = { kay, esl, bos, i: 0, filtre: f, degisen: new Set(), toplam: esl.size + bos.length }; anlik9(); EX9.mod = "isler"; exCiz9(); return;
     }
     if(t.closest("[data-ex9onc]")){ exGit9(-1); return; }

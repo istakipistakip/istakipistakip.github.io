@@ -1462,6 +1462,14 @@ html.dark .ihu9.s{ background:#2a1215; border-color:#5b1d22; color:#fecaca; }
 html.dark .iha9{ background:#0f1726; border-color:#2a3650; color:#e6ebf3; }
 html.dark .onz9 .r{ border-color:#2a3650; }
 html.dark .onz9 .r small{ color:#94a3b8; }
+.exr9 .gk9{ display:inline-block; font-size:11.5px; font-weight:800; color:#15803d; background:#dcfce7; border-radius:8px; padding:2px 8px; margin-bottom:5px; }
+.exr9 .ef button.bt9{ background:#16a34a; border-color:#16a34a; color:#fff; }
+.exr9 .et u{ text-decoration:underline; text-underline-offset:2px; }
+.exr9 .ls9{ display:flex; align-items:center; gap:10px; width:100%; text-align:left; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:11px 12px; margin-bottom:7px; font:inherit; color:#0f172a; }
+.exr9 .ls9 span{ flex:none; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:900; color:#94a3b8; background:#f1f5f9; }
+.exr9 .ls9.ok span{ color:#fff; background:#16a34a; }
+.exr9 .ls9.su{ border-color:#ea580c; box-shadow:0 0 0 2px #fed7aa; }
+.exr9 .ls9 b{ font-size:14px; font-weight:700; line-height:1.3; }
 </style>
 </head>
 <body>
@@ -6592,7 +6600,7 @@ async function excelOku9(fs){
   }
   if(!kay.length){ bildir("Excel'lerde İşin Adı altında iş bulunamadı"); return; }
   EX9 = { kay, ...eslesKur9(kay), i: 0, filtre: false, degisen: new Set(), toplam: kay.length, ys: calYeniSilinen9(kay) };
-  anlik9();
+  anlik9(); exBasla9();
   exAc9(EX9.bos.length || EX9.ys.yeni.length || EX9.ys.silinen.length ? "esle" : "isler");
 }
 // Excel satırlarını işlerle eşleştir. Elle bağlananlar hatırlanır. Aynı işe birden çok satır
@@ -6664,6 +6672,13 @@ ${sec("ss9a", "İş adı", o.r === r || o.ra === r ? o.a : -1)}${sec("ss9c", "Ç
   });
 }
 let EX9 = null;
+// Gözden geçirilen işler: işin o anki Excel yazısının izi saklanır. Excel'deki yazı değişmedikçe iş "bitti" sayılır.
+const GEC9 = "istakip-excel9-gecti";
+const exIz9 = id => { const x = EX9 && EX9.esl.get(id); return x ? iz9(x.c) + "." + iz9(x.b) : ""; };
+const gecti9 = id => { const g = lsOku9(GEC9, {}); return !!g[id] && g[id] === exIz9(id); };
+function gectiYaz9(id){ const g = lsOku9(GEC9, {}), v = exIz9(id); if(!v) return; g[id] = v; lsYaz9(GEC9, g); }
+// kaldığı yer: gözden geçirilmemiş ilk iş (hepsi bittiyse sonuncu)
+function exBasla9(){ const L = exListe9(), k = L.findIndex(id => !gecti9(id)); EX9.i = k >= 0 ? k : Math.max(0, L.length - 1); EX9.ac = null; }
 function exListe9(){
   if(!EX9) return [];
   const ids = ISLER.map(j => j.id).filter(id => EX9.esl.has(id));
@@ -6690,6 +6705,12 @@ function exCiz9(){
 <div class="ef"><button class="ana" data-ex9devam>Karşılaştırmaya geç ›</button></div>`;
     return;
   }
+  if(EX9.mod === "liste"){
+    const L = exListe9(), n = L.filter(gecti9).length;
+    ov.innerHTML = `<div class="eh"><button data-ex9geri>${IK("geri")}</button><div class="et"><b>İşler</b><small>${n} / ${L.length} bitti · dokunarak o işe gidin</small></div></div>
+<div class="eb">${L.map((id, i) => { const j = ISLER.find(x => x.id === id), g = gecti9(id); return `<button class="ls9${g ? " ok" : ""}${i === EX9.i ? " su" : ""}" data-ex9git="${i}"><span>${g ? "✓" : "○"}</span><b>${esc(j ? j.ad : id)}</b></button>`; }).join("")}</div>`;
+    return;
+  }
   const L = exListe9();
   if(!L.length){
     ov.innerHTML = `<div class="eh"><button data-ex9kapat>${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.esl.size} iş eşleşti</small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
@@ -6709,11 +6730,11 @@ function exCiz9(){
 <div class="ex"><small>${exAd}<button data-ex9tum="${alan}">Tümünü al</button></small><div class="ep">${P.map((p, i) => `<button class="pc${uN.includes(nrm9(p)) ? " on" : ""}" data-ex9p="${alan}:${i}">${esc(p)}</button>`).join("")}</div></div></div></div>`;
   };
   const yeniMi = EX9.degisen.has(id);
-  ov.innerHTML = `<div class="eh"><button data-ex9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.i + 1} / ${L.length} · Excel'de ${EX9.toplam} iş · <u data-ex9esle>${EX9.bos.length ? EX9.bos.length + " eşleşmeyen" : "Eşleşmeler"}</u></small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
-<div class="eb" id="ex9b"><div class="ead"><b>${esc(j.ad)}</b><small>${x.sef ? "Şef: " + esc(x.sef) + " · " : ""}${esc([...x.kaynak].join(", "))}${yeniMi && EX9.onceTarih ? " · <i>geçen haftadan beri değişti</i>" : ""}</small></div>
+  ov.innerHTML = `<div class="eh"><button data-ex9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.i + 1} / ${L.length} · <u data-ex9liste>${L.filter(gecti9).length} / ${L.length} bitti</u> · <u data-ex9esle>${EX9.bos.length ? EX9.bos.length + " eşleşmeyen" : "Eşleşmeler"}</u></small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
+<div class="eb" id="ex9b"><div class="ead">${gecti9(id) ? `<span class="gk9">✓ Gözden geçirildi</span>` : ""}<b>${esc(j.ad)}</b><small>${x.sef ? "Şef: " + esc(x.sef) + " · " : ""}${esc([...x.kaynak].join(", "))}${yeniMi && EX9.onceTarih ? " · <i>geçen haftadan beri değişti</i>" : ""}</small></div>
 ${blok("devam", "Devam Eden", "Excel · Çalışmalar", j.devam || "", x.c)}
 ${blok("biten", D.yil + " Biten", "Excel · Biten", j.biten || "", x.b)}</div>
-<div class="ef"><button data-ex9onc${EX9.i ? "" : " disabled"}>‹ Önceki</button><button class="km" data-ex9km>${IK("arti")}KM Ekle</button><button data-ex9son${EX9.i < L.length - 1 ? "" : " disabled"}>Sonraki ›</button></div>`;
+<div class="ef"><button data-ex9onc${EX9.i ? "" : " disabled"}>‹ Önceki</button><button class="km" data-ex9km>${IK("arti")}KM Ekle</button>${EX9.i < L.length - 1 ? `<button data-ex9son>Sonraki ›</button>` : `<button class="bt9" data-ex9bitir>Bitir ✓</button>`}</div>`;
   ov.querySelector("#ex9b").scrollTop = 0;
 }
 async function exKaydet9(){
@@ -6727,12 +6748,12 @@ async function exKaydet9(){
     catch(err){ bildir(err.message || "Kaydedilemedi"); }
   }
 }
-async function exGit9(d){ await exKaydet9(); EX9.i += d; EX9.ac = null; exCiz9(); }
+async function exGit9(d){ await exKaydet9(); if(d > 0 && EX9.cur) gectiYaz9(EX9.cur.id); EX9.i += d; EX9.ac = null; exCiz9(); }
 function exOlay9(ov){
   ov.addEventListener("click", async e => {
     const t = e.target; let b;
     if(t.closest("[data-ex9kapat]")){ exKapat9(); return; }
-    if(t.closest("[data-ex9filtre]")){ await exKaydet9(); EX9.filtre = !EX9.filtre; EX9.i = 0; exCiz9(); return; }
+    if(t.closest("[data-ex9filtre]")){ await exKaydet9(); EX9.filtre = !EX9.filtre; exBasla9(); exCiz9(); return; }
     if(t.closest("[data-ex9esle]")){ await exKaydet9(); EX9.mod = "esle"; exCiz9(); return; }
     if(t.closest("[data-ex9devam]")){
       const bag = lsOku9(BAG9, {});
@@ -6740,9 +6761,18 @@ function exOlay9(ov){
       Object.keys(EX9.sec || {}).forEach(i => { const x = EX9.sat[+i], v = EX9.sec[i]; if(v === x.id) return; const n = nrm9(x.k.ad); if(v) bag[n] = v; else delete bag[n]; });
       lsYaz9(BAG9, bag);
       const kay = EX9.kay, f = EX9.filtre;
-      EX9 = { kay, ...eslesKur9(kay), i: 0, filtre: f, degisen: new Set(), toplam: kay.length }; anlik9(); EX9.mod = "isler"; exCiz9(); return;
+      const ys = EX9.ys; EX9 = { kay, ...eslesKur9(kay), i: 0, filtre: f, degisen: new Set(), toplam: kay.length, ys }; anlik9(); exBasla9(); EX9.mod = "isler"; exCiz9(); return;
     }
     if(t.closest("[data-ex9onc]")){ exGit9(-1); return; }
+    if(t.closest("[data-ex9liste]")){ await exKaydet9(); EX9.mod = "liste"; exCiz9(); return; }
+    if(t.closest("[data-ex9geri]")){ EX9.mod = "isler"; exCiz9(); return; }
+    if((b = t.closest("[data-ex9git]"))){ EX9.i = +b.dataset.ex9git; EX9.ac = null; EX9.mod = "isler"; exCiz9(); return; }
+    if(t.closest("[data-ex9bitir]")){
+      await exKaydet9(); if(EX9.cur) gectiYaz9(EX9.cur.id);
+      const L = exListe9(), k = L.findIndex(id => !gecti9(id));
+      if(k >= 0){ bildir("Gözden geçirilmemiş iş kaldı"); EX9.i = k; EX9.ac = null; exCiz9(); return; }
+      bildir("Tüm işler gözden geçirildi"); document.getElementById("exr9")?.remove(); EX9 = null; return;
+    }
     if(t.closest("[data-ex9son]")){ exGit9(1); return; }
     if(t.closest("[data-ex9km]")){ await exKaydet9(); if(EX9 && EX9.cur) kmForm9(EX9.cur.id); return; }
     if((b = t.closest("[data-ex9ac]"))){ EX9.ac = { ...(EX9.ac || {}), [b.dataset.ex9ac]: 1 }; const ta = {}; ov.querySelectorAll("[data-ex9ta]").forEach(x => { ta[x.dataset.ex9ta] = x.value; }); exCiz9(); Object.keys(ta).forEach(k => { const x = ov.querySelector(`[data-ex9ta="${k}"]`); if(x) x.value = ta[k]; }); return; }
@@ -6759,7 +6789,7 @@ function exOlay9(ov){
   let bas = null;
   ov.addEventListener("touchstart", e => { if(e.target.closest("textarea, select") || e.touches.length !== 1){ bas = null; return; } bas = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
   ov.addEventListener("touchend", e => {
-    if(!bas || !EX9 || EX9.mod === "esle") return;
+    if(!bas || !EX9 || EX9.mod !== "isler") return;
     const t = e.changedTouches[0], dx = t.clientX - bas.x, dy = t.clientY - bas.y; bas = null;
     if(Math.abs(dx) < 70 || Math.abs(dy) > 45) return;
     const L = exListe9();

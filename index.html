@@ -1397,6 +1397,11 @@ html.dark .exr9 textarea, html.dark .exr9 .eslr select, html.dark .exr9 .ef butt
 html.dark .exr9 .pc{ background:#0f1726; border-color:#475569; color:#e6ebf3; }
 html.dark .exr9 .pc.on{ background:#0c2416; border-color:#166534; color:#86efac; }
 html.dark .exr9 .eblk.ayni .ayt{ color:#94a3b8; }
+
+/* v48: Bu Hafta listesinden kaldırma */
+.hs2 .h{ position:relative; }
+.hs2 .h .hx9{ position:absolute; top:-4px; right:-2px; width:22px; height:22px; border-radius:50%; background:#dc2626; color:#fff; display:grid; place-items:center; box-shadow:0 2px 6px rgba(0,0,0,.3); z-index:2; }
+.hs2 .h .hx9 svg{ width:13px; height:13px; stroke-width:3; }
 </style>
 </head>
 <body>
@@ -1554,7 +1559,8 @@ function genelDurum(){
 // ---------- Bu Hafta Girilen KM'ler ----------
 // Verinin oluşturulduğu haftada (Pazartesi–Pazar) programa girilen KM aralıkları
 function haftaPenceresi(){
-  const n = new Date(D.olusturma);
+  // bugünün haftası (Pazartesi 00:00 – Pazar 23:59); Pazar gece 12'de liste boşalır
+  const n = new Date();
   const pt = new Date(n); pt.setDate(n.getDate() - ((n.getDay() + 6) % 7)); pt.setHours(0, 0, 0, 0);
   const pz = new Date(pt); pz.setDate(pt.getDate() + 6); pz.setHours(23, 59, 59, 999);
   return { a: pt.getTime(), b: pz.getTime(), pt, pz };
@@ -4243,7 +4249,7 @@ document.addEventListener("click", e => {
   if(e.target.closest("[data-avatar]")){ e.stopPropagation(); avatarMenu(); return; }
   if(e.target.closest("[data-temadegis]")){ e.stopPropagation(); temaDegis(e.clientX, e.clientY); return; }
   if(e.target.closest("[data-cikis5]")){ e.stopPropagation(); GIRIS.oturumYaz(null); location.reload(); return; }
-  const h = e.target.closest("[data-hik]"); if(h){ e.stopPropagation(); hikayeAc(+h.dataset.hik); return; }
+  const h = e.target.closest("[data-hik]"); if(h && !e.target.closest("[data-hik9sil]")){ e.stopPropagation(); hikayeAc(+h.dataset.hik); return; }
 }, true);
 
 // ---------- Genel Durum: kademeli giriş, akan sayılar ----------
@@ -5983,8 +5989,17 @@ function uygula9(R, e, ters){
   if(e.tip === "sil") return ters ? kmEkle9(R, e.is, e.km) : kmSil9(R, e.is, e.km);
   if(e.tip === "duz"){ const [a, b] = ters ? [e.yeni, e.eski] : [e.eski, e.yeni]; if(!kmSil9(R, e.is, a)) return false; return kmEkle9(R, e.is, b); }
   if(e.tip === "yazi") return yaziYaz9(R, e.is, e.alan, e.yil, ters ? e.onceki : e.sonraki);
+  if(e.tip === "gizle") return gzYaz9(R, e, ters ? e.onceki : 0);
   return false;
 }
+// "Bu Hafta" listesinden kaldırma: KM aralığının "Anasayfada göster" ayarı kapanır
+function gzYaz9(R, e, gz){
+  const j = isBul9(R, e.is); if(!j) return false;
+  let var_ = false;
+  kaplar9(R, j, yilOf9(R, e.km.t), false).forEach(o => o.kmler.forEach(k => { if(kmEsit9(k, e.km)){ if(gz === 0) k.gz = 0; else delete k.gz; var_ = true; } }));
+  return var_;
+}
+function gzAl9(R, e){ const j = isBul9(R, e.is); if(!j) return null; for(const o of kaplar9(R, j, yilOf9(R, e.km.t), false)){ const k = o.kmler.find(k => kmEsit9(k, e.km)); if(k) return k.gz === 0 ? 0 : 1; } return null; }
 // Programdan yeni dosya gelince: telefondaki değişiklik dosyada yoksa tekrar uygula (iki kez uygulanmaz)
 function tekrar9(R, e){
   const j = isBul9(R, e.is); if(!j) return false;
@@ -5992,6 +6007,7 @@ function tekrar9(R, e){
   if(e.tip === "sil") return kmVar9b(R, j, e.km) ? kmSil9(R, e.is, e.km) : false;
   if(e.tip === "duz"){ if(!kmVar9b(R, j, e.eski) || kmVar9b(R, j, e.yeni)) return false; kmSil9(R, e.is, e.eski); return kmEkle9(R, e.is, e.yeni); }
   if(e.tip === "yazi"){ if(yaziAl9(R, e.is, e.alan, e.yil) === e.sonraki) return false; return yaziYaz9(R, e.is, e.alan, e.yil, e.sonraki); }
+  if(e.tip === "gizle"){ return gzAl9(R, e) === 1 ? gzYaz9(R, e, 0) : false; }
   return false;
 }
 async function hamKaydet9(){
@@ -6035,6 +6051,7 @@ const tanim9 = e => {
   if(e.tip === "ekle") return ["KM eklendi", km(e.km)];
   if(e.tip === "sil") return ["KM silindi", km(e.km)];
   if(e.tip === "duz") return ["KM düzenlendi", km(e.eski) + " → " + km(e.yeni)];
+  if(e.tip === "gizle") return ["Bu Hafta listesinden kaldırıldı", km(e.km)];
   if(e.tip === "yazi") return [e.alan === "devam" ? "Devam Eden yazısı" : e.yil + " Biten yazısı", (e.sonraki || "").slice(0, 70) || "(boş)"];
   return ["Değişiklik", ""];
 };
@@ -6564,6 +6581,35 @@ function exOlay9(ov){
     else if(dx > 0 && EX9.i > 0) exGit9(-1);
   }, { passive: true });
 }
+
+// ---------- Bu Hafta listesinden kaldırma (yalnız yönetici, düzenleme modunda) ----------
+let haftaBas9 = null;
+const _hikSatir9 = hikayeSatiri;
+hikayeSatiri = function(){
+  let h = _hikSatir9.apply(this, arguments);
+  try{ haftaBas9 = haftaPenceresi().a; }catch(_){}
+  if(YON9 && DUZ9) h = h.replace(/data-hik="(\d+)">/g, (m, i) => `${m}<i class="hx9" data-hik9sil="${i}" role="button" aria-label="Listeden kaldır">${IK("x")}</i>`);
+  return h;
+};
+document.addEventListener("click", async e => {
+  const x = e.target.closest && e.target.closest("[data-hik9sil]"); if(!x) return;
+  e.stopPropagation(); e.preventDefault();
+  if(!YON9 || !DUZ9) return;
+  const g = hikListe()[+x.dataset.hik9sil]; if(!g) return;
+  const ok = await onay9("Bu Hafta listesinden kaldırılsın mı?", `<b>${esc(g.j.ad)}</b><br>${esc(g.k.s)} ${esc(g.k.a)} – ${esc(g.k.e)} · +${f2(g.km)} km<br>KM aralığı ve toplamlar değişmez; yalnız bu listede görünmez. Veri Aktar dosyasını alan telefonlarda da kalkar.`, [{ t: "Vazgeç", v: false }, { t: "Kaldır", v: true, ana: 1, tehlike: 1 }]);
+  if(!ok) return;
+  try{ const k = { ...g.k }; const r = await degistir9({ tip: "gizle", is: g.j.id, ad: g.j.ad, km: k, onceki: 1 }); geriNot9("Listeden kaldırıldı", r.id); }
+  catch(err){ bildir(err.message || "Kaldırılamadı"); }
+}, true);
+// hafta dönünce (Pazar gece 12) anasayfa kendiliğinden yenilenir
+function haftaBak9(){
+  if(!D) return;
+  const a = haftaPenceresi().a;
+  if(haftaBas9 !== null && a !== haftaBas9 && tab === "home" && !detay && document.getElementById("tabs").style.display !== "none") yenidenCiz9();
+  haftaBas9 = a;
+}
+setInterval(haftaBak9, 60000);
+document.addEventListener("visibilitychange", () => { if(!document.hidden) haftaBak9(); });
 
 function bildir(m){
   document.querySelectorAll(".bildir").forEach(x => x.remove());

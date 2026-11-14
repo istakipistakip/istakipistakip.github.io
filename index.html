@@ -1501,7 +1501,7 @@ let mz = { s: 1, x: 0, y: 0 };
 
 function eskiUyari(){
   const gun = Math.floor((Date.now() - D.olusturma) / 86400000);
-  return gun >= 7 ? `<div class="warn">${IK("uyari")} Bu veriler ${gun} günlük. WhatsApp'taki en son dosyayı yükleyin.</div>` : "";
+  return "";      // eski veri bilgisi yalnız üstteki çipte (bkz. eskiVeri)
 }
 function veriTarih(){
   const d = new Date(D.olusturma);
@@ -3894,7 +3894,7 @@ function hosgeldin(mesaj){
 <div class="hos-alt">${kurumHtml()}</div>
 <button class="btn" data-yukle style="margin-top:26px">${IK("yukle")}Veri Dosyasını Yükle</button>
 ${mesaj ? `<div class="hos-hata">${esc(mesaj)}</div>` : ""}
-<div class="hos-not"><b>Nasıl kullanılır?</b><br>1. WhatsApp'taki en son <b>.istakip</b> dosyasını telefona kaydedin (dosyaya dokunun → Paylaş → <b>Dosyalar'a Kaydet</b>).<br>2. Yukarıdaki düğmeyle o dosyayı seçin.<br>3. Safari'de <b>Paylaş → Ana Ekrana Ekle</b> derseniz uygulama gibi açılır.<br><br>Veriler yalnızca bu telefonda saklanır, internete gönderilmez. Yeni dosya yüklenince eskisinin yerine geçer.</div>
+<div class="hos-not"><b>Nasıl kullanılır?</b><br>1. Yukarıdaki düğmeyle <b>.istakip</b> veri dosyasını seçin.<br>2. Safari'de <b>Paylaş → Ana Ekrana Ekle</b> derseniz uygulama gibi açılır.<br><br>Veriler yalnızca bu telefonda saklanır, internete gönderilmez. Yeni dosya yüklenince eskisinin yerine geçer.</div>
 </div>`;
 }
 function dosyaSec(){
@@ -3927,7 +3927,7 @@ function dosyaSec(){
         await veriYukle(v);
       }catch(e){
         if(D) bildir("Bu dosya İşTakip veri dosyası değil.");
-        else hosgeldin("Bu dosya İşTakip veri dosyası değil. WhatsApp'taki .istakip dosyasını seçin.");
+        else hosgeldin("Bu dosya İşTakip veri dosyası değil.");
       }
     });
     document.body.appendChild(inp);
@@ -4955,7 +4955,7 @@ function galeriKartlar(j){
   if(j.hat){ const nk = j.hat.nok.filter(q => q[2]);
     K.push({ k: "hat", ik: "kmz", ad: "KMZ", alt: `${j.hat.cizgi.length} çizgi${nk.length ? ` · ${nk[0][2]} – ${nk[nk.length - 1][2]}` : ""} · 2B / 3B`, g: `<canvas data-on6="kmz" style="height:190px"></canvas>`, b: "KMZ'yi aç" });
     K.push({ k: "yt", ik: "yt", ad: "Yol Tarifi", alt: "Başlangıç · en yakın · bitiş", g: `<canvas data-on6="yt" style="height:190px"></canvas><div class="ipc6"><b style="color:#16a34a">●</b> başlangıç &nbsp; <b>●</b> bitiş &nbsp;— Apple ya da Google Haritalar ile.</div>`, b: "Yol tarifini başlat" }); }
-  K.push({ k: "pdf", ik: "pdf", ad: "PDF Gönder", alt: "Bu iş ya da birden fazla iş", g: `<div class="pl6"><div>İhale Bilgileri<span>${parVar(j) ? "var" : "yok"}</span></div><div>KM Bilgileri<span>var</span></div><div>İtinerer<span>${itiVar(j) ? "var" : "yok"}</span></div></div><div class="ipc6">PDF hazırlanınca WhatsApp, Mail gibi uygulamalarla paylaşılır.</div>`, b: "PDF hazırla" });
+  K.push({ k: "pdf", ik: "pdf", ad: "PDF Gönder", alt: "Bu iş ya da birden fazla iş", g: `<div class="pl6"><div>İhale Bilgileri<span>${parVar(j) ? "var" : "yok"}</span></div><div>KM Bilgileri<span>var</span></div><div>İtinerer<span>${itiVar(j) ? "var" : "yok"}</span></div></div>`, b: "PDF hazırla" });
   return K;
 }
 function galeriAc(j, anahtar){
@@ -5154,14 +5154,25 @@ ciz = function(){
   if(tab === "map" && !detay) kutuEtiketi();
 };
 // eski veri uyarısı (7 günden eski)
+// Veri tarihi çipi: bu telefona son veri yüklenen (ya da düzenleme yapılan) an esas alınır;
+// 7 gün ve üstünde turuncu
+function guncelAn9(){
+  let t = 0; try{ t = +localStorage.getItem("istakip-guncel9") || 0; }catch(_){}
+  const gun = (typeof GUN9 !== "undefined" && GUN9.length) ? Math.max(...GUN9.map(e => +e.t || 0)) : 0;
+  return Math.max(t, gun, D ? new Date(D.olusturma).getTime() : 0) || Date.now();
+}
+function guncelYaz9(){ try{ localStorage.setItem("istakip-guncel9", String(Date.now())); }catch(_){} }
 function eskiVeri(){
-  const dt = document.querySelector("#main .h5 .dt"); if(!dt || !D || !D.olusturma) return;
-  const gun = Math.floor((Date.now() - new Date(D.olusturma).getTime()) / 864e5); if(gun < 7) return;
-  dt.classList.add("eski6"); dt.innerHTML = `<i></i>Veri ${gun} gün önce`; dt.setAttribute("data-eskiveri", "");
+  const dt = document.querySelector("#main .h5 .dt"); if(!dt || !D) return;
+  const t = guncelAn9(), d0 = new Date(), bas = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate()).getTime();
+  const gun = t >= bas ? 0 : Math.ceil((bas - t) / 864e5);
+  dt.classList.toggle("eski6", gun >= 7);
+  dt.innerHTML = `<i></i>Yüklendi: ${gun === 0 ? "bugün" : gun === 1 ? "dün" : gun + " gün önce"}`;
+  dt.setAttribute("data-eskiveri", "");
 }
 document.addEventListener("click", e => { if(!e.target.closest || !e.target.closest("[data-eskiveri]")) return; e.stopPropagation();
-  const d = new Date(D.olusturma), gun = Math.floor((Date.now() - d.getTime()) / 864e5);
-  pencere(`Veri ${gun} gün önce`, `${p2(d.getDate())}.${p2(d.getMonth() + 1)}.${d.getFullYear()} · ${p2(d.getHours())}:${p2(d.getMinutes())} tarihli`, `Rakamlar ${gun} gün önceki duruma göre. Güncel bilgi için masaüstünden yeni "Telefon Verisi" alıp WhatsApp'tan yükleyin.`, false); }, true);
+  const t = new Date(guncelAn9()), d = new Date(D.olusturma), yaz = x => `${p2(x.getDate())}.${p2(x.getMonth() + 1)}.${x.getFullYear()} · ${p2(x.getHours())}:${p2(x.getMinutes())}`;
+  pencere("Veri", "", `Son yükleme / düzenleme: ${yaz(t)}\nProgramda hazırlandığı tarih: ${yaz(d)}`, false); }, true);
 // harita: seçili kutuda iş adı etiketi (dokununca işe girer)
 function kutuEtiketi(){
   document.querySelectorAll(".ket6").forEach(x => x.remove());
@@ -6063,7 +6074,7 @@ async function degistir9(e){
   e.id = e.id || ("d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)); e.t = e.t || Date.now();
   GUN9.push(e);
   HAM9.telDuzen = { t: Date.now(), n: GUN9.length };
-  await hamKaydet9(); await gunKaydet9();
+  await hamKaydet9(); await gunKaydet9(); guncelYaz9();
   yenidenKur9(); exYenile9();
   return e;
 }
@@ -6234,7 +6245,7 @@ function listeSayfa9(){
 
 // ---------- Dosya yükleme sonrası: parçalar, KMZ kısmı, telefondaki değişiklikler ----------
 const _veriYukle9 = veriYukle;
-veriYukle = async function(v){ HAM9 = null; return _veriYukle9.apply(this, arguments); };
+veriYukle = async function(v){ HAM9 = null; guncelYaz9(); return _veriYukle9.apply(this, arguments); };
 async function dosyaSonrasi9(o, g){
   await hazir9;
   HAMK9 = { veriKmz: o.veriKmz || null, z: o.z || "" }; await idbYaz9("hamk9", HAMK9);
@@ -6314,7 +6325,7 @@ async function paylas9(d){
 function aktarSayfa9(){
   const degOlur = !!(KILIT && KILIT.temel && FARK9 && FARK9.temel === KILIT.temel);
   const govde = `<div class="ak9">
-<div class="blk"><b>Diğer telefonlar için</b><small>WhatsApp'tan gönderin; alan kişi <b>Veri Yükle</b> ile açar. Kullanıcı adları ve şifreler aynıdır.</small>
+<div class="blk"><b>Diğer telefonlar için</b><small>Kullanıcı adları ve şifreler aynıdır.</small>
 <label class="rd"><input type="radio" name="ak9t" value="degisiklik"${degOlur ? " checked" : " disabled"}><span><b>Değişiklik dosyası</b>${degOlur ? "<small>Küçük; son tam dosyanın yüklü olduğu telefonlarda açılır</small>" : "<small>Önce diğer telefonlara bir kez tam dosya gönderin; sonrakiler değişiklik dosyası olabilir</small>"}</span></label>
 <label class="rd"><input type="radio" name="ak9t" value="tam"${degOlur ? "" : " checked"}><span><b>Tam dosya</b><small>Bütün veri; her telefonda açılır</small></span></label>
 <button class="btn" data-ak9haz>Hazırla</button><div class="sonuc" id="ak9s"></div></div>

@@ -6419,12 +6419,18 @@ function kayitlar9(rows, s, mer){
     const adM = birlesik(r, s.a), devam = adM && adM.r1 < r;
     const ad = devam ? "" : hucre9(x[s.a]), c = s.c >= 0 ? hucre9(x[s.c]) : "", b = s.b >= 0 ? hucre9(x[s.b]) : "";
     let sef = "";
-    if(sf >= 0){ sef = deger(r, sf);      // kendi hücresi ya da üstünden birleştirilmiş şef hücresi
-      if(!/[A-Za-zÇĞİÖŞÜçğıöşü]/.test(sef)) sef = "";   // sayı (sıra no vb.) yazıyorsa şef değil → iş alınmaz
+    if(sf >= 0){
+      // kendi hücresi ya da üstünden birleştirilmiş şef hücresi; boşsa üstteki şefin işi sayılır
+      // (şefin adı yalnız ilk işinin yanında yazar). Sayı yazıyorsa (sıra no vb.) iş değil.
+      const v = deger(r, sf);
+      if(/[A-Za-zÇĞİÖŞÜçğıöşü]/.test(v)) sonSef = v;
+      else if(v) sonSef = "";
+      else if(!ad && !c && !b) sonSef = "";          // tamamen boş satır: blok bitti
+      sef = sonSef;
     }
     if(ad){
       const n = nrm9(ad);
-      if(/^\d+$/.test(n) || /^(genel )?toplam( |$)/.test(n)){ son = null; continue; }
+      if(/^\d+$/.test(n) || /^(genel |ara )?toplam( |$)/.test(n)){ son = null; sonSef = ""; continue; }
       if(sf >= 0 && !sef){ son = null; continue; }               // şefi olmayan satır iş değil
       // bir hücre = bir iş (hücre içinde alt satıra geçmiş uzun adlar birleştirilir)
       son = { ad: ad.replace(/\s*\n\s*/g, " "), c, b, sef }; out.push(son);

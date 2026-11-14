@@ -6399,7 +6399,8 @@ function sefSutun9(rows, s){
     const n = (rows[q] || []).map(hnrm9), L = n.map((x, i) => /kontrol sef|kont sef|ksef|^sef$|^sefi$/.test(x) && i !== s.a ? i : -1).filter(i => i >= 0);
     if(L.length) return L.sort((x, y) => ((x < s.a ? 0 : 1) - (y < s.a ? 0 : 1)) || (Math.abs(x - s.a) - Math.abs(y - s.a)))[0];
   }
-  return -1;
+  // başlığı farklı yazılmışsa: İşin Adı'nın hemen solundaki sütun
+  return s.a > 0 ? s.a - 1 : -1;
 }
 // "İşin Adı" altındaki işler. Kontrol Şefi sütunu varsa şefin (birleştirilmiş hücresinin)
 // kapladığı her satırdaki iş alınır; şefi olmayan satırlar (TOPLAM, ara başlık) iş sayılmaz.
@@ -6418,7 +6419,7 @@ function kayitlar9(rows, s, mer){
     const adM = birlesik(r, s.a), devam = adM && adM.r1 < r;
     const ad = devam ? "" : hucre9(x[s.a]), c = s.c >= 0 ? hucre9(x[s.c]) : "", b = s.b >= 0 ? hucre9(x[s.b]) : "";
     let sef = "";
-    if(sf >= 0){ sef = deger(r, sf); if(!sef && !sfBirlesik && ad) sef = sonSef; if(sef) sonSef = sef; }
+    if(sf >= 0) sef = deger(r, sf);       // kendi hücresi ya da üstünden birleştirilmiş şef hücresi
     if(ad){
       const n = nrm9(ad);
       if(/^\d+$/.test(n) || /^(genel )?toplam( |$)/.test(n)){ son = null; continue; }

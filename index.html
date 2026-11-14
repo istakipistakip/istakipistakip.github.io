@@ -6360,49 +6360,51 @@ function isEsle9(ad){
 const hucre9 = v => v === null || v === undefined ? "" : String(v).replace(/\r\n?/g, "\n").trim();
 const harf9 = i => { let s = ""; i++; while(i > 0){ const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
 // Bir sayfada başlık satırı ve sütunlar
+// başlık metni: parantez içi (ör. tarih) ve büyük/küçük harf önemsiz
+const hnrm9 = v => nrm9(String(v ?? "").replace(/\([^)]*\)/g, " "));
+const AD_BAS9 = /^(isin adi|is adi|isin ismi|is ismi|isin tanimi|is tanimi|proje adi|projenin adi|ihale adi|isin adi ve yeri)( |$)/;
+const C_BAS9 = x => /calisma/.test(x) && !/biten/.test(x), B_BAS9 = x => /biten/.test(x);
+// Bir sayfada "İşin Adı" hücresi ve yakınındaki Çalışmalar / Biten başlıkları
 function bul9(rows){
-  const hat = lsOku9(ESLE9, []);
-  const yil = String(new Date().getFullYear());
-  for(let r = 0; r < Math.min(rows.length, 40); r++){
-    const n = (rows[r] || []).map(nrm9);
-    // daha önce seçilen başlıklar
-    for(const h of hat){ const c = n.indexOf(h.c), b = n.indexOf(h.b), a = n.indexOf(h.a); if(c >= 0 && b >= 0 && a >= 0) return { r, a, c, b, emin: 1 }; }
-  }
-  let iyi = null;
-  for(let r = 0; r < Math.min(rows.length, 40); r++){
-    const n = (rows[r] || []).map(nrm9);
-    let C = n.map((x, i) => /calisma/.test(x) && !/biten/.test(x) ? i : -1).filter(i => i >= 0);
-    let B = n.map((x, i) => /biten/.test(x) ? i : -1).filter(i => i >= 0);
-    if(!C.length && !B.length) continue;
-    const yilli = L => { const y = L.filter(i => n[i].includes(yil)); return y.length ? y : L; };
-    C = yilli(C); B = yilli(B);
-    const aday = { r, c: C.length ? C[0] : -1, b: B.length ? B[0] : -1, emin: C.length === 1 && B.length === 1 };
-    // iş adı sütunu: başlığından ya da içeriği işlere en çok benzeyen sütun
-    let a = n.findIndex(x => /(^| )(isin adi|is adi|isin ismi|is ismi|proje adi|projenin adi|ihale adi|isin tanimi|is tanimi)( |$)/.test(x));
-    if(a < 0){
-      let en = -1, enS = 0;
-      const W = Math.max(...rows.slice(r, r + 60).map(x => (x || []).length), 0);
-      for(let i = 0; i < W; i++){
-        if(i === aday.c || i === aday.b) continue;
-        let s = 0; rows.slice(r + 1, r + 80).forEach(x => { const v = hucre9(x && x[i]); if(v.length > 4 && ISLER.some(j => benzer9(v, j.ad) >= .55)) s++; });
-        if(s > enS){ enS = s; en = i; }
-      }
-      a = en; if(a < 0) aday.emin = false;
+  const hat = lsOku9(ESLE9, []), N = Math.min(rows.length, 60), yil = String(new Date().getFullYear());
+  const hn = r => (rows[r] || []).map(hnrm9);
+  // daha önce elle seçilen başlıklar
+  for(let r = 0; r < N; r++){
+    const n = hn(r);
+    for(const h of hat){ const a = n.indexOf(h.a); if(a < 0) continue;
+      let c = -1, b = -1, son = r;
+      for(let q = Math.max(0, r - 3); q <= Math.min(rows.length - 1, r + 3); q++){ const m = hn(q); if(c < 0 && h.c && m.indexOf(h.c) >= 0){ c = m.indexOf(h.c); son = Math.max(son, q); } if(b < 0 && h.b && m.indexOf(h.b) >= 0){ b = m.indexOf(h.b); son = Math.max(son, q); } }
+      if(c >= 0 || b >= 0) return { r: son, ra: r, a, c, b, emin: 1 };
     }
-    aday.a = a;
-    if(aday.c >= 0 && aday.b >= 0 && a >= 0){ if(!iyi || (aday.emin && !iyi.emin)) iyi = aday; if(aday.emin) break; }
-    else if(!iyi) iyi = { ...aday, emin: false };
   }
-  return iyi;
+  for(let r = 0; r < N; r++){
+    const n = hn(r), a = n.findIndex(x => AD_BAS9.test(x));
+    if(a < 0) continue;
+    // Çalışmalar / Biten başlığı aynı satırda ya da birleştirilmiş başlıkta birkaç satır yakında olabilir
+    const C = [], B = [];
+    for(let q = Math.max(0, r - 3); q <= Math.min(rows.length - 1, r + 3); q++) hn(q).forEach((x, i) => { if(i === a) return; if(C_BAS9(x)) C.push({ q, i, y: x.includes(yil) }); else if(B_BAS9(x)) B.push({ q, i, y: x.includes(yil) }); });
+    const sec = L => (L.find(o => o.y) || L[0] || null);
+    const c = sec(C), b = sec(B);
+    const son = Math.max(r, c ? c.q : r, b ? b.q : r);
+    return { r: son, ra: r, a, c: c ? c.i : -1, b: b ? b.i : -1, emin: !!(c || b) };
+  }
+  return null;
 }
+// "İşin Adı" altındaki adı yazılı her satır bir iş (yazısı boş olsa da)
 function kayitlar9(rows, s){
   const out = []; let son = null;
+  const basMi = x => { const n = (x || []).map(hnrm9); return AD_BAS9.test(n[s.a] || "") || (s.c >= 0 && C_BAS9(n[s.c] || "") && /calisma/.test(n[s.c])) || (s.b >= 0 && B_BAS9(n[s.b] || "") && /calisma/.test(n[s.b])); };
   for(let r = s.r + 1; r < rows.length; r++){
-    const x = rows[r] || [], ad = hucre9(x[s.a]), c = s.c >= 0 ? hucre9(x[s.c]) : "", b = s.b >= 0 ? hucre9(x[s.b]) : "";
-    if(ad){ son = { ad, c, b }; out.push(son); }
-    else if(son && (c || b)){ if(c) son.c = son.c ? son.c + "\n" + c : c; if(b) son.b = son.b ? son.b + "\n" + b : b; }
+    const x = rows[r] || [];
+    if(basMi(x)){ son = null; continue; }      // tekrar eden başlık satırı
+    const ad = hucre9(x[s.a]), c = s.c >= 0 ? hucre9(x[s.c]) : "", b = s.b >= 0 ? hucre9(x[s.b]) : "";
+    if(ad){
+      const n = nrm9(ad);
+      if(/^\d+$/.test(n) || /^(genel )?toplam( |$)/.test(n)){ son = null; continue; }
+      son = { ad, c, b }; out.push(son);
+    }else if(son && (c || b)){ if(c) son.c = son.c ? son.c + "\n" + c : c; if(b) son.b = son.b ? son.b + "\n" + b : b; }
   }
-  return out.filter(k => k.c || k.b);
+  return out;
 }
 function excelSec9(){
   let inp = document.getElementById("ex9sec");
@@ -6435,7 +6437,7 @@ async function excelOku9(fs){
       if(s){ kayitlar9(s.rows, s).forEach(k => kay.push({ ...k, kaynak: f.name })); }
     }
   }
-  if(!kay.length){ bildir("Excel'lerde Çalışmalar / Biten yazısı bulunamadı"); return; }
+  if(!kay.length){ bildir("Excel'lerde İşin Adı altında iş bulunamadı"); return; }
   // işlerle eşleştir
   const esl = new Map(), bos = [];
   kay.forEach(k => {
@@ -6444,7 +6446,7 @@ async function excelOku9(fs){
     if(m && m.j){ const x = esl.get(m.j.id) || { id: m.j.id, c: "", b: "", kaynak: new Set() }; if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(m.j.id, x); }
     else bos.push(k);
   });
-  EX9 = { kay, esl, bos, i: 0, filtre: false, degisen: new Set() };
+  EX9 = { kay, esl, bos, i: 0, filtre: false, degisen: new Set(), toplam: esl.size + bos.length };
   anlik9();
   exAc9(bos.length ? "esle" : "isler");
 }
@@ -6473,7 +6475,7 @@ function sutunSor9(dosya, sayfalar){
       ov.innerHTML = `<div class="kut ss9"><b>Sütunları seçin</b><p>${esc(dosya)} — başlıklar tanınamadı. Seçiminiz hatırlanır.</p>
 ${sayfalar.length > 1 ? `<label>Sayfa</label><select id="ss9s">${sayfalar.map((s, i) => `<option value="${i}"${i === si ? " selected" : ""}>${esc(s.ad)}</option>`).join("")}</select>` : ""}
 <label>Başlık satırı</label><select id="ss9r">${rows.slice(0, 30).map((x, i) => `<option value="${i}"${i === r ? " selected" : ""}>${i + 1}. ${esc((x || []).map(hucre9).filter(Boolean).join(" | ").slice(0, 60) || "(boş)")}</option>`).join("")}</select>
-${sec("ss9a", "İş adı", o.r === r ? o.a : -1)}${sec("ss9c", "Çalışmalar (Devam Eden)", o.r === r ? o.c : -1)}${sec("ss9b", "Biten", o.r === r ? o.b : -1)}
+${sec("ss9a", "İş adı", o.r === r || o.ra === r ? o.a : -1)}${sec("ss9c", "Çalışmalar (Devam Eden)", o.r === r || o.ra === r ? o.c : -1)}${sec("ss9b", "Biten", o.r === r || o.ra === r ? o.b : -1)}
 <div class="dg"><button data-ss9="atla">Bu dosyayı atla</button><button class="ana" data-ss9="tamam">Devam</button></div></div>`;
     };
     ov.addEventListener("change", e => {
@@ -6485,8 +6487,9 @@ ${sec("ss9a", "İş adı", o.r === r ? o.a : -1)}${sec("ss9c", "Çalışmalar (D
       if(b.dataset.ss9 === "atla"){ ov.remove(); ok(null); return; }
       const a = +ov.querySelector("#ss9a").value, c = +ov.querySelector("#ss9c").value, bb = +ov.querySelector("#ss9b").value;
       if(a < 0 || (c < 0 && bb < 0)){ bildir("İş adı ve en az bir yazı sütununu seçin"); return; }
-      const rows = sayfalar[si].rows, n = (rows[r] || []).map(nrm9);
-      if(c >= 0 && bb >= 0 && n[a] && n[c] && n[bb]){ const L = lsOku9(ESLE9, []).filter(x => !(x.c === n[c] && x.b === n[bb])); L.unshift({ a: n[a], c: n[c], b: n[bb] }); lsYaz9(ESLE9, L.slice(0, 10)); }
+      const rows = sayfalar[si].rows, n = (rows[r] || []).map(hnrm9);
+      const hc = c >= 0 ? n[c] || "" : "", hb = bb >= 0 ? n[bb] || "" : "";
+      if(n[a] && (hc || hb)){ const L = lsOku9(ESLE9, []).filter(x => !(x.a === n[a] && x.c === hc && x.b === hb)); L.unshift({ a: n[a], c: hc, b: hb }); lsYaz9(ESLE9, L.slice(0, 10)); }
       ov.remove(); ok({ rows, r, a, c, b: bb });
     });
     ciz9(); document.body.appendChild(ov);
@@ -6510,8 +6513,8 @@ function exCiz9(){
   const ov = document.getElementById("exr9"); if(!ov || !EX9) return;
   if(EX9.mod === "esle"){
     const secenek = k => { const s = ISLER.map(j => ({ j, s: benzer9(k.ad, j.ad) })).sort((a, b) => b.s - a.s); return `<option value="">Seçin…</option><option value="-">Bu satırı her zaman atla</option>${s.map(x => `<option value="${esc(x.j.id)}">${esc(x.j.ad)}</option>`).join("")}`; };
-    ov.innerHTML = `<div class="eh"><button data-ex9kapat>${IK("geri")}</button><div class="et"><b>Eşleşmeyen satırlar</b><small>${EX9.bos.length} satır · seçiminiz hatırlanır</small></div></div>
-<div class="eb">${EX9.bos.map((k, i) => `<div class="eslr"><b>${esc(k.ad)}</b><small>${esc(k.kaynak)} · ${esc((k.c || k.b).slice(0, 80))}</small><select data-ex9bag="${i}">${secenek(k)}</select></div>`).join("")}</div>
+    ov.innerHTML = `<div class="eh"><button data-ex9kapat>${IK("geri")}</button><div class="et"><b>Eşleşmeyen işler</b><small>Excel'de ${EX9.toplam} iş · ${EX9.esl.size} eşleşti · ${EX9.bos.length} bekliyor</small></div></div>
+<div class="eb">${EX9.bos.map((k, i) => `<div class="eslr"><b>${esc(k.ad)}</b><small>${esc(k.kaynak)}${(k.c || k.b) ? " · " + esc((k.c || k.b).slice(0, 80)) : " · yazı yok"}</small><select data-ex9bag="${i}">${secenek(k)}</select></div>`).join("")}</div>
 <div class="ef"><button class="ana" data-ex9devam>Karşılaştırmaya geç ›</button></div>`;
     return;
   }
@@ -6534,7 +6537,7 @@ function exCiz9(){
 <div class="ex"><small>${exAd}<button data-ex9tum="${alan}">Tümünü al</button></small><div class="ep">${P.map((p, i) => `<button class="pc${uN.includes(nrm9(p)) ? " on" : ""}" data-ex9p="${alan}:${i}">${esc(p)}</button>`).join("")}</div></div></div></div>`;
   };
   const yeniMi = EX9.degisen.has(id);
-  ov.innerHTML = `<div class="eh"><button data-ex9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.i + 1} / ${L.length}${EX9.bos.length ? ` · <u data-ex9esle>${EX9.bos.length} eşleşmeyen</u>` : ""}</small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
+  ov.innerHTML = `<div class="eh"><button data-ex9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.i + 1} / ${L.length} · Excel'de ${EX9.toplam} iş${EX9.bos.length ? ` · <u data-ex9esle>${EX9.bos.length} eşleşmeyen</u>` : ""}</small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
 <div class="eb" id="ex9b"><div class="ead"><b>${esc(j.ad)}</b><small>${esc([...x.kaynak].join(", "))}${yeniMi && EX9.onceTarih ? " · <i>geçen haftadan beri değişti</i>" : ""}</small></div>
 ${blok("devam", "Devam Eden", "Excel · Çalışmalar", j.devam || "", x.c)}
 ${blok("biten", D.yil + " Biten", "Excel · Biten", j.biten || "", x.b)}</div>
@@ -6568,7 +6571,7 @@ function exOlay9(ov){
       const esl = new Map(), bos = [];
       kay.forEach(k => { const m = isEsle9(k.ad); if(m && m.yok) return;
         if(m && m.j){ const x = esl.get(m.j.id) || { id: m.j.id, c: "", b: "", kaynak: new Set() }; if(k.c) x.c = x.c ? x.c + "\n" + k.c : k.c; if(k.b) x.b = x.b ? x.b + "\n" + k.b : k.b; x.kaynak.add(k.kaynak); esl.set(m.j.id, x); } else bos.push(k); });
-      EX9 = { kay, esl, bos, i: 0, filtre: f, degisen: new Set() }; anlik9(); EX9.mod = "isler"; exCiz9(); return;
+      EX9 = { kay, esl, bos, i: 0, filtre: f, degisen: new Set(), toplam: esl.size + bos.length }; anlik9(); EX9.mod = "isler"; exCiz9(); return;
     }
     if(t.closest("[data-ex9onc]")){ exGit9(-1); return; }
     if(t.closest("[data-ex9son]")){ exGit9(1); return; }

@@ -6281,7 +6281,14 @@ async function telefonDosyasi9(tur){
     ic = { tur: "degisiklik", temel: KILIT.temel, olusturma: v.olusturma, parca, sil: FARK9.sil || [], ozet: { is: isler.size, agir: Object.keys(parca).length - 1, silinen: (FARK9.sil || []).length }, telefon: 1 };
     Object.assign(ek, { tur: "degisiklik", temel: KILIT.temel });
   }else{
-    ic = v; Object.assign(ek, { tur: "tam", ...(KILIT.temel ? { temel: KILIT.temel } : {}) });
+    // programın dosyasında temel yoksa (eski program sürümü) telefon kendi temelini koyar:
+    // bu tam dosyayı alan telefonlar, sonraki değişiklik dosyalarını açabilir
+    if(!KILIT.temel){
+      const yeni = "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+      await kilitYaz({ ...KILIT, temel: yeni });
+      FARK9 = { temel: yeni, keys: [], sil: [] }; await idbYaz9("fark9", FARK9);
+    }
+    ic = v; Object.assign(ek, { tur: "tam", temel: KILIT.temel });
   }
   const dosya = { ...ek, veri: await paketle9(ic, r.K), ...(HAMK9 && HAMK9.veriKmz && HAMK9.z === "gzip" ? { veriKmz: HAMK9.veriKmz } : {}) };
   return { metin: JSON.stringify(dosya), ad: dosyaAdi9(tur === "degisiklik" ? "-degisiklik" : "") };
@@ -6308,7 +6315,7 @@ function aktarSayfa9(){
   const degOlur = !!(KILIT && KILIT.temel && FARK9 && FARK9.temel === KILIT.temel);
   const govde = `<div class="ak9">
 <div class="blk"><b>Diğer telefonlar için</b><small>WhatsApp'tan gönderin; alan kişi <b>Veri Yükle</b> ile açar. Kullanıcı adları ve şifreler aynıdır.</small>
-<label class="rd"><input type="radio" name="ak9t" value="degisiklik"${degOlur ? " checked" : " disabled"}><span><b>Değişiklik dosyası</b>${degOlur ? "<small>Küçük; programın son tam dosyası yüklü telefonlarda açılır</small>" : "<small>Önce programın dosyasını bu telefona bir kez yeniden yükleyin</small>"}</span></label>
+<label class="rd"><input type="radio" name="ak9t" value="degisiklik"${degOlur ? " checked" : " disabled"}><span><b>Değişiklik dosyası</b>${degOlur ? "<small>Küçük; son tam dosyanın yüklü olduğu telefonlarda açılır</small>" : "<small>Önce diğer telefonlara bir kez tam dosya gönderin; sonrakiler değişiklik dosyası olabilir</small>"}</span></label>
 <label class="rd"><input type="radio" name="ak9t" value="tam"${degOlur ? "" : " checked"}><span><b>Tam dosya</b><small>Bütün veri; her telefonda açılır</small></span></label>
 <button class="btn" data-ak9haz>Hazırla</button><div class="sonuc" id="ak9s"></div></div>
 <div class="blk"><b>Program için aktarım dosyası</b><small>${GUN9.length} değişiklik şifreli olarak tek dosyada. Program bunu ileride <b>Veriyi Programa Aktar</b> ile alacak.</small>

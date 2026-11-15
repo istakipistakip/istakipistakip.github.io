@@ -1480,6 +1480,22 @@ html.dark .onz9 .r small{ color:#94a3b8; }
 .exr9 .sor9 .sb9 button.bt{ background:#16a34a; }
 .exr9 .sor9 .vz9{ width:100%; height:42px; margin-top:8px; border:0; background:none; color:#64748b; font-weight:700; font-size:14px; }
 html.dark .exr9 .sor9 .kt9{ background:#111a2e; } html.dark .exr9 .sor9 p{ background:#0b1220; border-color:#334155; color:#e2e8f0; }
+.exr9 .kms9{ display:flex; gap:6px; margin-top:8px; flex-wrap:wrap; }
+.exr9 .kms9 span{ flex:1 1 0; min-width:92px; background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:6px 9px; }
+.exr9 .kms9 small{ display:block; font-size:10.5px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.03em; margin:0; }
+.exr9 .kms9 b{ display:block; font-size:14.5px; color:#0f172a; margin-top:1px; }
+.exr9 .onb9{ background:#fffbeb; border:1px solid #fcd34d; border-radius:14px; padding:9px; margin-top:-4px; display:flex; flex-direction:column; gap:6px; }
+.exr9 .onb9 > small{ font-size:11px; font-weight:800; color:#92400e; text-transform:uppercase; letter-spacing:.03em; }
+.exr9 .onb9 button{ text-align:left; background:#fff; border:1px solid #fde68a; border-radius:10px; padding:8px 10px; font:inherit; color:#0f172a; display:flex; flex-direction:column; gap:2px; }
+.exr9 .onb9 button b{ font-size:13px; color:#b45309; }
+.exr9 .onb9 button span{ font-size:14px; font-weight:700; }
+.exr9 .onb9 button em{ font-style:normal; font-size:12.5px; color:#475569; }
+.exr9 .hz9{ display:flex; flex-direction:column; gap:6px; margin-top:-4px; }
+.exr9 .hz9 small{ font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.03em; }
+.exr9 .hz9 button{ text-align:left; background:#eef2ff; border:1px solid #c7d2fe; color:#3730a3; border-radius:10px; padding:8px 10px; font:inherit; font-size:13.5px; font-weight:600; }
+html.dark .exr9 .kms9 span, html.dark .exr9 .onb9 button{ background:#111a2e; border-color:#334155; } html.dark .exr9 .kms9 b, html.dark .exr9 .onb9 button span{ color:#e2e8f0; }
+html.dark .exr9 .onb9{ background:#1f1a0b; border-color:#78350f; } html.dark .exr9 .hz9 button{ background:#1e1b4b; border-color:#3730a3; color:#c7d2fe; }
+.exr9 .on9x:empty{ display:none; }
 </style>
 </head>
 <body>
@@ -6195,7 +6211,7 @@ ${yz("devam", "Devam Eden")}${yz("biten", D.yil + " Biten")}</div>`;
 }
 
 // ---------- KM formu ----------
-function kmForm9(id, idx){
+function kmForm9(id, idx, on){
   const j = ISLER.find(x => x.id === id); if(!j) return;
   const k = idx === undefined || idx === null ? null : j.kmler[idx];
   const stdler = [...new Set(j.cats.map(c => c.ad).concat(j.kmler.map(x => x.s)).concat(STD9))];
@@ -6204,7 +6220,7 @@ function kmForm9(id, idx){
   const t = k && /^\d{4}-\d{2}-\d{2}/.test(k.t || "") ? k.t.slice(0, 10) : bugun9();
   const govde = `<form class="kf9" id="kf9" autocomplete="off">
 <label>Standart</label><div class="ch" id="kf9s">${stdler.map(s => `<button type="button" class="${s === sec ? "on" : ""}${j.cats.some(c => c.ad === s) ? " is" : ""}" data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>
-<div class="ik2"><div><label for="kf9a">Başlangıç KM</label><input id="kf9a" inputmode="numeric" pattern="[0-9+]*" placeholder="12500 → 12+500" value="${esc(k ? k.a : "")}"></div><div><label for="kf9e">Bitiş KM</label><input id="kf9e" inputmode="numeric" pattern="[0-9+]*" placeholder="14000 → 14+000" value="${esc(k ? k.e : "")}"></div></div>
+<div class="ik2"><div><label for="kf9a">Başlangıç KM</label><input id="kf9a" inputmode="numeric" pattern="[0-9+]*" placeholder="12500 → 12+500" value="${esc(k ? k.a : on ? on.a : "")}"></div><div><label for="kf9e">Bitiş KM</label><input id="kf9e" inputmode="numeric" pattern="[0-9+]*" placeholder="14000 → 14+000" value="${esc(k ? k.e : on ? on.e : "")}"></div></div>
 <div class="uz" id="kf9u"></div>
 <label>Oran</label><div class="seg" id="kf9o"><button type="button" class="${yarim ? "" : "on"}" data-o="0">Tamamı</button><button type="button" class="${yarim ? "on" : ""}" data-o="1">Yarısı</button></div>
 <label for="kf9t">Tarih</label><input id="kf9t" type="date" value="${esc(t)}">
@@ -6743,11 +6759,12 @@ function exCiz9(){
   var pcYer9 = p => { const n = nrm9(p), d = nD.includes(n), b = nB.includes(n); return d || b ? `<em class="py9">${d && b ? "Devam · Biten" : d ? "Devam" : "Biten"}</em>` : ""; };
   const yeniMi = EX9.degisen.has(id);
   ov.innerHTML = `<div class="eh"><button data-ex9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.i + 1} / ${L.length} · <u data-ex9liste>${L.filter(gecti9).length} / ${L.length} bitti</u> · <u data-ex9esle>${EX9.bos.length ? EX9.bos.length + " eşleşmeyen" : "Eşleşmeler"}</u></small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
-<div class="eb" id="ex9b"><div class="ead">${gecti9(id) ? `<span class="gk9">✓ Gözden geçirildi</span>` : ""}<b>${esc(j.ad)}</b><small>${x.sef ? "Şef: " + esc(x.sef) + " · " : ""}${esc([...x.kaynak].join(", "))}${yeniMi && EX9.onceTarih ? " · <i>geçen haftadan beri değişti</i>" : ""}</small></div>
-${blok("devam", "Devam Eden", "Excel · Çalışmalar", j.devam || "", x.c)}
-${blok("biten", D.yil + " Biten", "Excel · Biten", j.biten || "", x.b)}</div>
+<div class="eb" id="ex9b"><div class="ead">${gecti9(id) ? `<span class="gk9">✓ Gözden geçirildi</span>` : ""}<b>${esc(j.ad)}</b><small>${x.sef ? "Şef: " + esc(x.sef) + " · " : ""}${esc([...x.kaynak].join(", "))}${yeniMi && EX9.onceTarih ? " · <i>geçen haftadan beri değişti</i>" : ""}</small>${kmSatir9(j)}</div>
+${blok("devam", "Devam Eden", "Excel · Çalışmalar", j.devam || "", x.c)}<div class="on9x" data-on9="devam"></div>
+<div class="hz9"><small>Hazır cümle · Devam Eden'e eklenir</small>${HAZIR9.map((h, i) => `<button data-ex9hz="${i}">${esc(h)}</button>`).join("")}</div>
+${blok("biten", D.yil + " Biten", "Excel · Biten", j.biten || "", x.b)}<div class="on9x" data-on9="biten"></div><div class="on9x" data-on9="km"></div></div>
 <div class="ef"><button data-ex9onc${EX9.i ? "" : " disabled"}>‹ Önceki</button><button class="km" data-ex9km>${IK("arti")}KM Ekle</button>${EX9.i < L.length - 1 ? `<button data-ex9son>Sonraki ›</button>` : `<button class="bt9" data-ex9bitir>Bitir ✓</button>`}</div>`;
-  ov.querySelector("#ex9b").scrollTop = 0;
+  ov.querySelector("#ex9b").scrollTop = 0; onerCiz9(ov);
 }
 async function exKaydet9(){
   const ov = document.getElementById("exr9"); if(!ov || !EX9 || !EX9.cur || EX9.mod === "esle") return;
@@ -6771,6 +6788,71 @@ function pcIsaret9(ov){
     const n = nrm9(p), d = nD.includes(n), bb = nB.includes(n);
     b.classList.toggle("on", d || bb); b.querySelector(".py9")?.remove();
     if(d || bb){ const e = document.createElement("em"); e.className = "py9"; e.textContent = d && bb ? "Devam · Biten" : d ? "Devam" : "Biten"; b.appendChild(e); }
+  });
+  onerCiz9(ov);
+}
+// ---------- Devam / Biten düzenlerken: biten km, öneriler, hazır cümleler ----------
+const HAZIR9 = ["Sanat yapıları ve toprak işleri çalışmaları devam etmektedir.", "Sanat yapıları çalışmaları devam etmektedir.", "Toprak işleri çalışmaları devam etmektedir."];
+function kmSatir9(j){
+  const o = kmOzet(j), yap = (j.cats || []).reduce((t, c) => t + (Number(c.b) || 0), 0), top = (Number(o.o) || 0) + yap;
+  return `<div class="kms9"><span><small>${D.yil} biten</small><b>${f2(yap)} km</b></span><span><small>Toplam biten</small><b>${f2(top)}${o.u !== null ? ` / ${f2(o.u)}` : ""} km</b></span>${o.u !== null ? `<span><small>Kalan</small><b>${f2(o.kalan)} km</b></span>` : ""}</div>`;
+}
+// yazıdaki km aralıkları (10+000 - 14+250, 10+000 ile 14+250 …)
+const ARALIK9 = /(\d{1,3}\s*\+\s*\d{3})\s*(?:[-–—]+|ile|ila|ve)\s*(?:km\.?\s*:?\s*)?(\d{1,3}\s*\+\s*\d{3})/gi;
+function araliklar9(t){ const L = []; String(t || "").replace(ARALIK9, (m, a, e, i) => { const x = kmSayi(a.replace(/\s/g, "")), y = kmSayi(e.replace(/\s/g, "")); if(x !== null && y !== null && x !== y) L.push({ m, a: kmYaz(Math.min(x, y)), e: kmYaz(Math.max(x, y)), s: Math.min(x, y), b: Math.max(x, y) }); return m; }); return L; }
+const iskelet9 = t => nrm9(t).replace(/\d+(?:\s*[+.,]\s*\d+)*/g, "#");
+const sayilar9 = t => (String(t).match(/\d+(?:\s*[+.,]\s*\d+)*/g) || []).map(x => x.replace(/\s/g, ""));
+function taAc9(ov, alan){
+  let ta = ov.querySelector(`[data-ex9ta="${alan}"]`); if(ta) return ta;
+  const v = {}; ov.querySelectorAll("[data-ex9ta]").forEach(x => { v[x.dataset.ex9ta] = x.value; });
+  EX9.ac = { ...(EX9.ac || {}), [alan]: 1 }; exCiz9(); Object.keys(v).forEach(k => { const x = ov.querySelector(`[data-ex9ta="${k}"]`); if(x) x.value = v[k]; });
+  pcIsaret9(ov); return ov.querySelector(`[data-ex9ta="${alan}"]`);
+}
+function oneriler9(ov){
+  const out = { devam: [], biten: [], km: [] }; if(!EX9 || !EX9.cur) return out;
+  const x = EX9.esl.get(EX9.cur.id), j = ISLER.find(y => y.id === EX9.cur.id); if(!x || !j) return out;
+  ["devam", "biten"].forEach(alan => {
+    const ta = ov.querySelector(`[data-ex9ta="${alan}"]`); if(!ta) return;
+    const satirlar = ta.value.split("\n").filter(l => l.trim()), gor = new Set();
+    parca9(alan === "devam" ? x.c : x.b).forEach(p => {
+      if(satirlar.some(l => nrm9(l).includes(nrm9(p)))) return;          // zaten kutuda
+      const ip = iskelet9(p), sp = sayilar9(p);
+      for(const l of satirlar){
+        if(iskelet9(l) === ip && sp.length){                               // sayıları değişmiş aynı cümle
+          const sl = sayilar9(l), fark = sp.map((n, i) => sl[i] !== n ? `${sl[i]} → ${n}` : "").filter(Boolean);
+          const k = "g:" + l + "|" + p; if(gor.has(k)) continue; gor.add(k);
+          out[alan].push({ tip: "guncelle", eski: l, yeni: p, yazi: fark.join(", ") }); return;
+        }
+      }
+      const rp = araliklar9(p);
+      for(const l of satirlar){                                            // çakışan / uzayan km aralığı
+        for(const r2 of araliklar9(l)) for(const r1 of rp){
+          if(Math.max(r1.s, r2.s) > Math.min(r1.b, r2.b) + 0.0005 || (r1.s === r2.s && r1.b === r2.b)) continue;
+          const a = kmYaz(Math.min(r1.s, r2.s)), e = kmYaz(Math.max(r1.b, r2.b)); if(a === r2.a && e === r2.e) continue;
+          const yeni = l.replace(r2.m, `${a} - ${e}`), k = "a:" + l + "|" + yeni; if(gor.has(k)) continue; gor.add(k);
+          out[alan].push({ tip: "aralik", eski: l, yeni, yazi: `${r2.a} – ${r2.e} → ${a} – ${e}` });
+        }
+      }
+    });
+  });
+  // Excel'deki aralık uygulamanın KM kayıtlarında yoksa
+  const kmler = (j.kmler || []).map(k => { const a = kmSayi(k.a), e = kmSayi(k.e); return a === null || e === null ? null : [Math.min(a, e), Math.max(a, e)]; }).filter(Boolean);
+  const gor = new Set();
+  araliklar9((x.c || "") + "\n" + (x.b || "")).forEach(r => {
+    const k = r.a + "|" + r.e; if(gor.has(k)) return; gor.add(k);
+    if(kmler.some(([a, e]) => a <= r.s + 0.0005 && e >= r.b - 0.0005)) return;
+    out.km.push({ tip: "km", a: r.a, e: r.e, yazi: `${r.a} – ${r.e} (${f2(r.b - r.s)} km)` });
+  });
+  return out;
+}
+function onerCiz9(ov){
+  if(!EX9 || EX9.mod !== "isler") return;
+  const O = oneriler9(ov); EX9.oner = O;
+  ov.querySelectorAll("[data-on9]").forEach(d => {
+    const alan = d.dataset.on9, L = O[alan] || [];
+    d.innerHTML = !L.length ? "" : `<div class="onb9"><small>${alan === "km" ? "Excel'deki aralık KM kayıtlarında yok" : "Öneri · " + (alan === "devam" ? "Devam Eden" : "Biten")}</small>${L.map((o, i) =>
+      o.tip === "km" ? `<button data-ex9on="km:${i}"><b>KM olarak ekle</b><span>${esc(o.yazi)}</span></button>`
+      : `<button data-ex9on="${alan}:${i}"><b>${o.tip === "guncelle" ? "Güncelle" : "Aralığı genişlet"}</b><span>${esc(o.yazi)}</span><em>${esc(o.yeni.length > 120 ? o.yeni.slice(0, 120) + "…" : o.yeni)}</em></button>`).join("")}</div>`;
   });
 }
 function exOlay9(ov){
@@ -6815,6 +6897,19 @@ function exOlay9(ov){
       ta.value = ta.value.replace(/\s+$/, "") + (ta.value.trim() ? "\n" : "") + p;
       pcIsaret9(ov); bildir(hedef === "devam" ? "Devam Eden'e eklendi" : "Biten'e eklendi");
       return;
+    }
+    if((b = t.closest("[data-ex9hz]"))){
+      const h = HAZIR9[+b.dataset.ex9hz], ta = taAc9(ov, "devam"); if(!ta || !h) return;
+      if(nrm9(ta.value).includes(nrm9(h))){ bildir("Bu cümle Devam Eden'de zaten var"); return; }
+      ta.value = ta.value.replace(/\s+$/, "") + (ta.value.trim() ? "\n" : "") + h; pcIsaret9(ov); bildir("Devam Eden'e eklendi"); return;
+    }
+    if((b = t.closest("[data-ex9on]"))){
+      const [alan, i] = b.dataset.ex9on.split(":"), o = ((EX9.oner || {})[alan] || [])[+i]; if(!o) return;
+      if(o.tip === "km"){ await exKaydet9(); if(EX9 && EX9.cur) kmForm9(EX9.cur.id, null, { a: o.a, e: o.e }); return; }
+      const ta = ov.querySelector(`[data-ex9ta="${alan}"]`); if(!ta) return;
+      const L = ta.value.split("\n"), k = L.indexOf(o.eski);
+      if(k < 0){ bildir("Cümle kutuda değişmiş"); onerCiz9(ov); return; }
+      L[k] = o.yeni; ta.value = L.join("\n"); pcIsaret9(ov); bildir("Güncellendi"); return;
     }
     if(t.closest(".sor9") && !t.closest(".sor9 .kt9")){ ov.querySelector(".sor9")?.remove(); EX9.pcSec = null; return; }
     if((b = t.closest("[data-ex9p]"))){

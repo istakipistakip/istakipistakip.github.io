@@ -3468,7 +3468,7 @@ function geriDon(){
       if(!(dx > 8 && dx > dy)) return;
       bas.aktif = true;
       alt = document.createElement("div"); alt.className = "geri5";
-      try{ alt.innerHTML = detay.from === "home" && !aramaAcik ? anasayfa().replace(/ id="[^"]*"/g, "") : `<div class="gen5">‹ ${GERI_AD[detay.from] || "Geri"}</div>`; }catch(_){ alt.innerHTML = `<div class="gen5">‹ Geri</div>`; }
+      try{ alt.innerHTML = detay.from === "home" ? (() => { const a0 = aramaAcik, s0 = isAra; aramaAcik = false; isAra = ""; try{ return anasayfa().replace(/ id="[^"]*"/g, ""); } finally { aramaAcik = a0; isAra = s0; } })() : `<div class="gen5">‹ ${GERI_AD[detay.from] || "Geri"}</div>`; }catch(_){ alt.innerHTML = `<div class="gen5">‹ Geri</div>`; }
       document.getElementById("app").insertBefore(alt, m);
       m.style.background = getComputedStyle(document.getElementById("app")).backgroundColor;
       m.style.boxShadow = "-18px 0 40px rgba(0,0,0,.3)";
@@ -3487,7 +3487,7 @@ function geriDon(){
     if(dx > W() * .33){
       m.style.transition = "transform .22s ease-out"; m.style.transform = "translateX(100%)";
       if(a){ a.style.transition = "transform .22s ease-out, filter .22s"; a.style.transform = "none"; a.style.filter = "none"; }
-      setTimeout(() => { bit(); detay = null; ciz(); }, 220);
+      setTimeout(() => { bit(); if(detay && detay.from === "home"){ aramaAcik = false; isAra = ""; } detay = null; ciz(); }, 220);
     }else{
       m.style.transition = "transform .32s cubic-bezier(.2,1.2,.3,1)"; m.style.transform = "";
       if(a){ a.style.transition = "transform .32s, filter .32s"; a.style.transform = "translateX(-30%)"; }
@@ -3853,7 +3853,7 @@ function ust(){ document.getElementById("main").scrollTop = 0; }
 document.addEventListener("click", e => {
   if(!D) return;
   const t = e.target.closest("[data-tab]");
-  if(t){ const yeni = t.dataset.tab; if(yeni !== tab || detay){ tab = yeni; detay = null; ciz(); ust(); } return; }
+  if(t){ const yeni = t.dataset.tab; if(yeni === "home" && aramaAcik){ aramaAcik = false; isAra = ""; } if(yeni !== tab || detay || yeni === "home"){ tab = yeni; detay = null; ciz(); ust(); } return; }
   if(e.target.closest("[data-hatkapat]")){ if(history.state && history.state.hat) history.back(); else hatKapat(); return; }
   if(e.target.closest("[data-geri]")){ geriDon(); return; }
   if(e.target.closest("[data-arama]")){ aramaAcik = !aramaAcik; if(!aramaAcik) isAra = ""; ciz(); ust(); if(aramaAcik) document.getElementById("isAra")?.focus(); return; }
@@ -4957,6 +4957,7 @@ let geriMesgul6 = false;
 geriDon = function(){
   if(!detay || geriMesgul6) return;
   const { id, from } = detay, main = document.getElementById("main"), app = document.getElementById("app");
+  if(from === "home" && aramaAcik){ aramaAcik = false; isAra = ""; }
   if(azHareket){ detay = null; ciz(); return; }
   const ust6 = sayfaKopya(main, "ust6"); app.appendChild(ust6);
   detay = null; ciz();

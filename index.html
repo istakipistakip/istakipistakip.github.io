@@ -1470,6 +1470,16 @@ html.dark .onz9 .r small{ color:#94a3b8; }
 .exr9 .ls9.ok span{ color:#fff; background:#16a34a; }
 .exr9 .ls9.su{ border-color:#ea580c; box-shadow:0 0 0 2px #fed7aa; }
 .exr9 .ls9 b{ font-size:14px; font-weight:700; line-height:1.3; }
+.exr9 .pc .py9{ display:inline-block; margin-left:6px; font-style:normal; font-size:10.5px; font-weight:800; color:#fff; background:#16a34a; border-radius:6px; padding:1px 6px; vertical-align:1px; }
+.exr9 .sor9{ position:absolute; inset:0; z-index:5; background:rgba(15,23,42,.45); display:flex; align-items:flex-end; justify-content:center; }
+.exr9 .sor9 .kt9{ width:100%; max-width:560px; background:#fff; border-radius:18px 18px 0 0; padding:16px 14px calc(14px + env(safe-area-inset-bottom)); box-shadow:0 -8px 30px rgba(0,0,0,.2); }
+.exr9 .sor9 small{ display:block; font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:.03em; }
+.exr9 .sor9 p{ margin:8px 0 14px; font-size:14.5px; color:#0f172a; line-height:1.4; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:10px; padding:9px 10px; }
+.exr9 .sor9 .sb9{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.exr9 .sor9 .sb9 button{ height:50px; border-radius:12px; border:0; background:#ea580c; color:#fff; font-weight:800; font-size:14.5px; }
+.exr9 .sor9 .sb9 button.bt{ background:#16a34a; }
+.exr9 .sor9 .vz9{ width:100%; height:42px; margin-top:8px; border:0; background:none; color:#64748b; font-weight:700; font-size:14px; }
+html.dark .exr9 .sor9 .kt9{ background:#111a2e; } html.dark .exr9 .sor9 p{ background:#0b1220; border-color:#334155; color:#e2e8f0; }
 </style>
 </head>
 <body>
@@ -6727,8 +6737,10 @@ function exCiz9(){
     const P = parca9(ex), uN = nrm9(uyg);
     return `<div class="eblk"><div class="ebh"><b>${baslik}</b></div><div class="eiki">
 <div class="ea"><small>Uygulamada</small><textarea data-ex9ta="${alan}" rows="6" placeholder="Boş">${esc(uyg)}</textarea></div>
-<div class="ex"><small>${exAd}<button data-ex9tum="${alan}">Tümünü al</button></small><div class="ep">${P.map((p, i) => `<button class="pc${uN.includes(nrm9(p)) ? " on" : ""}" data-ex9p="${alan}:${i}">${esc(p)}</button>`).join("")}</div></div></div></div>`;
+<div class="ex"><small>${exAd}<button data-ex9tum="${alan}">Tümünü al</button></small><div class="ep">${P.map((p, i) => `<button class="pc${pcYer9(p) ? " on" : ""}" data-ex9p="${alan}:${i}">${esc(p)}${pcYer9(p)}</button>`).join("")}</div></div></div></div>`;
   };
+  const nD = nrm9(j.devam || ""), nB = nrm9(j.biten || "");
+  var pcYer9 = p => { const n = nrm9(p), d = nD.includes(n), b = nB.includes(n); return d || b ? `<em class="py9">${d && b ? "Devam · Biten" : d ? "Devam" : "Biten"}</em>` : ""; };
   const yeniMi = EX9.degisen.has(id);
   ov.innerHTML = `<div class="eh"><button data-ex9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>Haftalık Excel</b><small>${EX9.i + 1} / ${L.length} · <u data-ex9liste>${L.filter(gecti9).length} / ${L.length} bitti</u> · <u data-ex9esle>${EX9.bos.length ? EX9.bos.length + " eşleşmeyen" : "Eşleşmeler"}</u></small></div><button class="fl${EX9.filtre ? " on" : ""}" data-ex9filtre>Değişenler</button></div>
 <div class="eb" id="ex9b"><div class="ead">${gecti9(id) ? `<span class="gk9">✓ Gözden geçirildi</span>` : ""}<b>${esc(j.ad)}</b><small>${x.sef ? "Şef: " + esc(x.sef) + " · " : ""}${esc([...x.kaynak].join(", "))}${yeniMi && EX9.onceTarih ? " · <i>geçen haftadan beri değişti</i>" : ""}</small></div>
@@ -6749,7 +6761,20 @@ async function exKaydet9(){
   }
 }
 async function exGit9(d){ await exKaydet9(); if(d > 0 && EX9.cur) gectiYaz9(EX9.cur.id); EX9.i += d; EX9.ac = null; exCiz9(); }
+// parçaların yanındaki "Devam / Biten" işaretleri, kutulardaki güncel yazıya göre
+function pcIsaret9(ov){
+  if(!EX9 || !EX9.cur) return; const x = EX9.esl.get(EX9.cur.id); if(!x) return;
+  const yaz = a => { const ta = ov.querySelector(`[data-ex9ta="${a}"]`); return nrm9(ta ? ta.value : (a === "devam" ? EX9.cur.devam : EX9.cur.biten)); };
+  const nD = yaz("devam"), nB = yaz("biten");
+  ov.querySelectorAll("[data-ex9p]").forEach(b => {
+    const [alan, i] = b.dataset.ex9p.split(":"), p = parca9(alan === "devam" ? x.c : x.b)[+i]; if(!p) return;
+    const n = nrm9(p), d = nD.includes(n), bb = nB.includes(n);
+    b.classList.toggle("on", d || bb); b.querySelector(".py9")?.remove();
+    if(d || bb){ const e = document.createElement("em"); e.className = "py9"; e.textContent = d && bb ? "Devam · Biten" : d ? "Devam" : "Biten"; b.appendChild(e); }
+  });
+}
 function exOlay9(ov){
+  ov.addEventListener("input", e => { if(e.target.matches && e.target.matches("[data-ex9ta]")) pcIsaret9(ov); });
   ov.addEventListener("click", async e => {
     const t = e.target; let b;
     if(t.closest("[data-ex9kapat]")){ exKapat9(); return; }
@@ -6775,13 +6800,30 @@ function exOlay9(ov){
     }
     if(t.closest("[data-ex9son]")){ exGit9(1); return; }
     if(t.closest("[data-ex9km]")){ await exKaydet9(); if(EX9 && EX9.cur) kmForm9(EX9.cur.id); return; }
-    if((b = t.closest("[data-ex9ac]"))){ EX9.ac = { ...(EX9.ac || {}), [b.dataset.ex9ac]: 1 }; const ta = {}; ov.querySelectorAll("[data-ex9ta]").forEach(x => { ta[x.dataset.ex9ta] = x.value; }); exCiz9(); Object.keys(ta).forEach(k => { const x = ov.querySelector(`[data-ex9ta="${k}"]`); if(x) x.value = ta[k]; }); return; }
-    if((b = t.closest("[data-ex9tum]"))){ const alan = b.dataset.ex9tum, ta = ov.querySelector(`[data-ex9ta="${alan}"]`), x = EX9.esl.get(EX9.cur.id); if(ta){ ta.value = alan === "devam" ? x.c : x.b; ov.querySelectorAll(`[data-ex9p^="${alan}:"]`).forEach(p => p.classList.add("on")); } return; }
+    if((b = t.closest("[data-ex9ac]"))){ EX9.ac = { ...(EX9.ac || {}), [b.dataset.ex9ac]: 1 }; const ta = {}; ov.querySelectorAll("[data-ex9ta]").forEach(x => { ta[x.dataset.ex9ta] = x.value; }); exCiz9(); Object.keys(ta).forEach(k => { const x = ov.querySelector(`[data-ex9ta="${k}"]`); if(x) x.value = ta[k]; }); pcIsaret9(ov); return; }
+    if((b = t.closest("[data-ex9tum]"))){ const alan = b.dataset.ex9tum, ta = ov.querySelector(`[data-ex9ta="${alan}"]`), x = EX9.esl.get(EX9.cur.id); if(ta){ ta.value = alan === "devam" ? x.c : x.b; pcIsaret9(ov); } return; }
+    if((b = t.closest("[data-ex9hedef]"))){
+      const hedef = b.dataset.ex9hedef, p = EX9.pcSec; ov.querySelector(".sor9")?.remove(); EX9.pcSec = null;
+      if(!hedef || !p) return;
+      let ta = ov.querySelector(`[data-ex9ta="${hedef}"]`);
+      if(!ta){ // o kutu "Aynı" diye kapalıysa önce aç (yazılanları koruyarak)
+        const v = {}; ov.querySelectorAll("[data-ex9ta]").forEach(x => { v[x.dataset.ex9ta] = x.value; });
+        EX9.ac = { ...(EX9.ac || {}), [hedef]: 1 }; exCiz9(); Object.keys(v).forEach(k => { const x = ov.querySelector(`[data-ex9ta="${k}"]`); if(x) x.value = v[k]; });
+        ta = ov.querySelector(`[data-ex9ta="${hedef}"]`); if(!ta) return;
+      }
+      if(nrm9(ta.value).includes(nrm9(p))){ bildir("Bu kısım " + (hedef === "devam" ? "Devam Eden'de" : "Biten'de") + " zaten var"); return; }
+      ta.value = ta.value.replace(/\s+$/, "") + (ta.value.trim() ? "\n" : "") + p;
+      pcIsaret9(ov); bildir(hedef === "devam" ? "Devam Eden'e eklendi" : "Biten'e eklendi");
+      return;
+    }
+    if(t.closest(".sor9") && !t.closest(".sor9 .kt9")){ ov.querySelector(".sor9")?.remove(); EX9.pcSec = null; return; }
     if((b = t.closest("[data-ex9p]"))){
-      const [alan, i] = b.dataset.ex9p.split(":"), ta = ov.querySelector(`[data-ex9ta="${alan}"]`), x = EX9.esl.get(EX9.cur.id);
-      const p = parca9(alan === "devam" ? x.c : x.b)[+i]; if(!ta || !p) return;
-      if(nrm9(ta.value).includes(nrm9(p))){ bildir("Bu kısım zaten var"); return; }
-      ta.value = ta.value.replace(/\s+$/, "") + (ta.value.trim() ? "\n" : "") + p; b.classList.add("on");
+      const [alan, i] = b.dataset.ex9p.split(":"), x = EX9.esl.get(EX9.cur.id);
+      const p = parca9(alan === "devam" ? x.c : x.b)[+i]; if(!p) return;
+      EX9.pcSec = p; ov.querySelector(".sor9")?.remove();
+      const d = document.createElement("div"); d.className = "sor9";
+      d.innerHTML = `<div class="kt9"><small>Bu yazı nereye eklensin?</small><p>${esc(p.length > 140 ? p.slice(0, 140) + "…" : p)}</p><div class="sb9"><button data-ex9hedef="devam">Devam Eden'e ekle</button><button class="bt" data-ex9hedef="biten">${D.yil} Biten'e ekle</button></div><button class="vz9" data-ex9hedef="">Vazgeç</button></div>`;
+      ov.appendChild(d);
       return;
     }
   });

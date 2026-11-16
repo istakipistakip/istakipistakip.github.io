@@ -1579,6 +1579,11 @@ html.dark .krf9{ background:#141c2b; border-color:#334155; color:#e6ebf3; } html
 .bkk9 button.on{ background:#ea580c; border-color:#ea580c; color:#fff; } .bkk9 button.on small{ color:rgba(255,255,255,.85); }
 .bk6p .b1 span{ text-align:right; line-height:1.15; } .bk6p .b1 span small{ display:block; font-size:10.5px; font-weight:700; color:#64748b; }
 .bk6p .b1 span small.es9{ font-weight:800; color:#b45309; white-space:nowrap; } html.dark .bk6p .b1 span small.es9{ color:#fbbf24; }
+.kes9{ pointer-events:auto; display:inline-flex; align-items:center; gap:6px; font:inherit; font-size:12px; font-weight:800; color:#fde68a; background:rgba(15,23,42,.82); border:1px solid rgba(245,158,11,.55); border-radius:99px; padding:5px 10px 5px 6px; }
+.kes9 span{ width:18px; height:18px; border-radius:50%; background:#f59e0b; color:#0f172a; display:grid; place-items:center; font-size:13px; line-height:1; }
+.kes9 i{ font-style:normal; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:rgba(245,158,11,.25); color:#fbbf24; display:grid; place-items:center; font-size:11px; }
+.kesl9{ pointer-events:auto; display:flex; flex-direction:column; gap:2px; background:rgba(15,23,42,.92); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:4px; }
+.kesl9 button{ font:inherit; font-size:12.5px; font-weight:700; color:#e2e8f0; background:none; border:0; border-radius:9px; padding:8px 10px; text-align:left; white-space:nowrap; } .kesl9 button b{ color:#fbbf24; margin-right:4px; } .kesl9 button:active{ background:rgba(255,255,255,.08); }
 </style>
 </head>
 <body>
@@ -5244,9 +5249,10 @@ async function boyKesit(j){
     for(let i = 0; i <= 3; i++){ const h = lo + (hi - lo) * i / 3, y = Y(h); g.beginPath(); g.moveTo(L, y); g.lineTo(W - R, y); g.stroke(); g.fillText(Math.round(h) + "", 2, y + 3); }
     const sec = km.length > 6 ? km.filter((_, i) => i % Math.ceil(km.length / 5) === 0) : km; let sx = -99;
     sec.forEach(([d, t]) => { const x = X(d); if(x - sx < 46) return; sx = x; g.fillText(t, Math.min(x - 14, W - 44), H - 4); g.beginPath(); g.moveTo(x, H - B); g.lineTo(x, H - B + 4); g.stroke(); });
-    (ana.esit || []).forEach(e => { const x = Math.round(X(e.c)) + .5; g.save(); g.strokeStyle = "#f59e0b"; g.lineWidth = 1.2; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(x, T); g.lineTo(x, H - B); g.stroke(); g.setLineDash([]);
+    { let sx9 = -1e9; (ana.esit || []).forEach(e => { const x = Math.round(X(e.c)) + .5; g.save(); g.strokeStyle = "#f59e0b"; g.lineWidth = 1.2; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(x, T); g.lineTo(x, H - B); g.stroke(); g.setLineDash([]);
       const kt = v => { const m = Math.round(v * 1000); return Math.floor(m / 1000) + "+" + String(m % 1000).padStart(3, "0"); }, t = "G " + kt(e.g) + " = İ " + kt(e.i); g.font = "800 9px system-ui"; const tw = g.measureText(t).width + 8, tx = Math.max(L, Math.min(x - tw / 2, W - R - tw));
-      g.fillStyle = koyu ? "rgba(245,158,11,.25)" : "rgba(254,243,199,.95)"; g.fillRect(tx, T, tw, 13); g.fillStyle = koyu ? "#fbbf24" : "#b45309"; g.fillText(t, tx + 4, T + 9.5); g.restore(); });
+      const ty = tx < sx9 + 3 ? T + 15 : T; if(ty === T) sx9 = tx + tw;   // üst üste binmesin: ikinci sıra
+      g.fillStyle = koyu ? "rgba(245,158,11,.25)" : "rgba(254,243,199,.95)"; g.fillRect(tx, ty, tw, 13); g.fillStyle = koyu ? "#fbbf24" : "#b45309"; g.fillText(t, tx + 4, ty + 9.5); g.restore(); }); }
     if(sinirlar.length){ g.save(); g.strokeStyle = koyu ? "rgba(226,232,240,.45)" : "rgba(15,23,42,.35)"; g.lineWidth = 1; g.setLineDash([2, 3]); sinirlar.forEach(d => { const x = Math.round(X(d)) + .5; g.beginPath(); g.moveTo(x, T); g.lineTo(x, H - B); g.stroke(); }); g.restore(); }
     const gr = g.createLinearGradient(0, T, 0, H - B); gr.addColorStop(0, "rgba(234,88,12,.35)"); gr.addColorStop(1, "rgba(234,88,12,.02)");
     g.beginPath(); g.moveTo(X(0), H - B); S.forEach(s => g.lineTo(X(s.d), Y(s.h))); g.lineTo(X(top), H - B); g.closePath(); g.fillStyle = gr; g.fill();
@@ -5258,7 +5264,7 @@ async function boyKesit(j){
     ciz(ix); const b = document.querySelector("#bk6 .b1 span");
     const F = ana.kmF, dd = S[ix].d, hm = Math.round(S[ix].h);
     if(F){
-      const pk = kmYaz(F(dd)), k2 = f2(F.surekli(dd)), n = F.esitNo(dd);   // ikinci km: 8,22 gibi
+      const pk = kmYaz(F(dd)), k2 = f2(Math.max(0, F.surekli(dd) - F.surekli(0))), n = F.esitNo(dd);   // ikinci km: yolun başından   // ikinci km: 8,22 gibi
       const not = n ? (F.esitSay > 1 ? n + ". km eşitliği sonrası" : "km eşitliği sonrası") : "";
       if(b) b.innerHTML = `<b>P. Km: ${esc(pk)}</b> · ${hm} m<small>Km: ${esc(k2)}</small>${not ? `<small class="es9">(${not})</small>` : ""}`;
       bkIsaretKoy9(S[ix].p, `P. Km: ${pk}${not ? ` (${not})` : ""} · Km: ${k2}`);
@@ -7986,12 +7992,9 @@ function bkModel9(j){
   if(!par.length) return null;
   par.forEach(q => q.u = uz(q.p));
   par.sort((a, b) => b.u - a.u);
-  // üst üste binen kopya çizgileri ayıkla (ör. bölünmüş yolun diğer şeridi)
+  // Üst üste çizilmiş parçalar (ör. tam boy yolun üstüne ayrıca çizilen biten kısımlar, bölünmüş yolun
+  // öbür şeridi): her parçanın daha önce alınmış çizgilerin ÜSTÜNDE kalan kısmı kesilip atılır.
   const tut = [];
-  // (ör. tam boy çizilmiş yolun üstüne ayrıca çizilen biten parçalar, bölünmüş yolun öbür şeridi):
-  // parçanın %80'i daha önce alınmış çizgilerin herhangi birinin üstündeyse kopyadır
-  // Her parçanın daha önce alınmış çizgilerin ÜSTÜNDE kalan kısımları kesilip atılır; yalnız yeni yerden
-  // geçen kısımlar (en az 100 m) ayrı parça olarak kalır. Böylece parçalar üst üste binmez.
   par.forEach(q => {
     if(!tut.length){ tut.push(q); return; }
     const ust = q.p.map(o => tut.some(t => bkHatUzak9(o, t.p) < 40));
@@ -8006,106 +8009,143 @@ function bkModel9(j){
   });
   tut.sort((a, b) => b.u - a.u);
   par = tut;
-  // KM noktaları (12+000 gibi)
-  const esN = (j.hat.nok || []).map(q => { const e = bkEsit9(q[2]); return e ? { p: [q[0], q[1]], g: e.g, i: e.i, q } : null; }).filter(Boolean);
-  const kmN = (j.hat.nok || []).filter(q => !bkEsit9(q[2])).map(q => { const m = KMRX9.exec(q[2] || ""); return m ? { p: [q[0], q[1]], v: kmSayi(m[1] + "+" + m[2]), q } : null; }).filter(x => x && x.v !== null);
+  // noktalar: KM eşitlikleri, KM noktaları, proje başı / sonu (PB=, PBı:, PS…)
+  const nok = j.hat.nok || [];
+  const PBRX = /(^|[\s(])P\s*\.?\s*[BS][ıiIİ]?\s*\.?\s*[:=]|proje\s*(başı|sonu|basi|sonu)/i;
+  const esN = nok.map(q => { const e = bkEsit9(q[2]); return e ? { p: [q[0], q[1]], g: e.g, i: e.i, q } : null; }).filter(Boolean);
+  const kmN = nok.filter(q => !bkEsit9(q[2])).map(q => { const m = KMRX9.exec(q[2] || ""); return m ? { p: [q[0], q[1]], v: kmSayi(m[1] + "+" + m[2]), q } : null; }).filter(x => x && x.v !== null);
+  const pbN = nok.filter(q => PBRX.test(q[2] || "")).map(q => [q[0], q[1]]);
   par.forEach(q => q.k = kmN.filter(n => bkYakin9(n.p, q.p).d < 80).length);
-  // ana yol en uzun parçadan başlar (yan yolların kendi KM noktaları olabildiği için KM sayısına bakılmaz)
-  let ilk = par[0];
-  let kal = par.filter(q => q !== ilk), z = ilk.p.slice(), kop = [], anaAd = new Set([ilk.a].filter(Boolean));
+  const pbYakin = pt => pbN.some(b => mesafe6(b, pt) < 150);
+  const yakinKm = pt => { let en = null, bd = 800; kmN.forEach(n => { const d = mesafe6(n.p, pt); if(d < bd){ bd = d; en = n.v; } }); return en; };
   const yon = (a, b) => Math.atan2(b[0] - a[0], (b[1] - a[1]) * Math.cos(a[0] * Math.PI / 180));
   const ucYon = (p, son) => { // ucun 100 m'lik doğrultusu (dışarı doğru)
     if(son){ let i = p.length - 2, t = 0; while(i > 0 && t < 100){ t += mesafe6(p[i], p[i + 1]); i--; } return yon(p[Math.max(0, i)], p[p.length - 1]); }
     let i = 1, t = 0; while(i < p.length - 1 && t < 100){ t += mesafe6(p[i - 1], p[i]); i++; } return yon(p[Math.min(p.length - 1, i)], p[0]);
   };
-  const icDokun = q => { // parçanın bir ucu ana yolun ortasına (uçlarına değil) değiyor mu
-    const c = bkKum9(z), T = c[c.length - 1];
-    return [q.p[0], q.p[q.p.length - 1]].some(e => { const r = bkYakin9(e, z); return r.d < 80 && c[r.i] > 800 && T - c[r.i] > 800; });
-  };
-  for(;;){
-    let en = null; const sec = [];
-    kal.forEach(q => {
-      if(icDokun(q)) return;
-      const s = z[z.length - 1], b = z[0], n = q.p.length - 1;
-      [[mesafe6(s, q.p[0]), "son", false], [mesafe6(s, q.p[n]), "son", true], [mesafe6(b, q.p[n]), "bas", false], [mesafe6(b, q.p[0]), "bas", true]].forEach(([d, uc, ters]) => {
-        const sinir = q.k ? 5000 : 3000; if(d > sinir) return;
-        // aynı uçta birden çok aday varsa: KM noktalı olan, sonra doğrultusu en az kıranı seç
-        const zy = uc === "son" ? ucYon(z, true) : ucYon(z, false), qy = ters ? ucYon(q.p, true) : ucYon(q.p, false);
-        let aci = Math.abs(((zy - qy + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI); aci = Math.PI - aci;
-        sec.push({ q, d, uc, ters, puan: (d < 40 ? 0 : d) + aci * 200 - (q.k ? 1e5 : 0) });
+  // ---- yollar: birbirine bağlı parçalar uç uca eklenir; bağlantısı olmayan ayrı yol "Ana yol 2" olur
+  const yollar = [];
+  const yolUzak = pt => Math.min(1e18, ...yollar.map(y => bkYakin9(pt, y.p).d));
+  let rem = par.slice();
+  const zincirle = ilk => {
+    let z = ilk.p.slice(), kop = [], adS = new Set([ilk.a].filter(Boolean));
+    rem = rem.filter(q => q !== ilk);
+    const icDokun = q => { // parçanın bir ucu bu yolun ortasına (uçlarına değil) değiyor mu → yan yol
+      const c = bkKum9(z), T = c[c.length - 1];
+      return [q.p[0], q.p[q.p.length - 1]].some(e => { const r = bkYakin9(e, z); return r.d < 80 && c[r.i] > 800 && T - c[r.i] > 800; });
+    };
+    for(;;){
+      let en = null; const sec = [];
+      rem.forEach(q => {
+        if(icDokun(q)) return;
+        if(yollar.length && Math.min(yolUzak(q.p[0]), yolUzak(q.p[q.p.length - 1])) < 300) return;   // önceki bir yolun kolu
+        const s = z[z.length - 1], b = z[0], n = q.p.length - 1;
+        [[s, q.p[0], "son", false], [s, q.p[n], "son", true], [b, q.p[n], "bas", false], [b, q.p[0], "bas", true]].forEach(([zu, qu, uc, ters]) => {
+          const d = mesafe6(zu, qu);
+          if(d >= 40){
+            // arada boşluk var: proje başı/sonu ucuna eklenmez; iki yanda KM varsa boşlukla uyuşmalı, yoksa en çok 300 m
+            if(pbYakin(zu) || pbYakin(qu)) return;
+            const v1 = yakinKm(zu), v2 = yakinKm(qu);
+            if(v1 !== null && v2 !== null){ if(d > 5000 || Math.abs(v2 - v1) > d / 1000 + 0.8) return; }
+            else if(d > 300) return;
+          }
+          const zy = uc === "son" ? ucYon(z, true) : ucYon(z, false), qy = ters ? ucYon(q.p, true) : ucYon(q.p, false);
+          let aci = Math.abs(((zy - qy + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI); aci = Math.PI - aci;
+          sec.push({ q, d, uc, ters, puan: (d < 40 ? 0 : d) + aci * 200 - (q.k ? 1e5 : 0) });
+        });
       });
-    });
-    // önce uç uca değen parçalar; aralarında KM noktalı olan, sonra doğrultusu en az kıran
-    const deg = sec.filter(o => o.d < 40), havuz = deg.length ? deg : sec;
-    havuz.forEach(o => { if(!en || o.puan < en.puan) en = o; });
-    if(!en) break;
-    kal = kal.filter(x => x !== en.q); let p = en.ters ? en.q.p.slice().reverse() : en.q.p;
-    if(en.q.a) anaAd.add(en.q.a);
-    // birleşimde üst üste binen kısım iki kez sayılmasın: zincirin üstünde kalan baştaki noktalar atılır
-    const ust9 = q => bkHatUzak9(q, z) < 25;
-    if(en.uc === "son"){ let i = 0; while(i < p.length - 2 && ust9(p[i])) i++; if(i) p = p.slice(Math.max(0, i - 1)); }
-    else { let i = p.length - 1; while(i > 1 && ust9(p[i])) i--; if(i < p.length - 1) p = p.slice(0, Math.min(p.length, i + 2)); }
-    if(en.uc === "son"){ kop.push(z.length); z = z.concat(p); }
-    else { kop = kop.map(i => i + p.length); kop.push(p.length); z = p.concat(z); }
+      const deg = sec.filter(o => o.d < 40), havuz = deg.length ? deg : sec;
+      havuz.forEach(o => { if(!en || o.puan < en.puan) en = o; });
+      if(!en) break;
+      rem = rem.filter(x => x !== en.q); let p = en.ters ? en.q.p.slice().reverse() : en.q.p;
+      if(en.q.a) adS.add(en.q.a);
+      const ust9 = q => bkHatUzak9(q, z) < 25;   // birleşimde üst üste binen kısım iki kez sayılmasın
+      if(en.uc === "son"){ let i = 0; while(i < p.length - 2 && ust9(p[i])) i++; if(i) p = p.slice(Math.max(0, i - 1)); }
+      else { let i = p.length - 1; while(i > 1 && ust9(p[i])) i--; if(i < p.length - 1) p = p.slice(0, Math.min(p.length, i + 2)); }
+      if(en.uc === "son"){ kop.push(z.length); z = z.concat(p); }
+      else { kop = kop.map(i => i + p.length); kop.push(p.length); z = p.concat(z); }
+    }
+    return { p: z, kop: new Set(kop), adS, yol: 1 };
+  };
+  for(let g = 0; g < 20; g++){
+    const ad = rem.filter(q => q.u >= 300 && !(yollar.length && Math.min(yolUzak(q.p[0]), yolUzak(q.p[q.p.length - 1])) < 300));
+    if(!ad.length) break;
+    const y = zincirle(ad.reduce((b, q) => q.u > b.u ? q : b, ad[0]));
+    if(yollar.length && uz(y.p) < 500) continue;   // çok kısa ayrı parça yol sayılmaz
+    yollar.push(y);
   }
-  // yön: KM değeri artacak şekilde (soldan küçük km)
-  let kum = bkKum9(z, new Set(kop));
-  // KM noktası hangi yolun? En yakın olduğu yolun. Kavşaktaki (iki yola da 40 m'den yakın) nokta için
-  // teyit: değeri ana yolun diğer KM noktalarının sırasına uyuyorsa ana yolun, uymuyorsa yan yolun.
-  kmN.forEach(n => { const r = bkYakin9(n.p, z); n.dz = r.d; n.c = kum[r.i]; n.dk = Math.min(1e18, ...kal.map(q => bkYakin9(n.p, q.p).d)); n.amb = n.dz < 40 && n.dk < 40; n.ana = !n.amb && n.dz < 300 && n.dz <= n.dk; });
-  const icAra = (L, c) => { if(L.length < 2) return null; let a = L[0], b = L[L.length - 1]; for(let i = 0; i < L.length - 1; i++) if(L[i].c <= c && L[i + 1].c >= c){ a = L[i]; b = L[i + 1]; break; } if(c < L[0].c){ a = L[0]; b = L[1]; } if(c > L[L.length - 1].c){ a = L[L.length - 2]; b = L[L.length - 1]; } return b.c === a.c ? a.v : a.v + (b.v - a.v) * (c - a.c) / (b.c - a.c); };
-  { const net = kmN.filter(n => n.ana).map(n => ({ c: n.c, v: n.v })).sort((a, b) => a.c - b.c);
-    kmN.filter(n => n.amb).forEach(n => { const t = icAra(net, n.c); n.ana = t === null ? true : Math.abs(t - n.v) <= 0.3; }); }
-  const anaEt = kmN.filter(n => n.ana).map(n => n.q);
-  const proj = kmN.filter(n => n.ana).map(n => ({ c: n.c, v: n.v })).sort((a, b) => a.c - b.c);
-  // eşitlik noktaları: ana yola en yakın olanlar
-  esN.forEach(e => { const r = bkYakin9(e.p, z); e.dz = r.d; e.c = kum[r.i]; e.dk = Math.min(1e18, ...kal.map(q => bkYakin9(e.p, q.p).d)); e.ana = e.dz < 300 && e.dz <= e.dk; });
-  let esA = esN.filter(e => e.ana).map(e => ({ c: e.c, g: e.g, i: e.i }));
-  { const T = kum[kum.length - 1];
-    if(proj.length + esA.length >= 2 && bkYonEgim9(proj, esA, T, true) > bkYonEgim9(proj, esA, T, false)){
-      const N = z.length; z = z.slice().reverse(); kop = kop.map(i => N - i); kum = bkKum9(z, new Set(kop));
-      proj.forEach(x => x.c = T - x.c); proj.reverse(); esA.forEach(e => e.c = T - e.c); } }
-  esA.sort((a, b) => a.c - b.c);
-  const anaF = bkKmFn9(proj, esA);
-  const anaKm = c => { if(anaF){ const v = anaF(c); if(Number.isFinite(v)) return kmYaz(v); } if(proj.length >= 2){ let a = proj[0], b = proj[proj.length - 1]; for(let i = 0; i < proj.length - 1; i++) if(proj[i].c <= c && proj[i + 1].c >= c){ a = proj[i]; b = proj[i + 1]; break; } if(b.c !== a.c) return kmYaz(a.v + (b.v - a.v) * (c - a.c) / (b.c - a.c)); } return f2(c / 1000) + " km"; };
-  // kollar: ana yola değen parçalar, kavşak ucundan başlar; uç uca devam eden parçalar eklenir
+  if(!yollar.length) return null;
+  // ---- kollar: bir yola değen parçalar, kavşak ucundan başlar; uç uca devam eden parçalar eklenir
   const genel = /^(untitled|adsız|adsiz|path|line|yol|çizgi|cizgi|hat|polyline|linestring|yeni|new)\b/i;
+  const yolAdlari = new Set(); yollar.forEach(y => y.adS.forEach(a => yolAdlari.add(a)));
+  const enYakinYol = pt => { let en = { y: yollar[0], r: bkYakin9(pt, yollar[0].p) }; yollar.slice(1).forEach(y => { const r = bkYakin9(pt, y.p); if(r.d < en.r.d) en = { y, r }; }); return en; };
   const kollar = [];
-  kal.sort((a, b) => Math.min(bkYakin9(a.p[0], z).d, bkYakin9(a.p[a.p.length - 1], z).d) - Math.min(bkYakin9(b.p[0], z).d, bkYakin9(b.p[b.p.length - 1], z).d));
+  let kal = rem.slice();
+  kal.sort((a, b) => Math.min(yolUzak(a.p[0]), yolUzak(a.p[a.p.length - 1])) - Math.min(yolUzak(b.p[0]), yolUzak(b.p[b.p.length - 1])));
   while(kal.length){
-    const q = kal.shift(), r0 = bkYakin9(q.p[0], z), r1 = bkYakin9(q.p[q.p.length - 1], z);
-    let p = r1.d < r0.d ? q.p.slice().reverse() : q.p.slice(), ki = r1.d < r0.d ? r1 : r0, kp = [], adlar = [q.a].filter(Boolean);
+    const q = kal.shift(), d0 = yolUzak(q.p[0]), d1 = yolUzak(q.p[q.p.length - 1]);
+    let p = d1 < d0 ? q.p.slice().reverse() : q.p.slice(), kp = [], adlar = [q.a].filter(Boolean);
     for(let ek = true; ek;){ ek = false;
       for(let i = 0; i < kal.length; i++){ const o = kal[i], s = p[p.length - 1];
-        const d0 = mesafe6(s, o.p[0]), d1 = mesafe6(s, o.p[o.p.length - 1]);
-        if(Math.min(d0, d1) < 40){ kp.push(p.length); p = p.concat(d1 < d0 ? o.p.slice().reverse() : o.p); if(o.a) adlar.push(o.a); kal.splice(i, 1); ek = true; break; } } }
+        const e0 = mesafe6(s, o.p[0]), e1 = mesafe6(s, o.p[o.p.length - 1]);
+        if(Math.min(e0, e1) < 40){ kp.push(p.length); p = p.concat(e1 < e0 ? o.p.slice().reverse() : o.p); if(o.a) adlar.push(o.a); kal.splice(i, 1); ek = true; break; } } }
     if(uz(p) < 50) continue;
-    { // ana yolun üstünden / hemen yanından giden parça (üst üste binme, bölünmüş yolun öbür şeridi) yan yol değildir
+    { // yolların üstünden / hemen yanından giden parça yan yol değildir
       const orn = p.filter((_, i) => i % Math.max(1, Math.floor(p.length / 60)) === 0).concat([p[p.length - 1]]);
-      const dd = orn.map(o => bkYakin9(o, z).d), yakin = dd.filter(d => d < 150).length / dd.length;
+      const dd = orn.map(o => yolUzak(o)), yakin = dd.filter(d => d < 150).length / dd.length;
       if(yakin >= 0.6 || Math.max(...dd) < 150) continue; }
-    // ad: KMZ'deki çizgi adı (genel değilse ve ana yolunkinden farklıysa), yoksa yakındaki bir yer adı
-    let ad = adlar.find(a => !genel.test(a) && !anaAd.has(a) && !KMRX9.test(a)) || "";
+    let ad = adlar.find(a => !genel.test(a) && !yolAdlari.has(a) && !KMRX9.test(a)) || "";
     if(!ad){ const orn = p.filter((_, i) => i % Math.max(1, Math.floor(p.length / 40)) === 0);
-      const n = (j.hat.nok || []).filter(x => x[2] && !KMRX9.test(x[2]) && String(x[2]).trim().length > 1 && orn.some(o => mesafe6(o, [x[0], x[1]]) < 120) && bkYakin9([x[0], x[1]], z).d > 120);
+      const n = nok.filter(x => x[2] && !KMRX9.test(x[2]) && !PBRX.test(x[2]) && String(x[2]).trim().length > 1 && orn.some(o => mesafe6(o, [x[0], x[1]]) < 120) && yolUzak([x[0], x[1]]) > 120);
       if(n.length) ad = String(n[0][2]).trim(); }
-    // kolun kendi KM noktaları (ana yola değil bu kola en yakın olanlar): varsa yön onlara göre (küçük km'den büyüğe)
-    let kkop = new Set(kp); const ket = kmN.filter(n => !n.ana && (n.dz >= 40 || n.amb) && bkYakin9(n.p, p).d < 80);
-    if(ket.length){
-      const kk = bkKum9(p, kkop), T = kk[kk.length - 1], pr = ket.map(n => ({ c: kk[bkYakin9(n.p, p).i], v: n.v })).sort((a, b) => a.c - b.c);
-      let ters = false;
-      if(pr.length >= 2 && pr[pr.length - 1].c - pr[0].c > 20) ters = bkEgim9(pr) < 0;
-      else { // tek nokta: değeri hangi uca olan uzaklığa uyuyorsa o uç başlangıçtır ("0+000" ise kendi ucu)
-        const x = pr[0], km = x.v * 1000; ters = Math.abs(km - (T - x.c)) < Math.abs(km - x.c); }
-      if(ters){ const N = p.length; p = p.slice().reverse(); kkop = new Set([...kkop].map(i => N - i)); }
-    }
-    const kk2 = bkKum9(p, kkop), kE = esN.filter(e => !e.ana && bkYakin9(e.p, p).d < 80).map(e => ({ c: kk2[bkYakin9(e.p, p).i], g: e.g, i: e.i }));
-    const kF = ket.length + kE.length >= 2 ? bkKmFn9(ket.map(n => ({ c: kk2[bkYakin9(n.p, p).i], v: n.v })), kE) : null;
-    kollar.push({ p, kop: kkop, ad, c: kum[ki.i], ayr: ki.d < 300 ? anaKm(kum[ki.i]) : null, kol: 1, etik: ket.map(n => n.q), kmF: kF, esit: kE });
+    kollar.push({ p, kop: new Set(kp), ad, jp: p[0], kol: 1 });
   }
+  // ---- KM noktaları ve eşitlikler hangi hatta? En yakın olduğu hatta. İki hatta birden çok yakınsa (kavşak)
+  // teyit: değeri hangi hattın öteki KM noktalarının sırasına uyuyorsa onun.
+  const hatlar = yollar.concat(kollar);
+  hatlar.forEach(h => { h.L = []; h.E = []; h.et = []; h.kum = bkKum9(h.p, h.kop); });
+  const icAra = (L, c) => { if(L.length < 2) return null; L = L.slice().sort((a, b) => a.c - b.c); let a = L[0], b = L[1];
+    if(c > L[L.length - 1].c){ a = L[L.length - 2]; b = L[L.length - 1]; } else for(let i = 0; i < L.length - 1; i++) if(L[i].c <= c && L[i + 1].c >= c){ a = L[i]; b = L[i + 1]; break; }
+    return b.c === a.c ? a.v : a.v + (b.v - a.v) * (c - a.c) / (b.c - a.c); };
+  const belirsiz = [];
+  kmN.forEach(n => {
+    const ds = hatlar.map(h => { const r = bkYakin9(n.p, h.p); return { h, d: r.d, c: h.kum[r.i] }; }).sort((a, b) => a.d - b.d);
+    if(!ds.length || ds[0].d >= 300) return;
+    const yak = ds.filter(x => x.d < 40);
+    if(yak.length >= 2) belirsiz.push({ n, yak });
+    else { ds[0].h.L.push({ c: ds[0].c, v: n.v }); ds[0].h.et.push(n.q); }
+  });
+  belirsiz.forEach(({ n, yak }) => {
+    let sec = null, en = 1e9;
+    yak.forEach(x => { const t = icAra(x.h.L, x.c); if(t !== null && Math.abs(t - n.v) < en){ en = Math.abs(t - n.v); sec = x; } });
+    if(!sec || en > 0.3) sec = yak.find(x => x.h.yol) || yak[0];
+    sec.h.L.push({ c: sec.c, v: n.v }); sec.h.et.push(n.q);
+  });
+  esN.forEach(e => { const ds = hatlar.map(h => { const r = bkYakin9(e.p, h.p); return { h, d: r.d, c: h.kum[r.i] }; }).sort((a, b) => a.d - b.d);
+    if(ds.length && ds[0].d < 300) ds[0].h.E.push({ c: ds[0].c, g: e.g, i: e.i }); });
+  // ---- yön: küçük km'den büyüğe (eşitlikler hesaba katılarak); kolda KM yoksa kavşaktan başlar
+  const cevir = h => { const N = h.p.length, T = h.kum[h.kum.length - 1]; h.p = h.p.slice().reverse(); h.kop = new Set([...h.kop].map(i => N - i)); h.kum = bkKum9(h.p, h.kop); h.L.forEach(x => x.c = T - x.c); h.E.forEach(e => e.c = T - e.c); };
+  hatlar.forEach(h => {
+    const T = h.kum[h.kum.length - 1];
+    if(h.yol){ if(h.L.length + h.E.length >= 2 && bkYonEgim9(h.L, h.E, T, true) > bkYonEgim9(h.L, h.E, T, false)) cevir(h); }
+    else if(h.L.length){
+      const pr = h.L.slice().sort((a, b) => a.c - b.c); let ters;
+      if(pr.length >= 2 && pr[pr.length - 1].c - pr[0].c > 20) ters = bkYonEgim9(h.L, h.E, T, true) > bkYonEgim9(h.L, h.E, T, false);
+      else { const x = pr[0], km = x.v * 1000; ters = Math.abs(km - (T - x.c)) < Math.abs(km - x.c); }   // tek nokta: değeri hangi uca uyuyorsa
+      if(ters) cevir(h);
+    }
+    h.L.sort((a, b) => a.c - b.c); h.E.sort((a, b) => a.c - b.c);
+    h.kmF = h.L.length + h.E.length >= 2 ? bkKmFn9(h.L, h.E) : null;
+  });
+  const kmAdi = (h, c) => { if(h.kmF){ const v = h.kmF(c); if(Number.isFinite(v)) return kmYaz(v); } return f2(c / 1000) + " km"; };
+  // ---- adlar ve kolların ayrıldığı yer
+  const yolAd = y => [...y.adS].find(a => !genel.test(a) && !KMRX9.test(a)) || "";
+  yollar.forEach((y, i) => { y.ad = yolAd(y) || (yollar.length > 1 ? "Ana yol " + (i + 1) : "Ana yol"); });
+  kollar.forEach(k => { const { y, r } = enYakinYol(k.jp); k.c = y.kum[r.i] + (yollar.indexOf(y) * 1e9); k.ayr = r.d < 300 ? kmAdi(y, y.kum[r.i]) : null; });
   kollar.sort((a, b) => a.c - b.c);
   let adsiz = 0; kollar.forEach(k => { if(!k.ad) k.ad = "Kol " + (++adsiz); });
-  return (j._bkM9 = { h: j.hat, ana: { p: z, kop: new Set(kop), etik: anaEt, kmF: anaF, esit: esA }, kollar });
+  const paket = h => ({ p: h.p, kop: h.kop, etik: h.et, kmF: h.kmF, esit: h.E, ad: h.ad, ayr: h.ayr || null, kol: h === yollar[0] ? 0 : 1, yol: h.yol ? 1 : 0 });
+  return (j._bkM9 = { h: j.hat, ana: paket(yollar[0]), kollar: yollar.slice(1).map(paket).concat(kollar.map(paket)), esitN: esN });
 }
 bkZincir9 = function(j){ const M = bkModel9(j); return M ? M.ana : null; };
 let bkSec9 = { id: null, k: -1 };
@@ -8150,7 +8190,7 @@ boyKesit = async function(j){
   if(p && M && M.kollar.length){
     const sec = bkSec9.id === j.id ? bkSec9.k : -1;
     const d = document.createElement("div"); d.className = "bkk9";
-    d.innerHTML = `<button type="button" data-bkkol="-1" class="${sec < 0 ? "on" : ""}"><b>Ana yol</b></button>` + M.kollar.map((k, i) => `<button type="button" data-bkkol="${i}" class="${sec === i ? "on" : ""}"><b>${esc(k.ad)}</b>${k.ayr ? `<small>${esc(k.ayr)}'de ayrılıyor</small>` : ""}</button>`).join("");
+    d.innerHTML = `<button type="button" data-bkkol="-1" class="${sec < 0 ? "on" : ""}"><b>${esc(M.ana.ad || "Ana yol")}</b></button>` + M.kollar.map((k, i) => `<button type="button" data-bkkol="${i}" class="${sec === i ? "on" : ""}"><b>${esc(k.ad)}</b>${k.ayr ? `<small>${esc(k.ayr)}'de ayrılıyor</small>` : ""}</button>`).join("");
     p.querySelector(".b1").after(d);
     d.addEventListener("click", e => { const b = e.target.closest("[data-bkkol]"); if(!b) return; e.stopPropagation(); bkKolSec9(Number(b.dataset.bkkol)); });
     requestAnimationFrame(() => { const on = d.querySelector(".on"); if(on) on.scrollIntoView({ block: "nearest", inline: "center" }); });
@@ -8161,6 +8201,42 @@ boyKesit = async function(j){
 };
 const _bkTemizle77 = bkTemizle9;
 bkTemizle9 = function(){ _bkTemizle77(); bkVurguTemizle9(); };
+
+// ---------- v83: KMZ'de "Km eşitliği" düğmesi: kaç eşitlik varsa gösterir, basınca oraya gider ----------
+function kmEsitDugme9(){
+  const v = document.getElementById("hatv"); if(!v) return;
+  v.querySelectorAll(".kes9, .kesl9").forEach(x => x.remove());
+  const j = hatIs; if(!j || !j.hat) return;
+  const kt = x => { const m = Math.round(x * 1000); return Math.floor(m / 1000) + "+" + String(m % 1000).padStart(3, "0"); };
+  const L = (j.hat.nok || []).map(q => { const e = bkEsit9(q[2]); return e ? { p: [q[0], q[1]], e } : null; }).filter(Boolean);
+  if(!L.length) return;
+  L.sort((a, b) => a.e.g - b.e.g);
+  const solk = v.querySelector(".solk"); if(!solk) return;
+  const b = document.createElement("button"); b.type = "button"; b.className = "kes9";
+  b.innerHTML = `<span>=</span>Km eşitliği<i>${L.length}</i>`;
+  solk.appendChild(b);
+  let isaret = null;
+  const git = x => {
+    try{ yolaYak9(false); konumYak9(false); }catch(_){}
+    if(uc && uc.map && hatMod !== "2b"){ try{ uc.map.flyTo({ center: [x.p[1], x.p[0]], zoom: Math.max(uc.map.getZoom(), 16.5), duration: 900 }); }catch(_){} }
+    else if(hatHarita){ try{ hatHarita.setView(x.p, Math.max(hatHarita.getZoom(), 17), { animate: true });
+      try{ isaret && isaret.remove(); }catch(_){}
+      isaret = L_vurgu9(x.p); setTimeout(() => { try{ isaret && isaret.remove(); }catch(_){} isaret = null; }, 2600); }catch(_){} }
+    v.querySelector(".kesl9")?.remove();
+  };
+  b.addEventListener("click", e => {
+    e.stopPropagation();
+    if(L.length === 1){ git(L[0]); return; }
+    const acik = v.querySelector(".kesl9"); if(acik){ acik.remove(); return; }
+    const l = document.createElement("div"); l.className = "kesl9";
+    l.innerHTML = L.map((x, i) => `<button type="button" data-kes9="${i}"><b>${i + 1}.</b> G ${kt(x.e.g)} = İ ${kt(x.e.i)}</button>`).join("");
+    b.after(l);
+    l.addEventListener("click", ev => { const t = ev.target.closest("[data-kes9]"); if(t){ ev.stopPropagation(); git(L[+t.dataset.kes9]); } });
+  });
+}
+function L_vurgu9(p){ try{ return L.circleMarker(p, { radius: 16, color: "#f59e0b", weight: 3, fillColor: "#f59e0b", fillOpacity: .25, interactive: false, className: "kes9n" }).addTo(hatHarita); }catch(_){ return null; } }
+const _hatGoster83 = hatGoster;
+hatGoster = async function(){ const r = await _hatGoster83.apply(this, arguments); try{ kmEsitDugme9(); }catch(_){} return r; };
 
 function bildir(m){
   document.querySelectorAll(".bildir").forEach(x => x.remove());

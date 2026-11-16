@@ -1516,6 +1516,9 @@ html.dark .exr9 .kmp9 .kt9, html.dark .exr9 .kpa9{ background:#111a2e; border-co
 .kr9{ width:100%; display:flex; align-items:center; gap:12px; text-align:left; font:inherit; color:#111827; background:#fff; border:0; border-radius:18px; padding:12px 14px; box-shadow:0 1px 3px rgba(15,23,42,.06); }
 .kr9 .ic{ width:40px; height:40px; flex:none; border-radius:12px; background:#fff1e8; color:#ea580c; display:flex; align-items:center; justify-content:center; } .kr9 .ic svg{ width:21px; height:21px; }
 .kr9 div{ flex:1; min-width:0; } .kr9 b{ display:block; font-size:14px; font-weight:800; } .kr9 small{ display:block; font-size:12px; color:#64748b; margin-top:1px; } .kr9 em{ font-style:normal; font-size:22px; color:#94a3b8; }
+html.dark .kr9b{ background:#2a1a0e; color:#fb923c; }
+.hk .bs5{ align-items:center; gap:8px; } .bsl9{ display:flex; flex-direction:column; min-width:0; } .bsl9 b,.bsl9 small{ white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kr9b{ display:inline-flex; align-items:center; gap:4px; font:inherit; font-size:12px; font-weight:800; color:#ea580c; background:#fff1e8; border:0; border-radius:999px; padding:5px 10px 5px 8px; flex:none; } .kr9b svg{ width:14px; height:14px; }
 html.dark .kr9{ background:#141c2b; color:#e6ebf3; } html.dark .kr9 .ic{ background:#2a1a0e; }
 .krs9 label{ display:block; font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase; margin:4px 0 6px; }
 .krd9{ display:flex; align-items:center; gap:8px; } .krd9 input{ flex:1; min-width:0; height:46px; border:1px solid #d6dbe3; border-radius:12px; padding:0 10px; font:inherit; font-size:16px; font-weight:700; background:#fff; color:#0f172a; } .krd9 span{ color:#94a3b8; font-weight:800; }
@@ -4233,7 +4236,7 @@ function anasayfa(){
   const d = new Date(D.olusturma);
   return `<div class="h5">${kontur()}${anaUst()}<div class="gd5"><div><b>GENEL DURUM</b><div class="dt"><i></i>Veri ${p2(d.getDate())}.${p2(d.getMonth() + 1)}.${d.getFullYear()} · ${p2(d.getHours())}:${p2(d.getMinutes())}</div></div>${yillar().length > 1 ? `<button class="yil5" data-yilsec>${D.yil} ▾</button>` : `<span class="yil5">${D.yil}</span>`}</div>
 <div class="hs"><div><span class="ikt">${SVG_IS5}</span><div><b>${ISLER.length}</b><small>TOPLAM İŞ</small></div></div><div><span class="ikt o">${SVG_HEDEF5}</span><div><b>${ISLER.filter(j => j.fh).length}</b><small>FİZİKSEL HEDEFLİ</small></div></div></div></div>
-<div class="pad ana5">${eskiUyari()}${genelDurum()}${hikayeSatiri()}${kmRaporDugme9()}</div>`;
+<div class="pad ana5">${eskiUyari()}${genelDurum()}${hikayeSatiri()}</div>`;
 }
 // Genel Durum kartı (başlık ve sayılar artık kapakta)
 function genelDurum(){
@@ -4267,7 +4270,7 @@ function kisaIs(ad){ let t = String(ad || "").trim().split(/\s+/)[0] || ""; if(t
 function hikListe(){ const g = hikGor(); return haftaGirisleri().sort((a, b) => (g.has(hikAnahtar(a)) - g.has(hikAnahtar(b))) || b.k.g - a.k.g); }
 function hikayeSatiri(){
   const l = hikListe(), g = hikGor(), top = l.reduce((s, x) => s + x.km, 0);
-  return `<div class="hk" id="hk"><div class="bs5"><b>Bu Hafta Girilen KM'ler</b><small>${l.length ? `<i>${l.length} giriş</i> · +${f2(top)} km` : ""}</small></div>${l.length ? `<div class="hs2">${l.map((x, i) => { const d = new Date(x.k.g);
+  return `<div class="hk" id="hk"><div class="bs5"><span class="bsl9"><b>Bu Hafta Girilen KM'ler</b>${l.length ? `<small><i>${l.length} giriş</i> · +${f2(top)} km</small>` : ""}</span>${kmRaporDugme9()}</div>${l.length ? `<div class="hs2">${l.map((x, i) => { const d = new Date(x.k.g);
     return `<button class="h${g.has(hikAnahtar(x)) ? " g" : ""}" data-hik="${i}"><span class="hr5"><span class="ic5"><b>+${f2(x.km)}</b><small>KM</small></span></span><span>${esc(kisaIs(x.j.ad))}</span><em>${d.getDate()} ${AYK[d.getMonth()]}</em></button>`; }).join("")}</div>` : '<div class="hbos">Bu hafta henüz KM girilmedi.</div>'}</div>`;
 }
 const HIK_RENK = ["linear-gradient(165deg,#7c2d12,#1e1b2e 60%,#0b1020)", "linear-gradient(165deg,#1e3a8a,#111827 60%,#0b1020)", "linear-gradient(165deg,#14532d,#111827 60%,#0b1020)", "linear-gradient(165deg,#581c87,#111827 60%,#0b1020)", "linear-gradient(165deg,#0f766e,#111827 60%,#0b1020)"];
@@ -7411,7 +7414,7 @@ function raporVeri9(a, b){
 }
 function kmRaporDugme9(){
   if(kmzMi9()) return "";
-  return `<button class="kr9" data-kmrapor><span class="ic">${IK("pdf")}</span><div><b>KM İlerleme Raporu</b><small>İki tarih arasındaki ilerleme · standart ve il bazlı PDF</small></div><em>›</em></button>`;
+  return `<button class="kr9b" data-kmrapor aria-label="KM İlerleme Raporu">${IK("pdf")}Rapor</button>`;
 }
 function kmRaporSayfa9(){
   const [a0, b0] = raporAralik9("ay");

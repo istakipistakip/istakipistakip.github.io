@@ -7496,13 +7496,34 @@ function kmRaporSayfa9(){
 }
 document.addEventListener("click", e => { if(e.target.closest && e.target.closest("[data-kmrapor]")){ e.stopPropagation(); kmRaporSayfa9(); } }, true);
 
+// Rapor her zaman TEK SAYFA: içerik sığmazsa sayfa ölçeklenir (sayfa daha geniş
+// "sanal" bir alanda çizilir, PDF'e A4'e küçültülmüş olarak konur)
 async function kmRaporPdf9(V, a, b, sec){
   sec = sec || {};
   const font = await pdfHazirla();
-  const doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
-  doc.addFileToVFS("dv.ttf", font.normal); doc.addFont("dv.ttf", "DV", "normal");
-  doc.addFileToVFS("dvb.ttf", font.kalin); doc.addFont("dvb.ttf", "DV", "bold");
-  const W = 210, H = 297, X0 = 12, X1 = 198, ALT = 14, KOYU = [15, 26, 46], GRI = [100, 116, 139], CIZ = [226, 232, 240], TUR = [234, 88, 12];
+  const yeniDoc = () => { const d = new window.jspdf.jsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
+    d.addFileToVFS("dv.ttf", font.normal); d.addFont("dv.ttf", "DV", "normal"); d.addFileToVFS("dvb.ttf", font.kalin); d.addFont("dvb.ttf", "DV", "bold"); return d; };
+  const BOS = 297 - 14;                                  // altta sayfa çerçevesi payı
+  const olc = W => kmRaporCiz9(yeniDoc(), V, a, b, sec, W); // içeriğin boyu (W genişlikte, sayfasız)
+  let doc = yeniDoc(), k = 1;
+  const h1 = kmRaporCiz9(doc, V, a, b, sec, 210);
+  if(h1 > BOS){
+    // en büyük ölçeği bul: genişlik arttıkça satırlar daha az kırılır, boy kısalır
+    let alt = BOS / h1, ust = 1;
+    for(let i = 0; i < 7; i++){ const m = (alt + ust) / 2; if(olc(210 / m) * m <= BOS) alt = m; else ust = m; }
+    k = alt; doc = yeniDoc();
+    const P = doc.internal.pageSize.getHeight() * doc.internal.scaleFactor;
+    doc.internal.write("q", `${k.toFixed(5)} 0 0 ${k.toFixed(5)} 0 ${(P * (1 - k)).toFixed(3)} cm`);
+    kmRaporCiz9(doc, V, a, b, sec, 210 / k);
+    doc.internal.write("Q");
+  }
+  pdfCerceve(doc);
+  const ad = dosyaGuvenli(`KM İlerleme Raporu (${trG9(a)}-${trG9(b)})`) + ".pdf", bytes = doc.output("arraybuffer");
+  pdfDurum = { tek: true, j: null, sec: new Set(), bol: {}, ara: "", ad, blob: new Blob([bytes.slice(0)], { type: "application/pdf" }), dosya: new File([bytes.slice(0)], ad, { type: "application/pdf" }), rapor: 1 };
+}
+// raporu W mm genişlikte, sayfa bölmeden çizer; içeriğin bittiği y'yi döndürür
+function kmRaporCiz9(doc, V, a, b, sec, Wg){
+  const W = Wg, H = 1e6, X0 = 12, X1 = W - 12, ALT = 14, KOYU = [15, 26, 46], GRI = [100, 116, 139], CIZ = [226, 232, 240], TUR = [234, 88, 12];
   const yaz = (t, x, y, o = {}) => { doc.setFont("DV", o.k ? "bold" : "normal"); doc.setFontSize(o.f || 8); doc.setTextColor(...(o.c || KOYU)); doc.text(String(t), x, y, o.r ? { align: "right" } : undefined); };
   const gun = Math.round((new Date(b) - new Date(a)) / 864e5) + 1;
   // başlık
@@ -7541,7 +7562,7 @@ async function kmRaporPdf9(V, a, b, sec){
   };
   y = Math.max(tablo(X0, y, "STANDART BAZLI", "STANDART", V.std), tablo(X0 + tw + 5, y, "İL BAZLI", "İL", V.il), V.bir.length ? tablo(X0 + 2 * (tw + 5), y, "BİRİM BAZLI", "BİRİM", V.bir) : 0) + 7;
   // iş bazlı tablo
-  const AR = !!sec.aralik, C = AR ? { is: X0 + 2, il: X0 + 76, st: X0 + 102, ar: X0 + 127, km: X1 - 2 } : { is: X0 + 2, il: X0 + 108, st: X0 + 142, km: X1 - 2 };
+  const fx = (X1 - X0) / 186, AR = !!sec.aralik, C = AR ? { is: X0 + 2, il: X0 + 76 * fx, st: X0 + 102 * fx, ar: X0 + 127 * fx, km: X1 - 2 } : { is: X0 + 2, il: X0 + 108 * fx, st: X0 + 142 * fx, km: X1 - 2 };
   const baslik = () => {
     doc.setFillColor(241, 245, 249); doc.roundedRect(X0, y, X1 - X0, 8, 1, 1, "F"); doc.rect(X0, y + 4, X1 - X0, 4, "F");
     doc.setDrawColor(...KOYU); doc.setLineWidth(0.5); doc.line(X0, y + 8, X1, y + 8);
@@ -7584,9 +7605,7 @@ async function kmRaporPdf9(V, a, b, sec){
   if(y + 7 > H - ALT){ doc.addPage("a4", "portrait"); y = 14; }
   doc.setFillColor(255, 247, 237); doc.rect(X0, y, X1 - X0, 7, "F"); doc.setDrawColor(253, 186, 116); doc.setLineWidth(0.4); doc.line(X0, y, X1, y);
   yaz("Toplam", C.is, y + 4.8, { k: 1, f: 8.6 }); yaz(f2(V.top), C.km, y + 4.8, { k: 1, f: 8.6, r: 1 });
-  pdfCerceve(doc);
-  const ad = dosyaGuvenli(`KM İlerleme Raporu (${trG9(a)}-${trG9(b)})`) + ".pdf", bytes = doc.output("arraybuffer");
-  pdfDurum = { tek: true, j: null, sec: new Set(), bol: {}, ara: "", ad, blob: new Blob([bytes.slice(0)], { type: "application/pdf" }), dosya: new File([bytes.slice(0)], ad, { type: "application/pdf" }), rapor: 1 };
+  return y + 7;
 }
 
 // ---------- v73: rapor filtresi, görsel kart, animasyonlar ----------

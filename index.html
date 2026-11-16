@@ -1577,6 +1577,7 @@ html.dark .krf9{ background:#141c2b; border-color:#334155; color:#e6ebf3; } html
 .bkk9 button{ flex:none; font:inherit; border:1px solid rgba(148,163,184,.35); background:transparent; color:inherit; border-radius:12px; padding:5px 10px; text-align:left; line-height:1.2; max-width:190px; }
 .bkk9 button b{ display:block; font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .bkk9 button small{ display:block; font-size:10px; font-weight:600; color:#64748b; white-space:nowrap; }
 .bkk9 button.on{ background:#ea580c; border-color:#ea580c; color:#fff; } .bkk9 button.on small{ color:rgba(255,255,255,.85); }
+.bk6p .b1 span{ text-align:right; line-height:1.15; } .bk6p .b1 span small{ display:block; font-size:10.5px; font-weight:700; color:#64748b; }
 </style>
 </head>
 <body>
@@ -5223,10 +5224,10 @@ async function boyKesit(j){
   catch(_){ const y = p.querySelector("#bk6yk"); if(y) y.innerHTML = "Arazi verisi alınamadı.<br>Boy kesit için internet gerekir; bir kez açılan yol sonra internetsiz de görünür."; return; }
   if(!document.getElementById("bk6")) return;
   // KM etiketleri: KMZ'deki "12+000" noktalarının çizgi üzerindeki yeri
-  const km = []; (ana.etik || (ana.kol ? [] : j.hat.nok)).forEach(q => { const mm = /(\d+)\s*\+\s*(\d{3})/.exec(q[2] || ""); if(!mm) return; const et = mm[1] + "+" + mm[2]; let bi = 0, bd = 1e18; S.forEach((s, i) => { const dd = (s.p[0] - q[0]) ** 2 + (s.p[1] - q[1]) ** 2; if(dd < bd){ bd = dd; bi = i; } }); if(mesafe6(S[bi].p, [q[0], q[1]]) < 300) km.push([S[bi].d, et]); });
+  const km = []; (ana.etik || (ana.kol ? [] : j.hat.nok.filter(q => !bkEsit9(q[2])))).forEach(q => { const mm = /(\d+)\s*\+\s*(\d{3})/.exec(q[2] || ""); if(!mm) return; const et = mm[1] + "+" + mm[2]; let bi = 0, bd = 1e18; S.forEach((s, i) => { const dd = (s.p[0] - q[0]) ** 2 + (s.p[1] - q[1]) ** 2; if(dd < bd){ bd = dd; bi = i; } }); if(mesafe6(S[bi].p, [q[0], q[1]]) < 300) km.push([S[bi].d, et]); });
   if(ana.kol && km.length < 2){ km.length = 0; const st = top > 3000 ? 1000 : top > 1200 ? 500 : top > 500 ? 200 : 100; for(let d = 0; d <= top + 1; d += st) km.push([Math.min(d, top), kmYaz(Math.min(d, top) / 1000)]); }   // kolun kendi km'si (kavşakta 0+000)
   km.sort((a, b) => a[0] - b[0]);
-  const kmAd = d => { if(km.length >= 2){ let a = km[0], b = km[km.length - 1]; for(let i = 0; i < km.length - 1; i++) if(km[i][0] <= d && km[i + 1][0] >= d){ a = km[i]; b = km[i + 1]; break; } const va = kmSayi(a[1]), vb = kmSayi(b[1]); if(va !== null && vb !== null && b[0] !== a[0]) return kmYaz(va + (vb - va) * (d - a[0]) / (b[0] - a[0])); } return f2(d / 1000) + " km"; };
+  const kmAd = d => { if(ana.kmF){ const v = ana.kmF(d); if(Number.isFinite(v)) return kmYaz(v); } if(km.length >= 2){ let a = km[0], b = km[km.length - 1]; for(let i = 0; i < km.length - 1; i++) if(km[i][0] <= d && km[i + 1][0] >= d){ a = km[i]; b = km[i + 1]; break; } const va = kmSayi(a[1]), vb = kmSayi(b[1]); if(va !== null && vb !== null && b[0] !== a[0]) return kmYaz(va + (vb - va) * (d - a[0]) / (b[0] - a[0])); } return f2(d / 1000) + " km"; };
   const hs = S.map(s => s.h), hmin = Math.min(...hs), hmax = Math.max(...hs);
   let eg = 0; const w = Math.max(1, Math.round(200 / (top / N))); for(let i = w; i < S.length; i++) eg = Math.max(eg, Math.abs(S[i].h - S[i - w].h) / Math.max(1, S[i].d - S[i - w].d) * 100);
   let cik = 0; for(let i = 1; i < S.length; i++) cik += Math.max(0, S[i].h - S[i - 1].h);
@@ -5242,6 +5243,9 @@ async function boyKesit(j){
     for(let i = 0; i <= 3; i++){ const h = lo + (hi - lo) * i / 3, y = Y(h); g.beginPath(); g.moveTo(L, y); g.lineTo(W - R, y); g.stroke(); g.fillText(Math.round(h) + "", 2, y + 3); }
     const sec = km.length > 6 ? km.filter((_, i) => i % Math.ceil(km.length / 5) === 0) : km; let sx = -99;
     sec.forEach(([d, t]) => { const x = X(d); if(x - sx < 46) return; sx = x; g.fillText(t, Math.min(x - 14, W - 44), H - 4); g.beginPath(); g.moveTo(x, H - B); g.lineTo(x, H - B + 4); g.stroke(); });
+    (ana.esit || []).forEach(e => { const x = Math.round(X(e.c)) + .5; g.save(); g.strokeStyle = "#f59e0b"; g.lineWidth = 1.2; g.setLineDash([4, 3]); g.beginPath(); g.moveTo(x, T); g.lineTo(x, H - B); g.stroke(); g.setLineDash([]);
+      const kt = v => { const m = Math.round(v * 1000); return Math.floor(m / 1000) + "+" + String(m % 1000).padStart(3, "0"); }, t = "G " + kt(e.g) + " = İ " + kt(e.i); g.font = "800 9px system-ui"; const tw = g.measureText(t).width + 8, tx = Math.max(L, Math.min(x - tw / 2, W - R - tw));
+      g.fillStyle = koyu ? "rgba(245,158,11,.25)" : "rgba(254,243,199,.95)"; g.fillRect(tx, T, tw, 13); g.fillStyle = koyu ? "#fbbf24" : "#b45309"; g.fillText(t, tx + 4, T + 9.5); g.restore(); });
     if(sinirlar.length){ g.save(); g.strokeStyle = koyu ? "rgba(226,232,240,.45)" : "rgba(15,23,42,.35)"; g.lineWidth = 1; g.setLineDash([2, 3]); sinirlar.forEach(d => { const x = Math.round(X(d)) + .5; g.beginPath(); g.moveTo(x, T); g.lineTo(x, H - B); g.stroke(); }); g.restore(); }
     const gr = g.createLinearGradient(0, T, 0, H - B); gr.addColorStop(0, "rgba(234,88,12,.35)"); gr.addColorStop(1, "rgba(234,88,12,.02)");
     g.beginPath(); g.moveTo(X(0), H - B); S.forEach(s => g.lineTo(X(s.d), Y(s.h))); g.lineTo(X(top), H - B); g.closePath(); g.fillStyle = gr; g.fill();
@@ -5250,8 +5254,10 @@ async function boyKesit(j){
   };
   ciz();
   const goster = ev => { const r = c.getBoundingClientRect(), d = Math.max(0, Math.min(1, (ev.clientX - r.left - L) / (W - L - R))) * top; let ix = 0; S.forEach((s, i) => { if(Math.abs(s.d - d) < Math.abs(S[ix].d - d)) ix = i; });
-    ciz(ix); const b = document.querySelector("#bk6 .b1 span"); if(b) b.innerHTML = `<b>${esc(kmAd(S[ix].d))}</b> · ${Math.round(S[ix].h)} m`;
-    bkIsaretKoy9(S[ix].p, kmAd(S[ix].d)); };
+    ciz(ix); const b = document.querySelector("#bk6 .b1 span");
+    const projeVar = !!ana.kmF || km.length >= 2, pk = kmAd(S[ix].d), bt = kmYaz(S[ix].d / 1000);
+    if(b) b.innerHTML = projeVar ? `<b>${esc(pk)}</b> · ${Math.round(S[ix].h)} m<small>Baştan ${esc(bt)}</small>` : `<b>${esc(bt)}</b> · ${Math.round(S[ix].h)} m<small>Baştan</small>`;
+    bkIsaretKoy9(S[ix].p, projeVar ? pk + " · baştan " + bt : bt); };
   c.addEventListener("pointerdown", e => { c.setPointerCapture(e.pointerId); goster(e); });
   c.addEventListener("pointermove", e => { if(e.buttons || e.pointerType === "touch") goster(e); });
 }
@@ -7922,6 +7928,32 @@ function bkYakin9(pt, p){
   for(let i = Math.max(0, bi - st); i <= Math.min(p.length - 1, bi + st); i++){ const d = mesafe6(pt, p[i]); if(d < bd){ bd = d; bi = i; } }
   return { d: bd, i: bi };
 }
+// KM eşitliği noktası: "Km= İ:30+300 / G:35+377" ya da "35+377 = 30+300" (geri = ileri)
+function bkEsit9(t){
+  t = String(t || "");
+  const i = /(?:İ|I|i|ı)\s*[:=]\s*(\d+)\s*\+\s*(\d{3})/.exec(t), g = /(?:G|g)\s*[:=]\s*(\d+)\s*\+\s*(\d{3})/.exec(t);
+  if(i && g) return { g: +g[1] + +g[2] / 1000, i: +i[1] + +i[2] / 1000 };
+  const m = /(\d+)\s*\+\s*(\d{3})\s*=\s*(\d+)\s*\+\s*(\d{3})/.exec(t);
+  return m ? { g: +m[1] + +m[2] / 1000, i: +m[3] + +m[4] / 1000 } : null;
+}
+// proje km fonksiyonu: KM noktaları L [{c,v}] ve eşitlikler E [{c,g,i}] (c: hat boyunca metre) → c'deki proje km'si
+function bkKmFn9(L, E){
+  E = (E || []).slice().sort((a, b) => a.c - b.c);
+  const off = c => E.reduce((t, e) => t + (e.c < c ? e.g - e.i : 0), 0);
+  const P = L.map(x => ({ c: x.c, v: x.v + off(x.c) })).concat(E.map(e => ({ c: e.c, v: e.g + off(e.c) }))).sort((a, b) => a.c - b.c);
+  if(P.length < 2 || P[P.length - 1].c - P[0].c < 1) return null;
+  const ic = c => { let a = P[0], b = P[1];
+    if(c > P[P.length - 1].c){ a = P[P.length - 2]; b = P[P.length - 1]; }
+    else for(let k = 0; k < P.length - 1; k++) if(P[k].c <= c && P[k + 1].c >= c && P[k + 1].c > P[k].c){ a = P[k]; b = P[k + 1]; break; }
+    return b.c === a.c ? a.v : a.v + (b.v - a.v) * (c - a.c) / (b.c - a.c); };
+  return c => ic(c) - off(c);
+}
+// yön eğilimi (eşitlikler hesaba katılarak); >0: c arttıkça km artıyor
+function bkYonEgim9(L, E, T, ters){
+  const cc = c => ters ? T - c : c, E2 = (E || []).map(e => ({ c: cc(e.c), g: e.g, i: e.i }));
+  const off = c => E2.reduce((t, e) => t + (e.c < c ? e.g - e.i : 0), 0);
+  return bkEgim9(L.map(x => ({ c: cc(x.c), v: x.v + off(cc(x.c)) })).concat(E2.map(e => ({ c: e.c, v: e.g + off(e.c) }))));
+}
 function bkEgim9(pr){ if(pr.length < 2) return 0; const mc = pr.reduce((t, x) => t + x.c, 0) / pr.length, mv = pr.reduce((t, x) => t + x.v, 0) / pr.length; return pr.reduce((t, x) => t + (x.c - mc) * (x.v - mv), 0); }
 // noktanın çizgiye (parçalara) uzaklığı, metre
 function bkHatUzak9(pt, p){
@@ -7947,7 +7979,8 @@ function bkModel9(j){
     if(!tut.some(t => orn.filter(p => bkYakin9(p, t.p).d < 60).length >= 4)) tut.push(q); });
   par = tut;
   // KM noktaları (12+000 gibi)
-  const kmN = (j.hat.nok || []).map(q => { const m = KMRX9.exec(q[2] || ""); return m ? { p: [q[0], q[1]], v: kmSayi(m[1] + "+" + m[2]), q } : null; }).filter(x => x && x.v !== null);
+  const esN = (j.hat.nok || []).map(q => { const e = bkEsit9(q[2]); return e ? { p: [q[0], q[1]], g: e.g, i: e.i, q } : null; }).filter(Boolean);
+  const kmN = (j.hat.nok || []).filter(q => !bkEsit9(q[2])).map(q => { const m = KMRX9.exec(q[2] || ""); return m ? { p: [q[0], q[1]], v: kmSayi(m[1] + "+" + m[2]), q } : null; }).filter(x => x && x.v !== null);
   par.forEach(q => q.k = kmN.filter(n => bkYakin9(n.p, q.p).d < 80).length);
   // ana yol en uzun parçadan başlar (yan yolların kendi KM noktaları olabildiği için KM sayısına bakılmaz)
   let ilk = par[0];
@@ -7997,10 +8030,16 @@ function bkModel9(j){
     kmN.filter(n => n.amb).forEach(n => { const t = icAra(net, n.c); n.ana = t === null ? true : Math.abs(t - n.v) <= 0.3; }); }
   const anaEt = kmN.filter(n => n.ana).map(n => n.q);
   const proj = kmN.filter(n => n.ana).map(n => ({ c: n.c, v: n.v })).sort((a, b) => a.c - b.c);
-  if(proj.length >= 2 && proj[proj.length - 1].c > proj[0].c){
-    if(bkEgim9(proj) < 0){ const N = z.length; z = z.slice().reverse(); kop = kop.map(i => N - i); kum = bkKum9(z, new Set(kop)); proj.forEach(x => x.c = kum[kum.length - 1] - x.c); proj.reverse(); }
-  }
-  const anaKm = c => { if(proj.length >= 2){ let a = proj[0], b = proj[proj.length - 1]; for(let i = 0; i < proj.length - 1; i++) if(proj[i].c <= c && proj[i + 1].c >= c){ a = proj[i]; b = proj[i + 1]; break; } if(b.c !== a.c) return kmYaz(a.v + (b.v - a.v) * (c - a.c) / (b.c - a.c)); } return f2(c / 1000) + " km"; };
+  // eşitlik noktaları: ana yola en yakın olanlar
+  esN.forEach(e => { const r = bkYakin9(e.p, z); e.dz = r.d; e.c = kum[r.i]; e.dk = Math.min(1e18, ...kal.map(q => bkYakin9(e.p, q.p).d)); e.ana = e.dz < 300 && e.dz <= e.dk; });
+  let esA = esN.filter(e => e.ana).map(e => ({ c: e.c, g: e.g, i: e.i }));
+  { const T = kum[kum.length - 1];
+    if(proj.length + esA.length >= 2 && bkYonEgim9(proj, esA, T, true) > bkYonEgim9(proj, esA, T, false)){
+      const N = z.length; z = z.slice().reverse(); kop = kop.map(i => N - i); kum = bkKum9(z, new Set(kop));
+      proj.forEach(x => x.c = T - x.c); proj.reverse(); esA.forEach(e => e.c = T - e.c); } }
+  esA.sort((a, b) => a.c - b.c);
+  const anaF = bkKmFn9(proj, esA);
+  const anaKm = c => { if(anaF){ const v = anaF(c); if(Number.isFinite(v)) return kmYaz(v); } if(proj.length >= 2){ let a = proj[0], b = proj[proj.length - 1]; for(let i = 0; i < proj.length - 1; i++) if(proj[i].c <= c && proj[i + 1].c >= c){ a = proj[i]; b = proj[i + 1]; break; } if(b.c !== a.c) return kmYaz(a.v + (b.v - a.v) * (c - a.c) / (b.c - a.c)); } return f2(c / 1000) + " km"; };
   // kollar: ana yola değen parçalar, kavşak ucundan başlar; uç uca devam eden parçalar eklenir
   const genel = /^(untitled|adsız|adsiz|path|line|yol|çizgi|cizgi|hat|polyline|linestring|yeni|new)\b/i;
   const kollar = [];
@@ -8032,11 +8071,13 @@ function bkModel9(j){
         const x = pr[0], km = x.v * 1000; ters = Math.abs(km - (T - x.c)) < Math.abs(km - x.c); }
       if(ters){ const N = p.length; p = p.slice().reverse(); kkop = new Set([...kkop].map(i => N - i)); }
     }
-    kollar.push({ p, kop: kkop, ad, c: kum[ki.i], ayr: ki.d < 300 ? anaKm(kum[ki.i]) : null, kol: 1, etik: ket.map(n => n.q) });
+    const kk2 = bkKum9(p, kkop), kE = esN.filter(e => !e.ana && bkYakin9(e.p, p).d < 80).map(e => ({ c: kk2[bkYakin9(e.p, p).i], g: e.g, i: e.i }));
+    const kF = ket.length + kE.length >= 2 ? bkKmFn9(ket.map(n => ({ c: kk2[bkYakin9(n.p, p).i], v: n.v })), kE) : null;
+    kollar.push({ p, kop: kkop, ad, c: kum[ki.i], ayr: ki.d < 300 ? anaKm(kum[ki.i]) : null, kol: 1, etik: ket.map(n => n.q), kmF: kF, esit: kE });
   }
   kollar.sort((a, b) => a.c - b.c);
   let adsiz = 0; kollar.forEach(k => { if(!k.ad) k.ad = "Kol " + (++adsiz); });
-  return (j._bkM9 = { h: j.hat, ana: { p: z, kop: new Set(kop), etik: anaEt }, kollar });
+  return (j._bkM9 = { h: j.hat, ana: { p: z, kop: new Set(kop), etik: anaEt, kmF: anaF, esit: esA }, kollar });
 }
 bkZincir9 = function(j){ const M = bkModel9(j); return M ? M.ana : null; };
 let bkSec9 = { id: null, k: -1 };

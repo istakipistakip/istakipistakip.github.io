@@ -7395,7 +7395,8 @@ function raporVeri9(a, b){
       const km = kmUz9(k); if(!(km > 0)) return;
       const g = G.get(k.s) || { s: k.s, km: 0, ar: [] }; g.km += km; g.ar.push({ a: k.a, e: k.e, y: k.y, t }); G.set(k.s, g);
       std.set(k.s, (std.get(k.s) || 0) + km);
-      const ik = j.il.length === 1 ? j.il[0] : "Birden fazla il"; il.set(ik, (il.get(ik) || 0) + km);
+      // birden fazla ildeki işin km'si iller arasında eşit bölünür
+      const iL = (j.il || []).filter(Boolean); (iL.length ? iL : ["İl belirtilmemiş"]).forEach(ik => il.set(ik, (il.get(ik) || 0) + km / (iL.length || 1)));
       const bk = String(j.birim || "").trim() || BIRSIZ9; bir.set(bk, (bir.get(bk) || 0) + km);
       top += km; n++;
     });
@@ -7405,7 +7406,7 @@ function raporVeri9(a, b){
   });
   isler.sort((x, y) => ilS(x.j.il.length === 1 ? x.j.il[0] : "~") - ilS(y.j.il.length === 1 ? y.j.il[0] : "~") || y.km - x.km);
   const stdL = [...std].sort((x, y) => stdS(x[0]) - stdS(y[0]) || y[1] - x[1]);
-  const ilL = [...il].sort((x, y) => (x[0] === "Birden fazla il") - (y[0] === "Birden fazla il") || ilS(x[0]) - ilS(y[0]) || x[0].localeCompare(y[0], "tr"));
+  const ilL = [...il].sort((x, y) => (x[0] === "İl belirtilmemiş") - (y[0] === "İl belirtilmemiş") || ilS(x[0]) - ilS(y[0]) || x[0].localeCompare(y[0], "tr"));
   const bs = birimler9(), bS = x => x === BIRSIZ9 ? 9999 : (bs.indexOf(x) + 1 || 999);
   const birL = [...bir].sort((x, y) => bS(x[0]) - bS(y[0]) || x[0].localeCompare(y[0], "tr"));
   // birim varsa işler birim birim (birim sırası, içinde il sırası)
@@ -7470,10 +7471,9 @@ async function kmRaporPdf9(V, a, b, sec){
   // standart, il (ve birim) tabloları yan yana
   const TS = V.bir.length ? 3 : 2, tw = (X1 - X0 - 5 * (TS - 1)) / TS, dar = TS === 3, bw = dar ? 11 : 20, nx = dar ? 16 : 26;
   const tablo = (x, y, baslik, sutun, L) => {
-    doc.setFillColor(...KOYU); doc.roundedRect(x, y, tw, 7, 1, 1, "F"); doc.rect(x, y + 4, tw, 3, "F");
-    yaz(baslik, x + 3, y + 4.8, { k: 1, f: 8, c: [255, 255, 255] }); y += 7;
-    doc.setFillColor(248, 250, 252); doc.rect(x, y, tw, 5.5, "F");
-    yaz(sutun, x + 3, y + 3.8, { k: 1, f: 6.5, c: GRI }); yaz("KM", x + tw - 3, y + 3.8, { k: 1, f: 6.5, c: GRI, r: 1 }); y += 5.5;
+    doc.setFillColor(241, 245, 249); doc.roundedRect(x, y, tw, 8, 1, 1, "F"); doc.rect(x, y + 4, tw, 4, "F");
+    doc.setDrawColor(...KOYU); doc.setLineWidth(0.5); doc.line(x, y + 8, x + tw, y + 8);
+    yaz(sutun, x + 3, y + 5.5, { k: 1, f: 9.5, c: KOYU }); yaz("KM", x + tw - 3, y + 5.5, { k: 1, f: 9.5, c: KOYU, r: 1 }); y += 8;
     const mx = Math.max(...L.map(r => r[1]), 0.001);
     L.forEach(([ad, km]) => {
       doc.setFillColor(...TUR); doc.roundedRect(x + 3, y + 2.4, Math.max(1.2, bw * km / mx), 1.8, 0.9, 0.9, "F");
@@ -7491,11 +7491,10 @@ async function kmRaporPdf9(V, a, b, sec){
   // iş bazlı tablo
   const AR = !!sec.aralik, C = AR ? { is: X0 + 2, il: X0 + 76, st: X0 + 102, ar: X0 + 127, km: X1 - 2 } : { is: X0 + 2, il: X0 + 108, st: X0 + 142, km: X1 - 2 };
   const baslik = () => {
-    doc.setFillColor(...KOYU); doc.roundedRect(X0, y, X1 - X0, 7, 1, 1, "F"); doc.rect(X0, y + 4, X1 - X0, 3, "F");
-    yaz("İŞ BAZLI", X0 + 3, y + 4.8, { k: 1, f: 8, c: [255, 255, 255] }); y += 7;
-    doc.setFillColor(248, 250, 252); doc.rect(X0, y, X1 - X0, 5.5, "F");
-    [["İŞ", C.is], ["İL", C.il], ["STANDART", C.st]].concat(AR ? [["KM ARALIKLARI · TARİH", C.ar]] : []).forEach(([t, x]) => yaz(t, x, y + 3.8, { k: 1, f: 6.5, c: GRI }));
-    yaz("KM", C.km, y + 3.8, { k: 1, f: 6.5, c: GRI, r: 1 }); y += 5.5;
+    doc.setFillColor(241, 245, 249); doc.roundedRect(X0, y, X1 - X0, 8, 1, 1, "F"); doc.rect(X0, y + 4, X1 - X0, 4, "F");
+    doc.setDrawColor(...KOYU); doc.setLineWidth(0.5); doc.line(X0, y + 8, X1, y + 8);
+    [["İŞ", C.is], ["İL", C.il], ["STANDART", C.st]].concat(AR ? [["KM ARALIKLARI · TARİH", C.ar]] : []).forEach(([t, x]) => yaz(t, x, y + 5.5, { k: 1, f: 9.5, c: KOYU }));
+    yaz("KM", C.km, y + 5.5, { k: 1, f: 9.5, c: KOYU, r: 1 }); y += 8;
   };
   if(y + 30 > H - ALT){ doc.addPage("a4", "portrait"); y = 14; }
   baslik();

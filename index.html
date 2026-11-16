@@ -1572,6 +1572,11 @@ html.dark .krs9 .sw{ color:#e6ebf3; } html.dark .krs9 .sw span{ background:#3341
 .rpa9.az .pg9,.rpa9.az .pg9 *{ animation:none !important; }
 html.dark .rpa9{ background:rgba(11,16,32,.96); } html.dark .pr9 b{ color:#e6ebf3; } html.dark .krt9{ background:#1e293b; } html.dark .krt9 button.on{ background:#334155; color:#fff; }
 html.dark .krf9{ background:#141c2b; border-color:#334155; color:#e6ebf3; } html.dark .krfg9{ border-color:#334155; } html.dark .krc9 button.on{ background:#e6ebf3; color:#0f172a; } html.dark .kgb9 .btn2{ background:#1e293b; color:#e6ebf3; }
+/* v77: boy kesit kol seçimi */
+.bkk9{ display:flex; gap:6px; overflow-x:auto; margin:8px -2px 0; padding:0 2px 2px; scrollbar-width:none; } .bkk9::-webkit-scrollbar{ display:none; }
+.bkk9 button{ flex:none; font:inherit; border:1px solid rgba(148,163,184,.35); background:transparent; color:inherit; border-radius:12px; padding:5px 10px; text-align:left; line-height:1.2; max-width:190px; }
+.bkk9 button b{ display:block; font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .bkk9 button small{ display:block; font-size:10px; font-weight:600; color:#64748b; white-space:nowrap; }
+.bkk9 button.on{ background:#ea580c; border-color:#ea580c; color:#fff; } .bkk9 button.on small{ color:rgba(255,255,255,.85); }
 </style>
 </head>
 <body>
@@ -3233,7 +3238,7 @@ async function pdfIs(doc, j, bol){
       if(ciz(sahte, y + mh) <= Hs){ sec = ad; break; }
     }
     Object.assign(PDF, { o: sec[0], a: sec[1], olcum: false });
-    if(harV){ const mw = gen * sec[2]; y += await pdfHarita(doc, j, PDF.k + (gen - mw) / 2, y, mw) + 4; }
+    if(harV){ const mw = gen * sec[2] * 0.75; /* harita %25 küçük */ y += await pdfHarita(doc, j, PDF.k + (gen - mw) / 2, y, mw) + 4; }
     y = ciz(doc, y);
     Object.assign(PDF, { o: 1, a: 1 });
     pdfTam(doc);
@@ -5207,7 +5212,7 @@ async function boyKesit(j){
   p.innerHTML = `<div class="b1"><b>Boy Kesit</b><em>yaklaşık</em><span></span><button data-bkkapat aria-label="Kapat">${IK("x")}</button></div><div class="yk" id="bk6yk">Arazi verisi alınıyor…</div>`;
   hv.appendChild(p);
   p.querySelector("[data-bkkapat]").addEventListener("click", () => { p.remove(); bkTemizle9(); });
-  const ana = bkZincir9(j) || (anaCizgiler(j)[0] || j.hat.cizgi.slice().sort((a, b) => b.p.length - a.p.length)[0]); if(!ana || ana.p.length < 2){ p.querySelector("#bk6yk").textContent = "Bu işin çizgisi boy kesit için yetersiz."; return; }
+  const ana = bkSecHat9(j) || (anaCizgiler(j)[0] || j.hat.cizgi.slice().sort((a, b) => b.p.length - a.p.length)[0]); if(!ana || ana.p.length < 2){ p.querySelector("#bk6yk").textContent = "Bu işin çizgisi boy kesit için yetersiz."; return; }
   const kop = ana.kop || new Set();
   const cum = [0]; for(let i = 1; i < ana.p.length; i++) cum.push(cum[i - 1] + (kop.has(i) ? 0 : mesafe6(ana.p[i - 1], ana.p[i])));
   bkHat9 = { p: ana.p, kop };
@@ -5218,7 +5223,8 @@ async function boyKesit(j){
   catch(_){ const y = p.querySelector("#bk6yk"); if(y) y.innerHTML = "Arazi verisi alınamadı.<br>Boy kesit için internet gerekir; bir kez açılan yol sonra internetsiz de görünür."; return; }
   if(!document.getElementById("bk6")) return;
   // KM etiketleri: KMZ'deki "12+000" noktalarının çizgi üzerindeki yeri
-  const km = []; j.hat.nok.forEach(q => { const mm = /(\d+)\s*\+\s*(\d{3})/.exec(q[2] || ""); if(!mm) return; const et = mm[1] + "+" + mm[2]; let bi = 0, bd = 1e18; S.forEach((s, i) => { const dd = (s.p[0] - q[0]) ** 2 + (s.p[1] - q[1]) ** 2; if(dd < bd){ bd = dd; bi = i; } }); if(mesafe6(S[bi].p, [q[0], q[1]]) < 300) km.push([S[bi].d, et]); });
+  const km = []; if(!ana.kol) j.hat.nok.forEach(q => { const mm = /(\d+)\s*\+\s*(\d{3})/.exec(q[2] || ""); if(!mm) return; const et = mm[1] + "+" + mm[2]; let bi = 0, bd = 1e18; S.forEach((s, i) => { const dd = (s.p[0] - q[0]) ** 2 + (s.p[1] - q[1]) ** 2; if(dd < bd){ bd = dd; bi = i; } }); if(mesafe6(S[bi].p, [q[0], q[1]]) < 300) km.push([S[bi].d, et]); });
+  if(ana.kol){ const st = top > 3000 ? 1000 : top > 1200 ? 500 : top > 500 ? 200 : 100; for(let d = 0; d <= top + 1; d += st) km.push([Math.min(d, top), kmYaz(Math.min(d, top) / 1000)]); }   // kolun kendi km'si (kavşakta 0+000)
   km.sort((a, b) => a[0] - b[0]);
   const kmAd = d => { if(km.length >= 2){ let a = km[0], b = km[km.length - 1]; for(let i = 0; i < km.length - 1; i++) if(km[i][0] <= d && km[i + 1][0] >= d){ a = km[i]; b = km[i + 1]; break; } const va = kmSayi(a[1]), vb = kmSayi(b[1]); if(va !== null && vb !== null && b[0] !== a[0]) return kmYaz(va + (vb - va) * (d - a[0]) / (b[0] - a[0])); } return f2(d / 1000) + " km"; };
   const hs = S.map(s => s.h), hmin = Math.min(...hs), hmax = Math.max(...hs);
@@ -7781,7 +7787,7 @@ function isListe9(c, V, ilSon){
 
 function kartGoster9(blob, a, b){
   const ad = `KM Kartı (${trG9(a)}-${trG9(b)}).png`, dosya = new File([blob], ad, { type: "image/png" }), url = URL.createObjectURL(blob);
-  const ov = altSayfa(IK("paylas"), aralikAd9(a, b) + " Kartı", "Telefonda hazırlandı · hiçbir yere gönderilmedi", `<div class="kgs9"><div class="kgi9"><img src="${url}" alt="KM kartı"></div><div class="kgb9"><button class="btn" data-kg9p>${IK("paylas")}Paylaş</button><button class="btn2" data-kg9k>↓ Kaydet</button></div></div>`);
+  const ov = altSayfa(IK("paylas"), aralikAd9(a, b) + " Kartı", "", `<div class="kgs9"><div class="kgi9"><img src="${url}" alt="KM kartı"></div><div class="kgb9"><button class="btn" data-kg9p>${IK("paylas")}Paylaş</button><button class="btn2" data-kg9k>↓ Kaydet</button></div></div>`);
   const kaydet = () => { const l = document.createElement("a"); l.href = url; l.download = ad; document.body.appendChild(l); l.click(); l.remove(); };
   ov.addEventListener("click", async e => {
     if(e.target.closest("[data-kg9p]")){
@@ -7889,6 +7895,167 @@ genelAnim = function(){
   if(!ilk || azHareket) return;
   [document.getElementById("gd"), document.getElementById("hk")].forEach((el, i) => el && el.animate([{ transform: "translateY(60px)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 600, delay: i * 90, easing: "cubic-bezier(.2,1.1,.4,1)", fill: "backwards" }));
 };
+
+// ---------- v77: KMZ Konumum düğmesi basılınca turuncu yanık kalır ----------
+// Harita başka yere gidince (elle kaydırma / yakınlaştırma, "hatta dön", başka iş) söner.
+let konumAcik9 = false, konumDok9 = null, konumZam9 = 0;
+function konumYak9(on){ konumAcik9 = on; const b = document.querySelector("#hatv [data-konumum]"); if(b){ clearTimeout(b._t9); b.classList.toggle("on", !!on); } }
+window.addEventListener("click", e => {
+  if(!e.target.closest) return;
+  if(e.target.closest("#hatv [data-konumum]")){ konumZam9 = Date.now(); setTimeout(() => konumYak9(true), 0); setTimeout(() => konumYak9(konumAcik9), 700); return; }
+  if(e.target.closest("#hatv [data-yola]")) konumYak9(false);
+}, true);
+document.addEventListener("pointerdown", e => { if(!konumAcik9 || !haritaAlani9(e.target)) return; konumDok9 = { x: e.clientX, y: e.clientY, n: (konumDok9 && konumDok9.n || 0) + 1 }; if(konumDok9.n > 1) konumYak9(false); }, true);
+document.addEventListener("pointermove", e => { if(!konumAcik9 || !konumDok9) return; if(Math.hypot(e.clientX - konumDok9.x, e.clientY - konumDok9.y) > 8) konumYak9(false); }, true);
+document.addEventListener("pointerup", () => { konumDok9 = null; }, true);
+document.addEventListener("pointercancel", () => { konumDok9 = null; }, true);
+document.addEventListener("wheel", e => { if(konumAcik9 && haritaAlani9(e.target) && Date.now() - konumZam9 > 300) konumYak9(false); }, { capture: true, passive: true });
+document.addEventListener("dblclick", e => { if(konumAcik9 && haritaAlani9(e.target)) konumYak9(false); }, true);
+const _hatGoster77 = hatGoster;
+hatGoster = async function(){ konumYak9(false); return _hatGoster77.apply(this, arguments); };
+
+// ---------- v77: Boy kesit — ana yol düşük km'den yüksek km'ye, yan yollar (kollar) ayrı ----------
+const KMRX9 = /(\d+)\s*\+\s*(\d{3})/;
+function bkYakin9(pt, p){
+  let bd = 1e18, bi = 0; const st = Math.max(1, Math.floor(p.length / 500));
+  for(let i = 0; i < p.length; i += st){ const d = mesafe6(pt, p[i]); if(d < bd){ bd = d; bi = i; } }
+  for(let i = Math.max(0, bi - st); i <= Math.min(p.length - 1, bi + st); i++){ const d = mesafe6(pt, p[i]); if(d < bd){ bd = d; bi = i; } }
+  return { d: bd, i: bi };
+}
+function bkKum9(p, kop){ const c = [0]; for(let i = 1; i < p.length; i++) c.push(c[i - 1] + (kop && kop.has(i) ? 0 : mesafe6(p[i - 1], p[i]))); return c; }
+function bkModel9(j){
+  if(!j || !j.hat) return null;
+  if(j._bkM9 && j._bkM9.h === j.hat) return j._bkM9;
+  const uz = p => { let t = 0; for(let i = 1; i < p.length; i++) t += mesafe6(p[i - 1], p[i]); return t; };
+  let par = anaCizgiler(j).filter(c => c && c.p && c.p.length >= 2).map(c => ({ p: c.p.map(q => [q[0], q[1]]), a: String(c.a || "").trim() }));
+  if(!par.length) return null;
+  par.forEach(q => q.u = uz(q.p));
+  par.sort((a, b) => b.u - a.u);
+  // üst üste binen kopya çizgileri ayıkla (ör. bölünmüş yolun diğer şeridi)
+  const tut = [];
+  par.forEach(q => { const orn = [0, .25, .5, .75, 1].map(f => q.p[Math.min(q.p.length - 1, Math.round(f * (q.p.length - 1)))]);
+    if(!tut.some(t => orn.filter(p => bkYakin9(p, t.p).d < 60).length >= 4)) tut.push(q); });
+  par = tut;
+  // KM noktaları (12+000 gibi)
+  const kmN = (j.hat.nok || []).map(q => { const m = KMRX9.exec(q[2] || ""); return m ? { p: [q[0], q[1]], v: kmSayi(m[1] + "+" + m[2]) } : null; }).filter(x => x && x.v !== null);
+  par.forEach(q => q.k = kmN.filter(n => bkYakin9(n.p, q.p).d < 80).length);
+  // ana yol: en çok KM noktası olan (eşitse en uzun) parçadan başlanır
+  let ilk = par.reduce((b, q) => (q.k > b.k || (q.k === b.k && q.u > b.u)) ? q : b, par[0]);
+  let kal = par.filter(q => q !== ilk), z = ilk.p.slice(), kop = [], anaAd = new Set([ilk.a].filter(Boolean));
+  const yon = (a, b) => Math.atan2(b[0] - a[0], (b[1] - a[1]) * Math.cos(a[0] * Math.PI / 180));
+  const ucYon = (p, son) => { // ucun 100 m'lik doğrultusu (dışarı doğru)
+    if(son){ let i = p.length - 2, t = 0; while(i > 0 && t < 100){ t += mesafe6(p[i], p[i + 1]); i--; } return yon(p[Math.max(0, i)], p[p.length - 1]); }
+    let i = 1, t = 0; while(i < p.length - 1 && t < 100){ t += mesafe6(p[i - 1], p[i]); i++; } return yon(p[Math.min(p.length - 1, i)], p[0]);
+  };
+  const icDokun = q => { // parçanın bir ucu ana yolun ortasına (uçlarına değil) değiyor mu
+    const c = bkKum9(z), T = c[c.length - 1];
+    return [q.p[0], q.p[q.p.length - 1]].some(e => { const r = bkYakin9(e, z); return r.d < 80 && c[r.i] > 150 && T - c[r.i] > 150; });
+  };
+  for(;;){
+    let en = null;
+    kal.forEach(q => {
+      if(icDokun(q)) return;
+      const s = z[z.length - 1], b = z[0], n = q.p.length - 1;
+      [[mesafe6(s, q.p[0]), "son", false], [mesafe6(s, q.p[n]), "son", true], [mesafe6(b, q.p[n]), "bas", false], [mesafe6(b, q.p[0]), "bas", true]].forEach(([d, uc, ters]) => {
+        const sinir = q.k ? 5000 : 3000; if(d > sinir) return;
+        // aynı uçta birden çok aday varsa: KM noktalı olan, sonra doğrultusu en az kıranı seç
+        const zy = uc === "son" ? ucYon(z, true) : ucYon(z, false), qy = ters ? ucYon(q.p, true) : ucYon(q.p, false);
+        let aci = Math.abs(((zy - qy + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI); aci = Math.PI - aci;
+        const puan = (d < 40 ? 0 : d) + aci * 200 - (q.k ? 1e6 : 0);
+        if(!en || puan < en.puan) en = { q, d, uc, ters, puan };
+      });
+    });
+    if(!en) break;
+    kal = kal.filter(x => x !== en.q); let p = en.ters ? en.q.p.slice().reverse() : en.q.p;
+    if(en.q.a) anaAd.add(en.q.a);
+    if(en.uc === "son"){ kop.push(z.length); z = z.concat(p); }
+    else { kop = kop.map(i => i + p.length); kop.push(p.length); z = p.concat(z); }
+  }
+  // yön: KM değeri artacak şekilde (soldan küçük km)
+  let kum = bkKum9(z, new Set(kop));
+  const proj = kmN.map(n => { const r = bkYakin9(n.p, z); return r.d < 300 ? { c: kum[r.i], v: n.v } : null; }).filter(Boolean).sort((a, b) => a.c - b.c);
+  if(proj.length >= 2 && proj[proj.length - 1].c > proj[0].c){
+    let art = 0; for(let i = 1; i < proj.length; i++) art += Math.sign(proj[i].v - proj[i - 1].v);
+    if(art < 0){ const N = z.length; z = z.slice().reverse(); kop = kop.map(i => N - i); kum = bkKum9(z, new Set(kop)); proj.forEach(x => x.c = kum[kum.length - 1] - x.c); proj.reverse(); }
+  }
+  const anaKm = c => { if(proj.length >= 2){ let a = proj[0], b = proj[proj.length - 1]; for(let i = 0; i < proj.length - 1; i++) if(proj[i].c <= c && proj[i + 1].c >= c){ a = proj[i]; b = proj[i + 1]; break; } if(b.c !== a.c) return kmYaz(a.v + (b.v - a.v) * (c - a.c) / (b.c - a.c)); } return f2(c / 1000) + " km"; };
+  // kollar: ana yola değen parçalar, kavşak ucundan başlar; uç uca devam eden parçalar eklenir
+  const genel = /^(untitled|adsız|adsiz|path|line|yol|çizgi|cizgi|hat|polyline|linestring|yeni|new)\b/i;
+  const kollar = [];
+  kal.sort((a, b) => Math.min(bkYakin9(a.p[0], z).d, bkYakin9(a.p[a.p.length - 1], z).d) - Math.min(bkYakin9(b.p[0], z).d, bkYakin9(b.p[b.p.length - 1], z).d));
+  while(kal.length){
+    const q = kal.shift(), r0 = bkYakin9(q.p[0], z), r1 = bkYakin9(q.p[q.p.length - 1], z);
+    let p = r1.d < r0.d ? q.p.slice().reverse() : q.p.slice(), ki = r1.d < r0.d ? r1 : r0, kp = [], adlar = [q.a].filter(Boolean);
+    for(let ek = true; ek;){ ek = false;
+      for(let i = 0; i < kal.length; i++){ const o = kal[i], s = p[p.length - 1];
+        const d0 = mesafe6(s, o.p[0]), d1 = mesafe6(s, o.p[o.p.length - 1]);
+        if(Math.min(d0, d1) < 40){ kp.push(p.length); p = p.concat(d1 < d0 ? o.p.slice().reverse() : o.p); if(o.a) adlar.push(o.a); kal.splice(i, 1); ek = true; break; } } }
+    if(uz(p) < 50) continue;
+    // ad: KMZ'deki çizgi adı (genel değilse ve ana yolunkinden farklıysa), yoksa yakındaki bir yer adı
+    let ad = adlar.find(a => !genel.test(a) && !anaAd.has(a) && !KMRX9.test(a)) || "";
+    if(!ad){ const orn = p.filter((_, i) => i % Math.max(1, Math.floor(p.length / 40)) === 0);
+      const n = (j.hat.nok || []).filter(x => x[2] && !KMRX9.test(x[2]) && String(x[2]).trim().length > 1 && orn.some(o => mesafe6(o, [x[0], x[1]]) < 120) && bkYakin9([x[0], x[1]], z).d > 120);
+      if(n.length) ad = String(n[0][2]).trim(); }
+    kollar.push({ p, kop: new Set(kp), ad, c: kum[ki.i], ayr: ki.d < 300 ? anaKm(kum[ki.i]) : null, kol: 1 });
+  }
+  kollar.sort((a, b) => a.c - b.c);
+  let adsiz = 0; kollar.forEach(k => { if(!k.ad) k.ad = "Kol " + (++adsiz); });
+  return (j._bkM9 = { h: j.hat, ana: { p: z, kop: new Set(kop) }, kollar });
+}
+bkZincir9 = function(j){ const M = bkModel9(j); return M ? M.ana : null; };
+let bkSec9 = { id: null, k: -1 };
+function bkSecHat9(j){ const M = bkModel9(j); if(!M) return null; if(bkSec9.id !== j.id) bkSec9 = { id: j.id, k: -1 }; return bkSec9.k >= 0 && M.kollar[bkSec9.k] ? M.kollar[bkSec9.k] : M.ana; }
+// seçili kolu haritada vurgula
+let bkVurgu9 = null;
+function bkVurguTemizle9(){ try{ bkVurgu9 && bkVurgu9.remove(); }catch(_){} bkVurgu9 = null; try{ if(uc && uc.map && uc.map.getLayer("bk9kol")){ uc.map.removeLayer("bk9kol"); uc.map.removeSource("bk9kol"); } }catch(_){} }
+function bkVurgula9(h){
+  bkVurguTemizle9(); if(!h || !h.kol) return;
+  if(uc && uc.map && hatMod !== "2b"){ try{ uc.map.addSource("bk9kol", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: h.p.map(q => [q[1], q[0]]) } } });
+      uc.map.addLayer({ id: "bk9kol", type: "line", source: "bk9kol", paint: { "line-color": "#f97316", "line-width": 9, "line-opacity": .55 }, layout: { "line-cap": "round", "line-join": "round" } }); }catch(_){} return; }
+  if(hatHarita) try{ bkVurgu9 = L.polyline(h.p, { color: "#f97316", weight: 10, opacity: .5, lineCap: "round", interactive: false }).addTo(hatHarita); }catch(_){}
+}
+async function bkKolSec9(k){
+  if(!hatIs) return; bkSec9 = { id: hatIs.id, k };
+  await boyKesit(hatIs);
+  const h = bkSecHat9(hatIs);
+  if(h && h.kol){ const b = []; h.p.forEach(q => b.push(q));
+    try{ if(uc && uc.map && hatMod !== "2b"){ const lo = b.map(q => q[1]), la = b.map(q => q[0]); uc.map.fitBounds([[Math.min(...lo), Math.min(...la)], [Math.max(...lo), Math.max(...la)]], { padding: { top: 160, bottom: (document.getElementById("bk6")?.offsetHeight || 260) + 30, left: 40, right: 70 }, maxZoom: 16, duration: 700 }); }
+      else if(hatHarita) hatHarita.fitBounds(b, { paddingTopLeft: [30, 170], paddingBottomRight: [70, (document.getElementById("bk6")?.offsetHeight || 260) + 30], maxZoom: 16 }); }catch(_){} }
+}
+// haritada bir kola dokununca (boy kesit açıkken) o kolun boy kesiti açılır
+function bkHaritaTik9(lat, lng, pikselM){
+  if(!document.getElementById("bk6") || !hatIs) return;
+  const M = bkModel9(hatIs); if(!M || !M.kollar.length) return;
+  const pt = [lat, lng], lim = Math.max(15, pikselM * 22);
+  let en = { k: -1, d: bkYakin9(pt, M.ana.p).d };
+  M.kollar.forEach((h, i) => { const d = bkYakin9(pt, h.p).d; if(d < en.d) en = { k: i, d }; });
+  if(en.d > lim) return;
+  const simdi = bkSec9.id === hatIs.id ? bkSec9.k : -1; if(en.k === simdi) return;
+  bkKolSec9(en.k);
+}
+function bkHaritaBagla9(){
+  if(hatHarita && !hatHarita._bk9){ hatHarita._bk9 = 1; hatHarita.on("click", e => { const z = hatHarita.getZoom(), m = 40075016 * Math.cos(e.latlng.lat * Math.PI / 180) / Math.pow(2, z + 8); bkHaritaTik9(e.latlng.lat, e.latlng.lng, m); }); }
+  if(uc && uc.map && !uc.map._bk9){ uc.map._bk9 = 1; uc.map.on("click", e => { const z = uc.map.getZoom(), m = 40075016 * Math.cos(e.lngLat.lat * Math.PI / 180) / Math.pow(2, z + 9); bkHaritaTik9(e.lngLat.lat, e.lngLat.lng, m); }); }
+}
+// boy kesit panelinin üstüne kol seçimi
+const _boyKesit77 = boyKesit;
+boyKesit = async function(j){
+  const r = _boyKesit77.apply(this, arguments);
+  const p = document.getElementById("bk6"), M = j && bkModel9(j);
+  if(p && M && M.kollar.length){
+    const sec = bkSec9.id === j.id ? bkSec9.k : -1;
+    const d = document.createElement("div"); d.className = "bkk9";
+    d.innerHTML = `<button type="button" data-bkkol="-1" class="${sec < 0 ? "on" : ""}"><b>Ana yol</b></button>` + M.kollar.map((k, i) => `<button type="button" data-bkkol="${i}" class="${sec === i ? "on" : ""}"><b>${esc(k.ad)}</b>${k.ayr ? `<small>${esc(k.ayr)}'de ayrılıyor</small>` : ""}</button>`).join("");
+    p.querySelector(".b1").after(d);
+    d.addEventListener("click", e => { const b = e.target.closest("[data-bkkol]"); if(!b) return; e.stopPropagation(); bkKolSec9(Number(b.dataset.bkkol)); });
+    requestAnimationFrame(() => { const on = d.querySelector(".on"); if(on) on.scrollIntoView({ block: "nearest", inline: "center" }); });
+    bkVurgula9(bkSecHat9(j)); bkHaritaBagla9();
+    p.querySelector("[data-bkkapat]")?.addEventListener("click", () => { bkVurguTemizle9(); bkSec9 = { id: null, k: -1 }; });
+  }
+  return r;
+};
+const _bkTemizle77 = bkTemizle9;
+bkTemizle9 = function(){ _bkTemizle77(); bkVurguTemizle9(); };
 
 function bildir(m){
   document.querySelectorAll(".bildir").forEach(x => x.remove());

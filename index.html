@@ -1578,6 +1578,7 @@ html.dark .krf9{ background:#141c2b; border-color:#334155; color:#e6ebf3; } html
 .bkk9 button b{ display:block; font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .bkk9 button small{ display:block; font-size:10px; font-weight:600; color:#64748b; white-space:nowrap; }
 .bkk9 button.on{ background:#ea580c; border-color:#ea580c; color:#fff; } .bkk9 button.on small{ color:rgba(255,255,255,.85); }
 .bk6p .b1 span{ text-align:right; line-height:1.15; } .bk6p .b1 span small{ display:block; font-size:10.5px; font-weight:700; color:#64748b; }
+.bk6p .b1 span small.es9{ font-weight:800; color:#b45309; white-space:nowrap; } html.dark .bk6p .b1 span small.es9{ color:#fbbf24; }
 </style>
 </head>
 <body>
@@ -5255,9 +5256,17 @@ async function boyKesit(j){
   ciz();
   const goster = ev => { const r = c.getBoundingClientRect(), d = Math.max(0, Math.min(1, (ev.clientX - r.left - L) / (W - L - R))) * top; let ix = 0; S.forEach((s, i) => { if(Math.abs(s.d - d) < Math.abs(S[ix].d - d)) ix = i; });
     ciz(ix); const b = document.querySelector("#bk6 .b1 span");
-    const projeVar = !!ana.kmF || km.length >= 2, pk = kmAd(S[ix].d), bt = kmYaz(S[ix].d / 1000);
-    if(b) b.innerHTML = projeVar ? `<b>${esc(pk)}</b> · ${Math.round(S[ix].h)} m<small>Baştan ${esc(bt)}</small>` : `<b>${esc(bt)}</b> · ${Math.round(S[ix].h)} m<small>Baştan</small>`;
-    bkIsaretKoy9(S[ix].p, projeVar ? pk + " · baştan " + bt : bt); };
+    const F = ana.kmF, dd = S[ix].d, hm = Math.round(S[ix].h);
+    if(F){
+      const pk = kmYaz(F(dd)), k2 = f2(F.surekli(dd)), n = F.esitNo(dd);   // ikinci km: 8,22 gibi
+      const not = n ? (F.esitSay > 1 ? n + ". km eşitliği sonrası" : "km eşitliği sonrası") : "";
+      if(b) b.innerHTML = `<b>P. Km: ${esc(pk)}</b> · ${hm} m<small>Km: ${esc(k2)}</small>${not ? `<small class="es9">(${not})</small>` : ""}`;
+      bkIsaretKoy9(S[ix].p, `P. Km: ${pk}${not ? ` (${not})` : ""} · Km: ${k2}`);
+    }else{
+      const k2 = f2(dd / 1000);   // KM noktası yok: hattın ölçülen uzunluğu
+      if(b) b.innerHTML = `<b>Km: ${esc(k2)}</b> · ${hm} m`;
+      bkIsaretKoy9(S[ix].p, "Km: " + k2);
+    } };
   c.addEventListener("pointerdown", e => { c.setPointerCapture(e.pointerId); goster(e); });
   c.addEventListener("pointermove", e => { if(e.buttons || e.pointerType === "touch") goster(e); });
 }
@@ -7946,7 +7955,11 @@ function bkKmFn9(L, E){
     if(c > P[P.length - 1].c){ a = P[P.length - 2]; b = P[P.length - 1]; }
     else for(let k = 0; k < P.length - 1; k++) if(P[k].c <= c && P[k + 1].c >= c && P[k + 1].c > P[k].c){ a = P[k]; b = P[k + 1]; break; }
     return b.c === a.c ? a.v : a.v + (b.v - a.v) * (c - a.c) / (b.c - a.c); };
-  return c => ic(c) - off(c);
+  const f = c => ic(c) - off(c);
+  f.surekli = c => ic(c);                              // ikinci km: proje km'si, eşitliklerde geri düşmez
+  f.esitNo = c => E.filter(e => e.c < c).length;       // kaçıncı eşitlikten sonra
+  f.esitSay = E.length;
+  return f;
 }
 // yön eğilimi (eşitlikler hesaba katılarak); >0: c arttıkça km artıyor
 function bkYonEgim9(L, E, T, ters){
@@ -7975,8 +7988,23 @@ function bkModel9(j){
   par.sort((a, b) => b.u - a.u);
   // üst üste binen kopya çizgileri ayıkla (ör. bölünmüş yolun diğer şeridi)
   const tut = [];
-  par.forEach(q => { const orn = [0, .25, .5, .75, 1].map(f => q.p[Math.min(q.p.length - 1, Math.round(f * (q.p.length - 1)))]);
-    if(!tut.some(t => orn.filter(p => bkYakin9(p, t.p).d < 60).length >= 4)) tut.push(q); });
+  // (ör. tam boy çizilmiş yolun üstüne ayrıca çizilen biten parçalar, bölünmüş yolun öbür şeridi):
+  // parçanın %80'i daha önce alınmış çizgilerin herhangi birinin üstündeyse kopyadır
+  // Her parçanın daha önce alınmış çizgilerin ÜSTÜNDE kalan kısımları kesilip atılır; yalnız yeni yerden
+  // geçen kısımlar (en az 100 m) ayrı parça olarak kalır. Böylece parçalar üst üste binmez.
+  par.forEach(q => {
+    if(!tut.length){ tut.push(q); return; }
+    const ust = q.p.map(o => tut.some(t => bkHatUzak9(o, t.p) < 40));
+    if(!ust.includes(true)){ tut.push(q); return; }
+    for(let i = 0; i < q.p.length;){
+      if(ust[i]){ i++; continue; }
+      let k = i; while(k < q.p.length && !ust[k]) k++;
+      const p2 = q.p.slice(Math.max(0, i - 1), Math.min(q.p.length, k + 1));
+      if(p2.length >= 2 && uz(p2) >= 100) tut.push({ p: p2, a: q.a, u: uz(p2) });
+      i = k;
+    }
+  });
+  tut.sort((a, b) => b.u - a.u);
   par = tut;
   // KM noktaları (12+000 gibi)
   const esN = (j.hat.nok || []).map(q => { const e = bkEsit9(q[2]); return e ? { p: [q[0], q[1]], g: e.g, i: e.i, q } : null; }).filter(Boolean);

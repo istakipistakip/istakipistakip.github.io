@@ -1538,7 +1538,7 @@ html.dark .krd9 input, html.dark .krc9 button{ background:#0b1220; border-color:
 .krs9 .sw input:checked + span{ background:#16a34a; } .krs9 .sw input:checked + span::after{ transform:translateX(18px); }
 html.dark .krs9 .sw{ color:#e6ebf3; } html.dark .krs9 .sw span{ background:#334155; }
 /* v73: rapor sekmeleri, filtre, görsel kart, rapor animasyonu */
-.krs9 .sw[hidden]{ display:none; }
+.krs9 .sw[hidden]{ display:none; } .kgi9{ max-height:58vh; overflow:auto; -webkit-overflow-scrolling:touch; border-radius:14px; }
 .krt9{ display:flex; background:#eef1f6; border-radius:13px; padding:4px; margin-bottom:14px; }
 .krt9 button{ flex:1; font:inherit; font-size:14px; font-weight:800; color:#64748b; background:none; border:0; border-radius:10px; height:38px; display:flex; align-items:center; justify-content:center; gap:6px; }
 .krt9 button svg{ width:16px; height:16px; } .krt9 button.on{ background:#fff; color:#0f172a; box-shadow:0 1px 3px rgba(15,23,42,.12); }
@@ -7648,8 +7648,18 @@ function rapAnim9(tur){
 }
 
 // ---------- görsel kart (telefonda çizilir, hiçbir yere gönderilmez) ----------
-async function kartCiz9(V, a, b, F){
-  const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+async function kartCiz9(V, a, b, F, isG){
+  // önce 1350 boyda deneme çizimi: iller nerede bitiyor; işler gösterilecekse kart o kadar uzar
+  const once9 = isG ? kartCizim9(document.createElement("canvas"), V, a, b, F, null) : null;
+  const c = document.createElement("canvas");
+  kartCizim9(c, V, a, b, F, once9);
+  return await new Promise((ok, no) => c.toBlob(bl => bl ? ok(bl) : no(new Error("Görsel oluşturulamadı")), "image/png"));
+}
+function kartCizim9(c, V, a, b, F, isB){
+  const W = 1080;
+  let H = 1350, liste = null;
+  if(isB){ liste = isListe9(c, V, isB.ilSon); H = liste.H; }
+  c.width = W; c.height = H;
   const x = c.getContext("2d"), FN = '-apple-system, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
   const font = (w, s) => x.font = `${w} ${s}px ${FN}`;
   const yuv = (X, Y, w, h, r) => { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); };
@@ -7698,15 +7708,16 @@ async function kartCiz9(V, a, b, F){
   if(V.std.length > 6){ y += 40; font(700, 22); x.fillStyle = "#64748b"; x.fillText(`+${V.std.length - 6} standart daha`, L, y); }
   // iller (çipler, en fazla 3 satır)
   y += 72; font(800, 24); x.fillStyle = "#94a3b8"; x.fillText("İL", L, y); y += 22;
-  let cx = L, sat = 0; const ch = 56, ust = H - 150;
+  let cx = L, sat = 0, ilSon = y; const ch = 56, ust = isB ? 1350 - 150 : H - 150;
   for(const [il, km] of V.il){
     font(700, 28); const a1 = x.measureText(il).width; const b1 = x.measureText(f2(km)).width; const w = a1 + b1 + 60;
     if(cx + w > R){ cx = L; sat++; } if(sat > 2 || y + 12 + sat * (ch + 14) + ch > ust) break;
     const Y = y + 12 + sat * (ch + 14);
     x.fillStyle = "rgba(255,255,255,.07)"; yuv(cx, Y, w, ch, 28); x.fill(); x.strokeStyle = "rgba(255,255,255,.1)"; x.lineWidth = 1.5; x.stroke();
     x.fillStyle = "#e6ebf3"; x.fillText(il, cx + 24, Y + 38); x.fillStyle = "#fb923c"; x.fillText(f2(km), cx + 34 + a1, Y + 38);
-    cx += w + 14;
+    cx += w + 14; ilSon = Y + ch;
   }
+  if(liste) liste.ciz(x, font, yuv, sigdir, L, R);
   // alt satır
   x.strokeStyle = "#1e293b"; x.lineWidth = 2; x.beginPath(); x.moveTo(L, H - 110); x.lineTo(R, H - 110); x.stroke();
   font(700, 22); x.fillStyle = "#64748b";
@@ -7714,11 +7725,49 @@ async function kartCiz9(V, a, b, F){
   x.textAlign = "right"; x.fillText(bs, R, H - 62); const bsw = x.measureText(bs).width; x.textAlign = "left";
   const en = [...V.isler].sort((p, q) => q.km - p.km)[0];
   if(en) x.fillText(sigdir(`En çok ilerleyen: ${en.j.ad} · ${f2(en.km)} km`, R - L - bsw - 30), L, H - 62);
-  return await new Promise((ok, no) => c.toBlob(bl => bl ? ok(bl) : no(new Error("Görsel oluşturulamadı")), "image/png"));
+  return { ilSon };
 }
+// kartın altındaki iş listesi: ölçülür (kartın boyu), sonra çizilir
+function isListe9(c, V, ilSon){
+  const W = 1080, L = 72, R = W - 72, FN = '-apple-system, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+  const m = c.getContext("2d"), font = (w, s) => m.font = `${w} ${s}px ${FN}`;
+  const sar = (t, mw, en) => { const k = String(t).split(/\s+/), S = []; let s = "";
+    k.forEach(w => { const d = s ? s + " " + w : w; if(m.measureText(d).width <= mw || !s) s = d; else { S.push(s); s = w; } }); if(s) S.push(s);
+    if(S.length > en){ S.length = en; let t2 = S[en - 1]; while(t2.length > 1 && m.measureText(t2 + "…").width > mw) t2 = t2.slice(0, -1); S[en - 1] = t2 + "…"; }
+    return S; };
+  const SAT = [], bT = new Map(V.bir); let sonB = null, y = ilSon + 90, kes = 0;
+  const MAXH = 15000;
+  for(let i = 0; i < V.isler.length; i++){
+    const it = V.isler[i];
+    let bh = 0; if(V.bir.length && it.birim !== sonB) bh = 64;
+    font(700, 28); const ad = sar(it.j.ad, R - L - 190, 2);
+    const h = ad.length * 36 + 40 + 26;
+    if(y + bh + h + 170 > MAXH){ kes = V.isler.length - i; break; }
+    if(bh){ SAT.push({ b: it.birim, y }); y += bh; sonB = it.birim; }
+    SAT.push({ it, ad, y, h }); y += h;
+  }
+  const H = Math.max(1350, y + (kes ? 50 : 0) + 160);
+  return { H, ciz(x, fnt, yuv, sigdir, L, R){
+    fnt(800, 24); x.fillStyle = "#94a3b8"; x.fillText("İŞLER", L, ilSon + 66);
+    x.strokeStyle = "rgba(255,255,255,.12)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(L, ilSon + 82); x.lineTo(R, ilSon + 82); x.stroke();
+    SAT.forEach(S => {
+      if(S.b){ x.fillStyle = "rgba(255,255,255,.07)"; yuv(L, S.y + 10, R - L, 46, 12); x.fill();
+        fnt(800, 24); x.fillStyle = "#e6ebf3"; x.fillText(sigdir(S.b, R - L - 200), L + 18, S.y + 42);
+        x.textAlign = "right"; x.fillStyle = "#fb923c"; x.fillText(f2(bT.get(S.b) || 0) + " km", R - 18, S.y + 42); x.textAlign = "left"; return; }
+      const { it, ad, y, h } = S;
+      fnt(700, 28); x.fillStyle = "#fff"; ad.forEach((t, k) => x.fillText(t, L, y + 44 + k * 36));
+      fnt(800, 32); x.textAlign = "right"; x.fillStyle = "#fb923c"; x.fillText(f2(it.km), R - 44, y + 46); fnt(700, 20); x.fillStyle = "#94a3b8"; x.fillText("km", R, y + 46); x.textAlign = "left";
+      fnt(600, 22); x.fillStyle = "#94a3b8";
+      x.fillText(sigdir(`${(it.j.il || []).join(", ")}${it.j.il && it.j.il.length ? " · " : ""}${it.st.map(g => g.s + " " + f2(g.km)).join(", ")}`, R - L), L, y + 44 + ad.length * 36 + 4);
+      x.strokeStyle = "rgba(255,255,255,.07)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(L, y + h); x.lineTo(R, y + h); x.stroke();
+    });
+    if(kes){ fnt(700, 22); x.fillStyle = "#64748b"; const sy = SAT.length ? SAT[SAT.length - 1].y + (SAT[SAT.length - 1].h || 64) : ilSon + 90; x.fillText(`+${kes} iş daha (kart en fazla bu kadar uzayabiliyor)`, L, sy + 40); }
+  } };
+}
+
 function kartGoster9(blob, a, b){
   const ad = `KM Kartı (${trG9(a)}-${trG9(b)}).png`, dosya = new File([blob], ad, { type: "image/png" }), url = URL.createObjectURL(blob);
-  const ov = altSayfa(IK("paylas"), aralikAd9(a, b) + " Kartı", "Telefonda hazırlandı · hiçbir yere gönderilmedi", `<div class="kgs9"><img src="${url}" alt="KM kartı"><div class="kgb9"><button class="btn" data-kg9p>${IK("paylas")}Paylaş</button><button class="btn2" data-kg9k>↓ Kaydet</button></div></div>`);
+  const ov = altSayfa(IK("paylas"), aralikAd9(a, b) + " Kartı", "Telefonda hazırlandı · hiçbir yere gönderilmedi", `<div class="kgs9"><div class="kgi9"><img src="${url}" alt="KM kartı"></div><div class="kgb9"><button class="btn" data-kg9p>${IK("paylas")}Paylaş</button><button class="btn2" data-kg9k>↓ Kaydet</button></div></div>`);
   const kaydet = () => { const l = document.createElement("a"); l.href = url; l.download = ad; document.body.appendChild(l); l.click(); l.remove(); };
   ov.addEventListener("click", async e => {
     if(e.target.closest("[data-kg9p]")){
@@ -7745,6 +7794,7 @@ kmRaporSayfa9 = function(){
 <button type="button" class="krf9" data-kr9f><span>Filtrele</span><em id="kr9fo">Tümü</em><i>▾</i></button>
 <div class="krfg9" id="kr9fg" hidden>${grup("Birim", "b", O.bir)}${grup("İl", "i", O.il)}${grup("Standart", "s", O.std)}<button type="button" class="krfs9" data-kr9fsil>Filtreyi temizle</button></div>
 <label class="sw" id="kr9sw"><input type="checkbox" id="kr9ar"><span></span>KM aralıklarını göster</label>
+<label class="sw" id="kr9isw" hidden><input type="checkbox" id="kr9is"><span></span>İşleri göster</label>
 <p class="krn9">KM aralığının tarihine göre hesaplanır. "Yarısı" girilen aralıklar yarım sayılır. Birden fazla ildeki işte il filtresi seçilirse o ilin payı sayılır.</p>
 <div class="krh9" id="kr9h" hidden></div>
 <button class="btn" id="kr9git">${IK("pdf")}PDF'i Aç</button></div>`);
@@ -7754,7 +7804,7 @@ kmRaporSayfa9 = function(){
   const fOzet = () => { const m = fMetin9(F); $("#kr9fo").textContent = m || "Tümü"; $("#kr9fo").classList.toggle("on", !!m); };
   ov.addEventListener("click", async e => {
     const m = e.target.closest("[data-kr9m]");
-    if(m){ if(m.dataset.kr9m === mod) return; mod = m.dataset.kr9m; ov.querySelectorAll("[data-kr9m]").forEach(x => x.classList.toggle("on", x === m)); aralikSec(mod === "kart" ? "hafta" : "ay"); $("#kr9sw").hidden = mod === "kart"; dugme(); return; }
+    if(m){ if(m.dataset.kr9m === mod) return; mod = m.dataset.kr9m; ov.querySelectorAll("[data-kr9m]").forEach(x => x.classList.toggle("on", x === m)); aralikSec(mod === "kart" ? "hafta" : "ay"); $("#kr9sw").hidden = mod === "kart"; $("#kr9isw").hidden = mod !== "kart"; dugme(); return; }
     const c = e.target.closest("[data-kr9]"); if(c){ aralikSec(c.dataset.kr9); return; }
     if(e.target.closest("[data-kr9f]")){ const g = $("#kr9fg"); g.hidden = !g.hidden; $("[data-kr9f]").classList.toggle("ac", !g.hidden); return; }
     const fc = e.target.closest("[data-kr9fc]");
@@ -7770,7 +7820,7 @@ kmRaporSayfa9 = function(){
       const btn = $("#kr9git"); btn.disabled = true;
       const an = rapAnim9(mod);
       try{
-        if(mod === "kart"){ const bl = await kartCiz9(V, a, b, F); await an.bitir(true); kartGoster9(bl, a, b); }
+        if(mod === "kart"){ const bl = await kartCiz9(V, a, b, F, $("#kr9is").checked); await an.bitir(true); kartGoster9(bl, a, b); }
         else{ await kmRaporPdf9(V, a, b, { aralik: $("#kr9ar").checked, filtre: fMetin9(F) }); await an.bitir(true); kapatAlt(); pdfOnizle(); }
       }catch(err){ await an.bitir(false); hata((mod === "kart" ? "Kart" : "PDF") + " oluşturulamadı: " + (err.message || err)); btn.disabled = false; dugme(); }
     }

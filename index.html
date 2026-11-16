@@ -5237,7 +5237,7 @@ async function boyKesit(j){
   const hs = S.map(s => s.h), hmin = Math.min(...hs), hmax = Math.max(...hs);
   let eg = 0; const w = Math.max(1, Math.round(200 / (top / N))); for(let i = w; i < S.length; i++) eg = Math.max(eg, Math.abs(S[i].h - S[i - w].h) / Math.max(1, S[i].d - S[i - w].d) * 100);
   let cik = 0; for(let i = 1; i < S.length; i++) cik += Math.max(0, S[i].h - S[i - 1].h);
-  p.querySelector("#bk6yk").outerHTML = `<canvas id="bk6c"></canvas><div class="b2"><div><small>En düşük</small><b>${Math.round(hmin)} m</b></div><div><small>En yüksek</small><b>${Math.round(hmax)} m</b></div><div><small>Toplam çıkış</small><b>${Math.round(cik)} m</b></div><div><small>En dik</small><b>%${eg.toFixed(1).replace(".", ",")}</b></div></div><div class="b3" id="bk6b">Grafikte parmağınızı gezdirin · arazi verisi ~30 m çözünürlüklü, yaklaşıktır</div>`;
+  p.querySelector("#bk6yk").outerHTML = `<canvas id="bk6c"></canvas><div class="b2"><div><small>En düşük</small><b>${Math.round(hmin)} m</b></div><div><small>En yüksek</small><b>${Math.round(hmax)} m</b></div></div></div><div class="b3" id="bk6b">Grafikte parmağınızı gezdirin · arazi verisi ~30 m çözünürlüklü, yaklaşıktır</div>`;
   const c = document.getElementById("bk6c"), dpr = Math.min(2, devicePixelRatio || 1), W = c.clientWidth, H = c.clientHeight; c.width = W * dpr; c.height = H * dpr;
   const g = c.getContext("2d"); g.scale(dpr, dpr);
   const L = 36, R = 8, T = 8, B = 18, aralik = Math.max(10, hmax - hmin), lo = hmin - aralik * .08, hi = hmax + aralik * .08;
@@ -5264,7 +5264,7 @@ async function boyKesit(j){
     ciz(ix); const b = document.querySelector("#bk6 .b1 span");
     const F = ana.kmF, dd = S[ix].d, hm = Math.round(S[ix].h);
     if(F){
-      const pk = kmYaz(F(dd)), k2 = f2(Math.max(0, F.surekli(dd) - F.surekli(0))), n = F.esitNo(dd);   // ikinci km: yolun başından   // ikinci km: 8,22 gibi
+      const pk = kmYaz(F(dd)), k2 = f2(Math.max(0, F.surekli(dd) - (F.bas != null ? F.bas : F.surekli(0)))), n = F.esitNo(dd);   // ikinci km: yolun başından   // ikinci km: 8,22 gibi
       const not = n ? (F.esitSay > 1 ? n + ". km eşitliği sonrası" : "km eşitliği sonrası") : "";
       if(b) b.innerHTML = `<b>P. Km: ${esc(pk)}</b> · ${hm} m<small>Km: ${esc(k2)}</small>${not ? `<small class="es9">(${not})</small>` : ""}`;
       bkIsaretKoy9(S[ix].p, `P. Km: ${pk}${not ? ` (${not})` : ""} · Km: ${k2}`);
@@ -8090,6 +8090,19 @@ function bkModel9(j){
         const e0 = mesafe6(s, o.p[0]), e1 = mesafe6(s, o.p[o.p.length - 1]);
         if(Math.min(e0, e1) < 40){ kp.push(p.length); p = p.concat(e1 < e0 ? o.p.slice().reverse() : o.p); if(o.a) adlar.push(o.a); kal.splice(i, 1); ek = true; break; } } }
     if(uz(p) < 50) continue;
+    { // yolun UCUNDAN aynı doğrultuda devam eden parça yolun devamıdır: yola eklenir
+      const { y } = enYakinYol(p[0]), sonda = mesafe6(p[0], y.p[y.p.length - 1]) < mesafe6(p[0], y.p[0]), E = sonda ? y.p[y.p.length - 1] : y.p[0];
+      const uzak = p[p.length - 1], yd = ucYon(y.p, sonda), pd = yon(E, uzak);
+      let aci = Math.abs(((yd - pd + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI);
+      if(mesafe6(p[0], E) < 250 && mesafe6(uzak, E) > 40 && aci < 0.9 && bkYakin9(uzak, y.p).d > 30){
+        let q = p.slice(), i = 0; while(i < q.length - 2 && bkHatUzak9(q[i], y.p) < 25) i++; if(i) q = q.slice(Math.max(0, i - 1));
+        if(q.length >= 2){
+          if(sonda){ y.kop.add(y.p.length); y.p = y.p.concat(q); }
+          else { const N = q.length; y.kop = new Set([...y.kop].map(k => k + N)); y.kop.add(N); y.p = q.slice().reverse().concat(y.p); }
+          if(q.a) y.adS.add(q.a);
+          continue;
+        }
+      } }
     { // yolların üstünden / hemen yanından giden parça yan yol değildir
       const orn = p.filter((_, i) => i % Math.max(1, Math.floor(p.length / 60)) === 0).concat([p[p.length - 1]]);
       const dd = orn.map(o => yolUzak(o)), yakin = dd.filter(d => d < 150).length / dd.length;
@@ -8107,21 +8120,22 @@ function bkModel9(j){
   const icAra = (L, c) => { if(L.length < 2) return null; L = L.slice().sort((a, b) => a.c - b.c); let a = L[0], b = L[1];
     if(c > L[L.length - 1].c){ a = L[L.length - 2]; b = L[L.length - 1]; } else for(let i = 0; i < L.length - 1; i++) if(L[i].c <= c && L[i + 1].c >= c){ a = L[i]; b = L[i + 1]; break; }
     return b.c === a.c ? a.v : a.v + (b.v - a.v) * (c - a.c) / (b.c - a.c); };
-  const belirsiz = [];
+  const belirsiz = [], PBBAS = /P\s*\.?\s*B|proje\s*ba/i;
+  const cBul = (h, r) => { const T = h.kum[h.kum.length - 1]; if(r.d > 30 && r.i === 0) return -r.d; if(r.d > 30 && r.i === h.p.length - 1) return T + r.d; return h.kum[r.i]; };
   kmN.forEach(n => {
-    const ds = hatlar.map(h => { const r = bkYakin9(n.p, h.p); return { h, d: r.d, c: h.kum[r.i] }; }).sort((a, b) => a.d - b.d);
-    if(!ds.length || ds[0].d >= 300) return;
+    const ds = hatlar.map(h => { const r = bkYakin9(n.p, h.p); return { h, d: r.d, c: cBul(h, r) }; }).sort((a, b) => a.d - b.d);
+    if(!ds.length || ds[0].d >= 600 || (ds[0].d >= 300 && ds[0].c >= 0 && ds[0].c <= ds[0].h.kum[ds[0].h.kum.length - 1])) return;
     const yak = ds.filter(x => x.d < 40);
     if(yak.length >= 2) belirsiz.push({ n, yak });
-    else { ds[0].h.L.push({ c: ds[0].c, v: n.v }); ds[0].h.et.push(n.q); }
+    else { ds[0].h.L.push({ c: ds[0].c, v: n.v, pb: PBBAS.test(n.q[2] || "") }); ds[0].h.et.push(n.q); }
   });
   belirsiz.forEach(({ n, yak }) => {
     let sec = null, en = 1e9;
     yak.forEach(x => { const t = icAra(x.h.L, x.c); if(t !== null && Math.abs(t - n.v) < en){ en = Math.abs(t - n.v); sec = x; } });
     if(!sec || en > 0.3) sec = yak.find(x => x.h.yol) || yak[0];
-    sec.h.L.push({ c: sec.c, v: n.v }); sec.h.et.push(n.q);
+    sec.h.L.push({ c: sec.c, v: n.v, pb: PBBAS.test(n.q[2] || "") }); sec.h.et.push(n.q);
   });
-  esN.forEach(e => { const ds = hatlar.map(h => { const r = bkYakin9(e.p, h.p); return { h, d: r.d, c: h.kum[r.i] }; }).sort((a, b) => a.d - b.d);
+  esN.forEach(e => { const ds = hatlar.map(h => { const r = bkYakin9(e.p, h.p); return { h, d: r.d, c: cBul(h, r) }; }).sort((a, b) => a.d - b.d);
     if(ds.length && ds[0].d < 300) ds[0].h.E.push({ c: ds[0].c, g: e.g, i: e.i }); });
   // ---- yön: küçük km'den büyüğe (eşitlikler hesaba katılarak); kolda KM yoksa kavşaktan başlar
   const cevir = h => { const N = h.p.length, T = h.kum[h.kum.length - 1]; h.p = h.p.slice().reverse(); h.kop = new Set([...h.kop].map(i => N - i)); h.kum = bkKum9(h.p, h.kop); h.L.forEach(x => x.c = T - x.c); h.E.forEach(e => e.c = T - e.c); };
@@ -8136,6 +8150,7 @@ function bkModel9(j){
     }
     h.L.sort((a, b) => a.c - b.c); h.E.sort((a, b) => a.c - b.c);
     h.kmF = h.L.length + h.E.length >= 2 ? bkKmFn9(h.L, h.E) : null;
+    const pb = h.L.filter(x => x.pb)[0]; if(h.kmF && pb) h.kmF.bas = h.kmF.surekli(pb.c);   // ikinci km PB'den sayılır
   });
   const kmAdi = (h, c) => { if(h.kmF){ const v = h.kmF(c); if(Number.isFinite(v)) return kmYaz(v); } return f2(c / 1000) + " km"; };
   // ---- adlar ve kolların ayrıldığı yer

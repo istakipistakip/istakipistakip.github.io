@@ -942,6 +942,9 @@ html.dark .onz .kt, html.dark .onz .mn{ background:#141c2b; } html.dark .onz .mn
 @keyframes hvKay{ from{ transform:translateX(-1px); } to{ transform:translateX(1.5px); } }
 /* açılış ve giriş */
 #acilis .hos-logo{ animation:logoPop .7s cubic-bezier(.2,1.3,.3,1) both; }
+#acilis .hos-logo path{ stroke-dasharray:30; stroke-dashoffset:30; animation:yolCiz9 .6s ease-out .45s forwards; } #acilis .hos-logo path + path{ animation-delay:.75s; }
+@keyframes yolCiz9{ to{ stroke-dashoffset:0; } }
+@media (prefers-reduced-motion: reduce){ #acilis .hos-logo path{ animation:none; stroke-dashoffset:0; } }
 #acilis h1{ animation:yukari .6s ease .25s both; } #acilis .hos-alt{ animation:yukari .6s ease .4s both; }
 @keyframes logoPop{ from{ opacity:0; transform:scale(.6) rotate(-8deg); } }
 @keyframes yukari{ from{ opacity:0; transform:translateY(10px); } }
@@ -1534,6 +1537,41 @@ html.dark .krd9 input, html.dark .krc9 button{ background:#0b1220; border-color:
 .krs9 .sw span::after{ content:""; position:absolute; left:3px; top:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .15s; }
 .krs9 .sw input:checked + span{ background:#16a34a; } .krs9 .sw input:checked + span::after{ transform:translateX(18px); }
 html.dark .krs9 .sw{ color:#e6ebf3; } html.dark .krs9 .sw span{ background:#334155; }
+/* v73: rapor sekmeleri, filtre, görsel kart, rapor animasyonu */
+.krs9 .sw[hidden]{ display:none; }
+.krt9{ display:flex; background:#eef1f6; border-radius:13px; padding:4px; margin-bottom:14px; }
+.krt9 button{ flex:1; font:inherit; font-size:14px; font-weight:800; color:#64748b; background:none; border:0; border-radius:10px; height:38px; display:flex; align-items:center; justify-content:center; gap:6px; }
+.krt9 button svg{ width:16px; height:16px; } .krt9 button.on{ background:#fff; color:#0f172a; box-shadow:0 1px 3px rgba(15,23,42,.12); }
+.krf9{ margin-top:14px; width:100%; font:inherit; display:flex; align-items:center; gap:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:10px 12px; color:#0f172a; text-align:left; }
+.krf9 span{ font-size:14.5px; font-weight:800; flex:none; } .krf9 em{ flex:1; min-width:0; font-style:normal; font-size:13px; font-weight:700; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:right; }
+.krf9 em.on{ color:#ea580c; } .krf9 i{ font-style:normal; color:#64748b; transition:transform .2s; } .krf9.ac i{ transform:rotate(180deg); }
+.krfg9{ border:1px solid #e2e8f0; border-top:0; border-radius:0 0 12px 12px; margin-top:-6px; padding:10px 12px 12px; } .krfg9 .fg9 label{ margin-top:8px; } .krfg9 .krc9{ margin-top:0; }
+.krc9 button.on{ background:#0f172a; color:#fff; border-color:#0f172a; }
+.krfs9{ margin-top:12px; font:inherit; font-size:13px; font-weight:700; color:#b91c1c; background:none; border:0; padding:0; }
+.kgs9 img{ display:block; width:min(100%, 300px); margin:0 auto; border-radius:14px; box-shadow:0 8px 24px rgba(15,23,42,.3); }
+.kgb9{ display:flex; gap:8px; margin-top:14px; } .kgb9 .btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:7px; background:#16a34a; } .kgb9 .btn svg{ width:18px; height:18px; }
+.kgb9 .btn2{ flex:1; font:inherit; font-size:15px; font-weight:800; border:0; border-radius:14px; background:#eef1f6; color:#0f172a; }
+#kf9 [type="submit"].ok9{ background:#16a34a !important; font-size:22px; transition:background .2s; }
+.rpa9{ position:fixed; inset:0; z-index:3000; background:rgba(241,244,249,.96); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; }
+.rpa9.on{ opacity:1; } .rpa9.kapan{ opacity:0; }
+.rpk9{ width:240px; display:flex; flex-direction:column; align-items:center; }
+.pg9{ width:200px; height:270px; background:#fff; border-radius:8px; box-shadow:0 10px 30px rgba(15,23,42,.15); padding:16px 14px; overflow:hidden; animation:pg9g .45s cubic-bezier(.2,1.1,.4,1) both; }
+.pg9.kt9k{ background:#111a33; height:250px; } .pg9.kt9k .h{ background:#fff; } .pg9.kt9k .rw,.pg9.kt9k .tb p,.pg9.kt9k .kt i{ background:rgba(255,255,255,.1); border-color:transparent; }
+@keyframes pg9g{ from{ transform:translateY(24px); opacity:0; } }
+.pg9 i{ display:block; } .pg9 .h{ height:11px; width:60%; background:#0f172a; border-radius:3px; } .pg9 .ln{ height:3px; background:#ea580c; margin:9px 0 11px; animation:ln9 .5s ease-out .3s both; }
+@keyframes ln9{ from{ width:0; } to{ width:100%; } }
+.pg9 .kt{ display:flex; gap:7px; } .pg9 .kt i{ flex:1; height:32px; border:1.5px solid #e2e8f0; border-radius:6px; animation:op9 .3s ease .6s both; }
+@keyframes op9{ from{ opacity:0; } }
+.pg9 .tb{ display:grid; gap:6px; margin-top:11px; } .pg9 .tb p{ margin:0; height:8px; border-radius:3px; background:#eef1f6; position:relative; overflow:hidden; } .pg9 .tb p i{ position:absolute; left:0; top:0; bottom:0; width:0; background:#fb923c; border-radius:3px; transition:width .5s; }
+.pg9 .rw{ height:8px; margin-top:8px; border-radius:3px; background:#eef1f6; opacity:0; transition:opacity .25s; } .pg9 .rw.on{ opacity:1; } .pg9 .rw:nth-child(odd){ width:82%; }
+.pr9{ width:100%; margin-top:20px; } .pr9 b{ font-size:14.5px; color:#0f172a; } .pr9 small{ display:block; margin-top:7px; font-size:12.5px; font-weight:600; color:#64748b; }
+.pr9 .br{ margin-top:9px; height:9px; border-radius:5px; background:#dfe5ee; overflow:hidden; } .pr9 .br i{ display:block; height:100%; width:0; background:linear-gradient(90deg,#ea580c,#fb923c); }
+.rpa9.on .pr9 .br i{ animation:br9 1.3s ease-in-out forwards; } @keyframes br9{ to{ width:100%; } }
+.rok9{ margin-top:-46px; background:#16a34a; color:#fff; font-weight:800; font-size:15px; border-radius:999px; padding:11px 20px; transform:scale(0); transition:transform .4s cubic-bezier(.3,1.6,.5,1); }
+.rpa9.bitti .pr9{ opacity:0; transition:opacity .2s; } .rpa9.bitti .rok9{ transform:scale(1); }
+.rpa9.az .pg9,.rpa9.az .pg9 *{ animation:none !important; }
+html.dark .rpa9{ background:rgba(11,16,32,.96); } html.dark .pr9 b{ color:#e6ebf3; } html.dark .krt9{ background:#1e293b; } html.dark .krt9 button.on{ background:#334155; color:#fff; }
+html.dark .krf9{ background:#141c2b; border-color:#334155; color:#e6ebf3; } html.dark .krfg9{ border-color:#334155; } html.dark .krc9 button.on{ background:#e6ebf3; color:#0f172a; } html.dark .kgb9 .btn2{ background:#1e293b; color:#e6ebf3; }
 </style>
 </head>
 <body>
@@ -7375,7 +7413,7 @@ const trG9 = s => { const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
 function raporAralik9(ad){
   const b = new Date(); b.setHours(0, 0, 0, 0);
   const pzt = d => { const x = new Date(d); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; };
-  if(ad === "hafta") return [pzt(b), b];
+  if(ad === "hafta"){ const a = pzt(b), z = new Date(a); z.setDate(z.getDate() + 6); return [a, z]; }   // pazartesi–pazar
   if(ad === "gecenhafta"){ const a = pzt(b); a.setDate(a.getDate() - 7); const s = new Date(a); s.setDate(s.getDate() + 6); return [a, s]; }
   if(ad === "ay") return [new Date(b.getFullYear(), b.getMonth(), 1), b];
   if(ad === "gecenay") return [new Date(b.getFullYear(), b.getMonth() - 1, 1), new Date(b.getFullYear(), b.getMonth(), 0)];
@@ -7390,20 +7428,26 @@ function tumKm9(j){
   return L;
 }
 const kmTarih9 = k => /^\d{4}-\d{2}-\d{2}/.test(k.t || "") ? k.t.slice(0, 10) : (k.g ? isoG9(new Date(k.g)) : "");
-function raporVeri9(a, b){
+function raporVeri9(a, b, F){
+  F = F || {}; const fB = F.b && F.b.size ? F.b : null, fI = F.i && F.i.size ? F.i : null, fS = F.s && F.s.size ? F.s : null;
   const stdS = s => STD_SIRA.indexOf(s) + 1 || 99, ilS = il => { const i = IL_SIRA.indexOf(il); return i < 0 ? 99 : i; };
   const isler = [], std = new Map(), il = new Map(), bir = new Map(); let top = 0, n = 0;
   ISLER.forEach(j => {
     if(j.ekleme) return;
+    const bk = String(j.birim || "").trim() || BIRSIZ9; if(fB && !fB.has(bk)) return;
+    const iL = (j.il || []).filter(Boolean), iS = fI ? iL.filter(x => fI.has(x)) : iL;
+    if(fI && !iS.length) return;
+    const oran = fI ? iS.length / iL.length : 1;   // il filtresinde birden fazla ildeki işin yalnız seçilen illerin payı
     const G = new Map();
     tumKm9(j).forEach(k => {
       const t = kmTarih9(k); if(!t || t < a || t > b) return;
-      const km = kmUz9(k); if(!(km > 0)) return;
+      if(fS && !fS.has(k.s)) return;
+      const km = kmUz9(k) * oran; if(!(km > 0)) return;
       const g = G.get(k.s) || { s: k.s, km: 0, ar: [] }; g.km += km; g.ar.push({ a: k.a, e: k.e, y: k.y, t }); G.set(k.s, g);
       std.set(k.s, (std.get(k.s) || 0) + km);
       // birden fazla ildeki işin km'si iller arasında eşit bölünür
-      const iL = (j.il || []).filter(Boolean); (iL.length ? iL : ["İl belirtilmemiş"]).forEach(ik => il.set(ik, (il.get(ik) || 0) + km / (iL.length || 1)));
-      const bk = String(j.birim || "").trim() || BIRSIZ9; bir.set(bk, (bir.get(bk) || 0) + km);
+      (iS.length ? iS : ["İl belirtilmemiş"]).forEach(ik => il.set(ik, (il.get(ik) || 0) + km / (iS.length || 1)));
+      bir.set(bk, (bir.get(bk) || 0) + km);
       top += km; n++;
     });
     if(!G.size) return;
@@ -7468,7 +7512,9 @@ async function kmRaporPdf9(V, a, b, sec){
   yaz(`${gun} gün`, X1, 25, { f: 8.5, c: GRI, r: 1 });
   doc.setDrawColor(...TUR); doc.setLineWidth(0.9); doc.line(X0, 28.5, X1, 28.5);
   // özet kutuları
-  let y = 33; const kw = (X1 - X0 - 4) / 2;
+  let y = 33;
+  if(sec.filtre){ doc.setFont("DV", "bold"); doc.setFontSize(8.5); const fl = doc.splitTextToSize("Filtre: " + sec.filtre, X1 - X0); yaz(fl[0] + (fl.length > 1 ? "…" : ""), X0, 33.5, { k: 1, f: 8.5, c: TUR }); y = 37; }
+  const kw = (X1 - X0 - 4) / 2;
   [["TOPLAM İLERLEME", "+" + f2(V.top) + " km", [22, 163, 74]], ["İLERLEME OLAN İŞ", String(V.isler.length), KOYU]].forEach(([e, v, c], i) => {
     const x = X0 + i * (kw + 4); doc.setDrawColor(...CIZ); doc.setLineWidth(0.3); doc.roundedRect(x, y, kw, 15, 1.5, 1.5, "S");
     yaz(e, x + 3, y + 5.2, { k: 1, f: 6.5, c: GRI }); yaz(v, x + 3, y + 12, { k: 1, f: 13, c });
@@ -7542,6 +7588,243 @@ async function kmRaporPdf9(V, a, b, sec){
   const ad = dosyaGuvenli(`KM İlerleme Raporu (${trG9(a)}-${trG9(b)})`) + ".pdf", bytes = doc.output("arraybuffer");
   pdfDurum = { tek: true, j: null, sec: new Set(), bol: {}, ara: "", ad, blob: new Blob([bytes.slice(0)], { type: "application/pdf" }), dosya: new File([bytes.slice(0)], ad, { type: "application/pdf" }), rapor: 1 };
 }
+
+// ---------- v73: rapor filtresi, görsel kart, animasyonlar ----------
+// filtre metni (PDF ve kartta başlığın altına yazılır)
+function fMetin9(F){
+  if(!F) return "";
+  const p = [];
+  if(F.b && F.b.size) p.push("Birim: " + [...F.b].join(", "));
+  if(F.i && F.i.size) p.push("İl: " + [...F.i].join(", "));
+  if(F.s && F.s.size) p.push("Standart: " + [...F.s].join(", "));
+  return p.join(" · ");
+}
+// tarih aralığı başlığı: "16 – 22 Kasım", "28 Ekim – 3 Kasım", "16 Kasım"
+const AYT9 = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+function aralikAd9(a, b){
+  const A = new Date(a + "T00:00:00"), B = new Date(b + "T00:00:00"), yb = new Date().getFullYear();
+  const yl = d => d.getFullYear() !== yb ? " " + d.getFullYear() : "";
+  if(a === b) return `${A.getDate()} ${AYT9[A.getMonth()]}${yl(A)}`;
+  if(A.getFullYear() === B.getFullYear() && A.getMonth() === B.getMonth()) return `${A.getDate()} – ${B.getDate()} ${AYT9[B.getMonth()]}${yl(B)}`;
+  if(A.getFullYear() === B.getFullYear()) return `${A.getDate()} ${AYT9[A.getMonth()]} – ${B.getDate()} ${AYT9[B.getMonth()]}${yl(B)}`;
+  return `${A.getDate()} ${AYT9[A.getMonth()]} ${A.getFullYear()} – ${B.getDate()} ${AYT9[B.getMonth()]} ${B.getFullYear()}`;
+}
+// rapor ekranındaki filtre seçenekleri: yalnız işlerde geçenler
+function fSecenek9(){
+  const isl = ISLER.filter(j => !j.ekleme);
+  const bir = birimler9().filter(b => isl.some(j => String(j.birim || "").trim() === b));
+  const il = IL_SIRA.filter(x => isl.some(j => (j.il || []).includes(x)));
+  const st = new Set(); isl.forEach(j => tumKm9(j).forEach(k => k.s && st.add(k.s)));
+  const std = [...STD_SIRA.filter(s => st.has(s)), ...[...st].filter(s => !STD_SIRA.includes(s)).sort()];
+  return { bir, il, std };
+}
+
+// ---------- rapor hazırlanırken animasyonu ----------
+function rapAnim9(tur){
+  document.getElementById("rpa9")?.remove();
+  const v = document.createElement("div"); v.className = "rpa9"; v.id = "rpa9";
+  const kart = tur === "kart";
+  v.innerHTML = `<div class="rpk9"><div class="pg9${kart ? " kt9k" : ""}"><i class="h"></i><i class="ln"></i><div class="kt"><i></i><i></i></div><div class="tb"><p><i style="--w:90%"></i></p><p><i style="--w:55%"></i></p><p><i style="--w:72%"></i></p><p><i style="--w:40%"></i></p></div>${"<i class=\"rw\"></i>".repeat(kart ? 3 : 7)}</div>
+<div class="pr9"><b>${kart ? "Kart hazırlanıyor…" : "Rapor hazırlanıyor…"}</b><div class="br"><i></i></div><small>Veriler toplanıyor</small></div><div class="rok9">✓ ${kart ? "Kart hazır" : "PDF hazır · açılıyor"}</div></div>`;
+  document.body.appendChild(v);
+  const t0 = performance.now(), az = azHareket;
+  const adimlar = kart ? ["Veriler toplanıyor", "Standart ve iller", "Kart çiziliyor"] : ["Veriler toplanıyor", "Standart tablosu", "İl ve birim tabloları", "İş bazlı liste", "Sayfa düzeni"];
+  const zaman = [];
+  if(!az){
+    requestAnimationFrame(() => v.classList.add("on"));
+    adimlar.forEach((t, i) => zaman.push(setTimeout(() => { const s = v.querySelector(".pr9 small"); if(s) s.textContent = t; }, i * 300)));
+    v.querySelectorAll(".pg9 .tb i").forEach((x, i) => zaman.push(setTimeout(() => x.style.width = x.style.getPropertyValue("--w"), 350 + i * 90)));
+    v.querySelectorAll(".pg9 .rw").forEach((x, i) => zaman.push(setTimeout(() => x.classList.add("on"), 650 + i * 110)));
+  } else v.classList.add("on", "az");
+  const EN_AZ = az ? 0 : 1300;
+  return {
+    async bitir(basarili){
+      const kal = EN_AZ - (performance.now() - t0); if(kal > 0) await new Promise(r => setTimeout(r, kal));
+      zaman.forEach(clearTimeout);
+      if(basarili && !az){ v.classList.add("bitti"); await new Promise(r => setTimeout(r, 650)); }
+      v.classList.add("kapan"); setTimeout(() => v.remove(), az ? 0 : 220);
+    }
+  };
+}
+
+// ---------- görsel kart (telefonda çizilir, hiçbir yere gönderilmez) ----------
+async function kartCiz9(V, a, b, F){
+  const W = 1080, H = 1350, c = document.createElement("canvas"); c.width = W; c.height = H;
+  const x = c.getContext("2d"), FN = '-apple-system, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+  const font = (w, s) => x.font = `${w} ${s}px ${FN}`;
+  const yuv = (X, Y, w, h, r) => { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + w, Y, X + w, Y + h, r); x.arcTo(X + w, Y + h, X, Y + h, r); x.arcTo(X, Y + h, X, Y, r); x.arcTo(X, Y, X + w, Y, r); x.closePath(); };
+  const sigdir = (t, mw) => { if(x.measureText(t).width <= mw) return t; while(t.length > 1 && x.measureText(t + "…").width > mw) t = t.slice(0, -1); return t + "…"; };
+  // zemin
+  let g = x.createLinearGradient(0, 0, W * .35, H); g.addColorStop(0, "#111a33"); g.addColorStop(1, "#0b1020"); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  g = x.createRadialGradient(W * .88, -60, 0, W * .88, -60, 900); g.addColorStop(0, "rgba(30,58,138,.95)"); g.addColorStop(1, "rgba(30,58,138,0)"); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  g = x.createRadialGradient(-60, H + 60, 0, -60, H + 60, 600); g.addColorStop(0, "rgba(124,45,18,.75)"); g.addColorStop(1, "rgba(124,45,18,0)"); x.fillStyle = g; x.fillRect(0, 0, W, H);
+  const L = 72, R = W - 72;
+  // logo + etiket
+  g = x.createLinearGradient(L, 70, L + 64, 134); g.addColorStop(0, "#fb923c"); g.addColorStop(1, "#ea580c"); x.fillStyle = g; yuv(L, 70, 64, 64, 18); x.fill();
+  x.save(); x.translate(L + 32 - 17, 102 - 17); x.scale(34 / 24, 34 / 24); x.strokeStyle = "#fff"; x.lineWidth = 2.4; x.lineCap = "round";
+  x.beginPath(); x.moveTo(8, 3); x.lineTo(4, 21); x.moveTo(16, 3); x.lineTo(20, 21); x.moveTo(12, 4); x.lineTo(12, 7); x.moveTo(12, 10.5); x.lineTo(12, 13.5); x.moveTo(12, 17); x.lineTo(12, 20); x.stroke(); x.restore();
+  font(700, 30); x.fillStyle = "#cbd5e1"; x.textBaseline = "middle"; x.fillText("İşTakip", L + 84, 103);
+  const gun = Math.round((new Date(b) - new Date(a)) / 864e5) + 1, haftaMi = gun === 7 && new Date(a + "T00:00:00").getDay() === 1;
+  const etiket = haftaMi ? "HAFTALIK ÖZET" : "KM ÖZETİ"; font(800, 26); const ew = x.measureText(etiket).width + 52;
+  x.strokeStyle = "#334155"; x.lineWidth = 2; yuv(R - ew, 76, ew, 54, 27); x.stroke(); x.fillStyle = "#94a3b8"; x.fillText(etiket, R - ew + 26, 104);
+  // başlık
+  x.textBaseline = "alphabetic"; font(800, 46); x.fillStyle = "#fff"; x.fillText(sigdir(aralikAd9(a, b) + " Km İlerlemesi", R - L), L, 225);
+  let y = 225; const fm = fMetin9(F);
+  if(fm){ font(700, 26); x.fillStyle = "#fb923c"; x.fillText(sigdir(fm, R - L), L, 270); y = 270; }
+  // büyük toplam
+  font(800, 190); const ts = "+" + f2(V.top); g = x.createLinearGradient(0, y + 30, 0, y + 200); g.addColorStop(0, "#fdba74"); g.addColorStop(1, "#ea580c"); x.fillStyle = g;
+  x.fillText(ts, L - 6, y + 200); const tw = x.measureText(ts).width; font(800, 56); x.fillStyle = "#fb923c"; x.fillText("km", L + tw + 14, y + 192);
+  y += 240;
+  // kutular: giriş, iş, önceki dönem
+  const [pa, pb] = (() => { const A = new Date(a + "T00:00:00"), s = new Date(A); s.setDate(s.getDate() - 1); const e = new Date(A); e.setDate(e.getDate() - gun); return [isoG9(e), isoG9(s)]; })();
+  const once = raporVeri9(pa, pb, F).top, fark = V.top - once;
+  const kw = (R - L - 36) / 3, kutu = [["KM GİRİŞİ", String(V.n)], ["İLERLEYEN İŞ", String(V.isler.length)], [haftaMi ? "ÖNCEKİ HAFTA" : "ÖNCEKİ DÖNEM", f2(once)]];
+  kutu.forEach(([e, v], i) => { const X = L + i * (kw + 18);
+    x.fillStyle = "rgba(255,255,255,.06)"; yuv(X, y, kw, 160, 26); x.fill(); x.strokeStyle = "rgba(255,255,255,.09)"; x.lineWidth = 1.5; x.stroke();
+    font(700, 22); x.fillStyle = "#94a3b8"; x.fillText(e, X + 28, y + 50);
+    font(800, 52); x.fillStyle = "#e6ebf3"; x.fillText(v, X + 28, y + 122);
+    if(i === 2 && Math.abs(fark) >= 0.005){ const vw = x.measureText(v).width; font(800, 24); x.fillStyle = fark > 0 ? "#4ade80" : "#f87171"; x.fillText((fark > 0 ? "▲ " : "▼ ") + f2(Math.abs(fark)), X + 36 + vw, y + 120); }
+  });
+  y += 160 + 66;
+  // standartlar (en fazla 6)
+  font(800, 24); x.fillStyle = "#94a3b8"; x.fillText("STANDART", L, y); y += 22;
+  const sL = V.std.slice(0, 6), mx = Math.max(...sL.map(s => s[1]), 0.001);
+  sL.forEach(([s, km]) => { y += 48;
+    font(700, 30); x.fillStyle = "#e6ebf3"; x.fillText(sigdir(s, 220), L, y);
+    const bx = L + 252, bw = R - 140 - bx; x.fillStyle = "rgba(255,255,255,.08)"; yuv(bx, y - 20, bw, 16, 8); x.fill();
+    g = x.createLinearGradient(bx, 0, bx + bw, 0); g.addColorStop(0, "#ea580c"); g.addColorStop(1, "#fb923c"); x.fillStyle = g; yuv(bx, y - 20, Math.max(16, bw * km / mx), 16, 8); x.fill();
+    x.textAlign = "right"; x.fillStyle = "#fff"; x.fillText(f2(km), R, y); x.textAlign = "left";
+  });
+  if(V.std.length > 6){ y += 40; font(700, 22); x.fillStyle = "#64748b"; x.fillText(`+${V.std.length - 6} standart daha`, L, y); }
+  // iller (çipler, en fazla 3 satır)
+  y += 72; font(800, 24); x.fillStyle = "#94a3b8"; x.fillText("İL", L, y); y += 22;
+  let cx = L, sat = 0; const ch = 56, ust = H - 150;
+  for(const [il, km] of V.il){
+    font(700, 28); const a1 = x.measureText(il).width; const b1 = x.measureText(f2(km)).width; const w = a1 + b1 + 60;
+    if(cx + w > R){ cx = L; sat++; } if(sat > 2 || y + 12 + sat * (ch + 14) + ch > ust) break;
+    const Y = y + 12 + sat * (ch + 14);
+    x.fillStyle = "rgba(255,255,255,.07)"; yuv(cx, Y, w, ch, 28); x.fill(); x.strokeStyle = "rgba(255,255,255,.1)"; x.lineWidth = 1.5; x.stroke();
+    x.fillStyle = "#e6ebf3"; x.fillText(il, cx + 24, Y + 38); x.fillStyle = "#fb923c"; x.fillText(f2(km), cx + 34 + a1, Y + 38);
+    cx += w + 14;
+  }
+  // alt satır
+  x.strokeStyle = "#1e293b"; x.lineWidth = 2; x.beginPath(); x.moveTo(L, H - 110); x.lineTo(R, H - 110); x.stroke();
+  font(700, 22); x.fillStyle = "#64748b";
+  const bugun = new Date(), bs = `${p2(bugun.getDate())}.${p2(bugun.getMonth() + 1)}.${bugun.getFullYear()}`;
+  x.textAlign = "right"; x.fillText(bs, R, H - 62); const bsw = x.measureText(bs).width; x.textAlign = "left";
+  const en = [...V.isler].sort((p, q) => q.km - p.km)[0];
+  if(en) x.fillText(sigdir(`En çok ilerleyen: ${en.j.ad} · ${f2(en.km)} km`, R - L - bsw - 30), L, H - 62);
+  return await new Promise((ok, no) => c.toBlob(bl => bl ? ok(bl) : no(new Error("Görsel oluşturulamadı")), "image/png"));
+}
+function kartGoster9(blob, a, b){
+  const ad = `KM Kartı (${trG9(a)}-${trG9(b)}).png`, dosya = new File([blob], ad, { type: "image/png" }), url = URL.createObjectURL(blob);
+  const ov = altSayfa(IK("paylas"), aralikAd9(a, b) + " Kartı", "Telefonda hazırlandı · hiçbir yere gönderilmedi", `<div class="kgs9"><img src="${url}" alt="KM kartı"><div class="kgb9"><button class="btn" data-kg9p>${IK("paylas")}Paylaş</button><button class="btn2" data-kg9k>↓ Kaydet</button></div></div>`);
+  const kaydet = () => { const l = document.createElement("a"); l.href = url; l.download = ad; document.body.appendChild(l); l.click(); l.remove(); };
+  ov.addEventListener("click", async e => {
+    if(e.target.closest("[data-kg9p]")){
+      if(navigator.canShare && navigator.canShare({ files: [dosya] })){ try{ await navigator.share({ files: [dosya] }); }catch(err){ if(!err || err.name !== "AbortError") bildir("Paylaşılamadı"); } }
+      else kaydet();
+    }
+    if(e.target.closest("[data-kg9k]")){
+      // iPhone'da "Resmi Kaydet" paylaşma menüsünden yapılır
+      if(/iP(hone|ad|od)/.test(navigator.userAgent) && navigator.canShare && navigator.canShare({ files: [dosya] })){ try{ await navigator.share({ files: [dosya] }); }catch(_){} }
+      else kaydet();
+    }
+  });
+}
+
+// ---------- rapor ekranı: PDF Rapor / Görsel Kart + filtre ----------
+kmRaporSayfa9 = function(){
+  const [a0, b0] = raporAralik9("ay"), O = fSecenek9(), F = { b: new Set(), i: new Set(), s: new Set() };
+  let mod = "pdf";
+  const grup = (ad, k, L) => L.length ? `<div class="fg9"><label>${ad}</label><div class="krc9">${L.map(v => `<button type="button" data-kr9fc="${k}" data-v="${esc(v)}">${esc(v)}</button>`).join("")}</div></div>` : "";
+  const ov = altSayfa(IK("pdf"), "KM İlerleme Raporu", "Seçilen tarihler arasında girilen km'ler", `<div class="krs9">
+<div class="krt9"><button type="button" data-kr9m="pdf" class="on">${IK("pdf")}PDF Rapor</button><button type="button" data-kr9m="kart">${IK("paylas")}Görsel Kart</button></div>
+<label>Tarih aralığı</label><div class="krd9"><input type="date" id="kr9a" value="${isoG9(a0)}"><span>→</span><input type="date" id="kr9b" value="${isoG9(b0)}"></div>
+<div class="krc9">${[["hafta", "Bu hafta"], ["gecenhafta", "Geçen hafta"], ["ay", "Bu ay"], ["gecenay", "Geçen ay"], ["yil", "Yıl başından"]].map(([k, t]) => `<button type="button" data-kr9="${k}"${k === "ay" ? ' class="on"' : ""}>${t}</button>`).join("")}</div>
+<button type="button" class="krf9" data-kr9f><span>Filtrele</span><em id="kr9fo">Tümü</em><i>▾</i></button>
+<div class="krfg9" id="kr9fg" hidden>${grup("Birim", "b", O.bir)}${grup("İl", "i", O.il)}${grup("Standart", "s", O.std)}<button type="button" class="krfs9" data-kr9fsil>Filtreyi temizle</button></div>
+<label class="sw" id="kr9sw"><input type="checkbox" id="kr9ar"><span></span>KM aralıklarını göster</label>
+<p class="krn9">KM aralığının tarihine göre hesaplanır. "Yarısı" girilen aralıklar yarım sayılır. Birden fazla ildeki işte il filtresi seçilirse o ilin payı sayılır.</p>
+<div class="krh9" id="kr9h" hidden></div>
+<button class="btn" id="kr9git">${IK("pdf")}PDF'i Aç</button></div>`);
+  const $ = s => ov.querySelector(s);
+  const aralikSec = k => { const [a, b] = raporAralik9(k); $("#kr9a").value = isoG9(a); $("#kr9b").value = isoG9(b); ov.querySelectorAll("[data-kr9]").forEach(x => x.classList.toggle("on", x.dataset.kr9 === k)); $("#kr9h").hidden = true; };
+  const dugme = () => { $("#kr9git").innerHTML = mod === "kart" ? IK("paylas") + "Kartı Aç" : IK("pdf") + "PDF'i Aç"; };
+  const fOzet = () => { const m = fMetin9(F); $("#kr9fo").textContent = m || "Tümü"; $("#kr9fo").classList.toggle("on", !!m); };
+  ov.addEventListener("click", async e => {
+    const m = e.target.closest("[data-kr9m]");
+    if(m){ if(m.dataset.kr9m === mod) return; mod = m.dataset.kr9m; ov.querySelectorAll("[data-kr9m]").forEach(x => x.classList.toggle("on", x === m)); aralikSec(mod === "kart" ? "hafta" : "ay"); $("#kr9sw").hidden = mod === "kart"; dugme(); return; }
+    const c = e.target.closest("[data-kr9]"); if(c){ aralikSec(c.dataset.kr9); return; }
+    if(e.target.closest("[data-kr9f]")){ const g = $("#kr9fg"); g.hidden = !g.hidden; $("[data-kr9f]").classList.toggle("ac", !g.hidden); return; }
+    const fc = e.target.closest("[data-kr9fc]");
+    if(fc){ const S = F[fc.dataset.kr9fc], v = fc.dataset.v; S.has(v) ? S.delete(v) : S.add(v); fc.classList.toggle("on", S.has(v)); fOzet(); $("#kr9h").hidden = true; return; }
+    if(e.target.closest("[data-kr9fsil]")){ Object.values(F).forEach(S => S.clear()); ov.querySelectorAll("[data-kr9fc]").forEach(x => x.classList.remove("on")); fOzet(); return; }
+    if(e.target.closest("#kr9git")){
+      let a = $("#kr9a").value, b = $("#kr9b").value; const h = $("#kr9h");
+      const hata = m => { h.textContent = m; h.hidden = false; };
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(a) || !/^\d{4}-\d{2}-\d{2}$/.test(b)) return hata("İki tarihi de seçin.");
+      if(a > b) [a, b] = [b, a];
+      const V = raporVeri9(a, b, F);
+      if(!V.n) return hata(`${trG9(a)} – ${trG9(b)} arasında${fMetin9(F) ? " bu filtreye uyan" : ""} girilmiş KM yok.`);
+      const btn = $("#kr9git"); btn.disabled = true;
+      const an = rapAnim9(mod);
+      try{
+        if(mod === "kart"){ const bl = await kartCiz9(V, a, b, F); await an.bitir(true); kartGoster9(bl, a, b); }
+        else{ await kmRaporPdf9(V, a, b, { aralik: $("#kr9ar").checked, filtre: fMetin9(F) }); await an.bitir(true); kapatAlt(); pdfOnizle(); }
+      }catch(err){ await an.bitir(false); hata((mod === "kart" ? "Kart" : "PDF") + " oluşturulamadı: " + (err.message || err)); btn.disabled = false; dugme(); }
+    }
+  });
+  ["#kr9a", "#kr9b"].forEach(s => $(s).addEventListener("change", () => { ov.querySelectorAll("[data-kr9]").forEach(x => x.classList.remove("on")); $("#kr9h").hidden = true; }));
+};
+
+// ---------- KM kaydedilince: düğme ✓ olur, ana sayfada yeni halka dolar, toplam akar ----------
+let YENI9 = null, yeniGoz9 = null;
+function yeniKmIzle9(id, g, km){
+  YENI9 = { id, g, km, son: Date.now() + 60000 };
+  if(yeniGoz9) return;
+  yeniGoz9 = new MutationObserver(() => { if(document.getElementById("hk")) yeniKmOynat9(); });
+  yeniGoz9.observe(document.body, { childList: true, subtree: true });
+  setTimeout(yeniKmOynat9, 60);
+}
+function yeniKmOynat9(){
+  if(!YENI9) return;
+  if(Date.now() > YENI9.son){ YENI9 = null; yeniGoz9?.disconnect(); yeniGoz9 = null; return; }
+  const hk = document.getElementById("hk"); if(!hk || document.getElementById("bsov")) return;
+  const l = hikListe(), i = l.findIndex(x => x.j.id === YENI9.id && Number(x.k.g) === Number(YENI9.g));
+  const Y = YENI9; YENI9 = null; yeniGoz9?.disconnect(); yeniGoz9 = null;
+  if(i < 0 || azHareket) return;
+  const btn = hk.querySelector(`[data-hik="${i}"]`); if(!btn) return;
+  btn.scrollIntoView({ block: "nearest", inline: "center" });
+  btn.animate([{ transform: "scale(.2)", opacity: 0 }, { transform: "scale(1.08)", opacity: 1, offset: .7 }, { transform: "scale(1)" }], { duration: 520, easing: "cubic-bezier(.3,1.4,.5,1)" });
+  const r = btn.querySelector(".hr5"), t0 = performance.now();
+  if(r){ const ad = t => { const k = Math.min(1, (t - t0 - 250) / 800), p = Math.max(0, 1 - Math.pow(1 - Math.max(0, k), 3)) * 100;
+      r.style.setProperty("background", `conic-gradient(#ea580c ${p}%, #d7dde6 ${p}%)`, "important");
+      if(k < 1) requestAnimationFrame(ad); else r.style.removeProperty("background"); }; requestAnimationFrame(ad); }
+  const sm = hk.querySelector(".bsl9 small");
+  if(sm){ const top = l.reduce((s, x) => s + x.km, 0), bas = top - Y.km, ilk = sm.innerHTML;
+    const ad2 = t => { const k = Math.min(1, (t - t0 - 250) / 800), e = 1 - Math.pow(1 - Math.max(0, k), 3);
+      sm.innerHTML = ilk.replace(/\+[\d.,]+ km/, "+" + f2(bas + Y.km * e) + " km"); if(k < 1) requestAnimationFrame(ad2); else sm.innerHTML = ilk; };
+    requestAnimationFrame(ad2); sm.animate([{ color: "#16a34a" }, { color: "#16a34a", offset: .8 }, { color: "" }], { duration: 1400 }); }
+}
+// KM formundaki "KM Ekle" düğmesi kayıt bitince ✓ olur (form kapanmadan kısa an)
+const _degistir9k = degistir9;
+degistir9 = async function(d){
+  const sb = document.querySelector('#kf9 [type="submit"]');
+  const sonuc = await _degistir9k.apply(this, arguments);
+  if(d && d.tip === "ekle" && d.km){
+    if(sb && !azHareket){ sb.classList.add("ok9"); sb.innerHTML = "✓"; await new Promise(r => setTimeout(r, 450)); }
+    yeniKmIzle9(d.is, d.km.g, kmUz9(d.km));
+  }
+  return sonuc;
+};
+// açılış: ana sayfa kartları aşağıdan kayarak gelir
+const _genelAnim9 = genelAnim;
+genelAnim = function(){
+  const ilk = !acilisAnim5; _genelAnim9.apply(this, arguments);
+  if(!ilk || azHareket) return;
+  [document.getElementById("gd"), document.getElementById("hk")].forEach((el, i) => el && el.animate([{ transform: "translateY(60px)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 600, delay: i * 90, easing: "cubic-bezier(.2,1.1,.4,1)", fill: "backwards" }));
+};
 
 function bildir(m){
   document.querySelectorAll(".bildir").forEach(x => x.remove());

@@ -7681,21 +7681,16 @@ function kartCizim9(c, V, a, b, F, isB){
   x.textBaseline = "alphabetic"; font(800, 46); x.fillStyle = "#fff"; x.fillText(sigdir(aralikAd9(a, b) + " Km İlerlemesi", R - L), L, 225);
   let y = 225; const fm = fMetin9(F);
   if(fm){ font(700, 26); x.fillStyle = "#fb923c"; x.fillText(sigdir(fm, R - L), L, 270); y = 270; }
-  // büyük toplam
-  font(800, 190); const ts = "+" + f2(V.top); g = x.createLinearGradient(0, y + 30, 0, y + 200); g.addColorStop(0, "#fdba74"); g.addColorStop(1, "#ea580c"); x.fillStyle = g;
-  x.fillText(ts, L - 6, y + 200); const tw = x.measureText(ts).width; font(800, 56); x.fillStyle = "#fb923c"; x.fillText("km", L + tw + 14, y + 192);
-  y += 240;
-  // kutular: giriş, iş, önceki dönem
-  const [pa, pb] = (() => { const A = new Date(a + "T00:00:00"), s = new Date(A); s.setDate(s.getDate() - 1); const e = new Date(A); e.setDate(e.getDate() - gun); return [isoG9(e), isoG9(s)]; })();
-  const once = raporVeri9(pa, pb, F).top, fark = V.top - once;
-  const kw = (R - L - 36) / 3, kutu = [["KM GİRİŞİ", String(V.n)], ["İLERLEYEN İŞ", String(V.isler.length)], [haftaMi ? "ÖNCEKİ HAFTA" : "ÖNCEKİ DÖNEM", f2(once)]];
-  kutu.forEach(([e, v], i) => { const X = L + i * (kw + 18);
-    x.fillStyle = "rgba(255,255,255,.06)"; yuv(X, y, kw, 160, 26); x.fill(); x.strokeStyle = "rgba(255,255,255,.09)"; x.lineWidth = 1.5; x.stroke();
-    font(700, 22); x.fillStyle = "#94a3b8"; x.fillText(e, X + 28, y + 50);
-    font(800, 52); x.fillStyle = "#e6ebf3"; x.fillText(v, X + 28, y + 122);
-    if(i === 2 && Math.abs(fark) >= 0.005){ const vw = x.measureText(v).width; font(800, 24); x.fillStyle = fark > 0 ? "#4ade80" : "#f87171"; x.fillText((fark > 0 ? "▲ " : "▼ ") + f2(Math.abs(fark)), X + 36 + vw, y + 120); }
+  // iki kutu (PDF'teki gibi): toplam ilerleme, ilerleme olan iş
+  y += 50; const kw = (R - L - 24) / 2;
+  [["TOPLAM İLERLEME", 1], ["İLERLEME OLAN İŞ", 0]].forEach(([e, km], i) => { const X = L + i * (kw + 24);
+    x.fillStyle = "rgba(255,255,255,.06)"; yuv(X, y, kw, 210, 30); x.fill(); x.strokeStyle = "rgba(255,255,255,.1)"; x.lineWidth = 1.5; x.stroke();
+    font(800, 24); x.fillStyle = "#94a3b8"; x.fillText(e, X + 34, y + 60);
+    if(km){ const ts = "+" + f2(V.top); let fs = 92; font(800, fs); while(fs > 40 && x.measureText(ts).width > kw - 130){ fs -= 4; font(800, fs); } g = x.createLinearGradient(0, y + 90, 0, y + 175); g.addColorStop(0, "#fdba74"); g.addColorStop(1, "#ea580c"); x.fillStyle = g;
+      x.fillText(ts, X + 30, y + 168); const tw = x.measureText(ts).width; font(800, 36); x.fillStyle = "#fb923c"; x.fillText("km", X + 30 + tw + 12, y + 166); }
+    else{ font(800, 92); x.fillStyle = "#fff"; x.fillText(String(V.isler.length), X + 30, y + 168); }
   });
-  y += 160 + 66;
+  y += 210 + 76;
   // standartlar (en fazla 6)
   font(800, 24); x.fillStyle = "#94a3b8"; x.fillText("STANDART", L, y); y += 22;
   const sL = V.std.slice(0, 6), mx = Math.max(...sL.map(s => s[1]), 0.001);

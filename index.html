@@ -5264,7 +5264,7 @@ async function boyKesit(j){
     ciz(ix); const b = document.querySelector("#bk6 .b1 span");
     const F = ana.kmF, dd = S[ix].d, hm = Math.round(S[ix].h);
     if(F){
-      const pk = kmT9(F(dd)), k2v = F.surekli(dd), k2 = (k2v < 0 ? "-" : "") + f2(Math.abs(k2v)), n = F.esitNo(dd);   // ikinci km: eşitlikte geri düşmeyen proje km'si   // ikinci km: yolun başından   // ikinci km: 8,22 gibi
+      const pk = kmT9(F(dd)), k2 = f2(Math.max(0, F.surekli(dd) - F.surekli(0))), n = F.esitNo(dd);   // ikinci km: çizginin başında 0, eksi olmaz, eşitlikte geri düşmez   // ikinci km: yolun başından   // ikinci km: 8,22 gibi
       const not = n ? (F.esitSay > 1 ? n + ". km eşitliği sonrası" : "km eşitliği sonrası") : "";
       if(b) b.innerHTML = `<b>P. Km: ${esc(pk)}</b> · ${hm} m<small>Km: ${esc(k2)}</small>${not ? `<small class="es9">(${not})</small>` : ""}`;
       bkIsaretKoy9(S[ix].p, `P. Km: ${pk}${not ? ` (${not})` : ""} · Km: ${k2}`);

@@ -1584,6 +1584,7 @@ html.dark .krf9{ background:#141c2b; border-color:#334155; color:#e6ebf3; } html
 .kes9 i{ font-style:normal; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:rgba(245,158,11,.25); color:#fbbf24; display:grid; place-items:center; font-size:11px; }
 .kesl9{ pointer-events:auto; display:flex; flex-direction:column; gap:2px; background:rgba(15,23,42,.92); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:4px; }
 .kesl9 button{ font:inherit; font-size:12.5px; font-weight:700; color:#e2e8f0; background:none; border:0; border-radius:9px; padding:8px 10px; text-align:left; white-space:nowrap; } .kesl9 button b{ color:#fbbf24; margin-right:4px; } .kesl9 button:active{ background:rgba(255,255,255,.08); }
+#kf9 small.kk9{ font-weight:600; color:#94a3b8; }
 </style>
 </head>
 <body>
@@ -6311,7 +6312,7 @@ detaySayfa = function(j, from){
 };
 function kart9(j){
   const cok = new Set(j.kmler.map(k => k.s)).size > 1 || j.cats.length > 1;
-  const sat = j.kmler.map((k, i) => `<div class="dz9r"><button class="m" data-dz9km="${i}"><b>${cok ? `<em>${esc(k.s)}</em>` : ""}${esc(k.a)} – ${esc(k.e)}${k.y ? " <u>yarısı</u>" : ""}</b><small>${[tarih(k.t), f2(kmUz9(k)) + " km", k.gz === 0 ? "anasayfada gizli" : "", (k.ac || "").trim()].filter(Boolean).map(esc).join(" · ")}</small></button><button class="x" data-dz9sil="${i}" aria-label="Sil">${IK("x")}</button></div>`).join("");
+  const sat = j.kmler.map((k, i) => `<div class="dz9r"><button class="m" data-dz9km="${i}"><b>${cok ? `<em>${esc(k.s)}</em>` : ""}${esc(k.a)} – ${esc(k.e)}${k.y ? " <u>yarısı</u>" : ""}</b><small>${[tarih(k.t), f2(kmUz9(k)) + " km", k.gz === 0 ? "anasayfada gizli" : "", k.kk ? "K.K.No " + k.kk : "", (k.ac || "").trim()].filter(Boolean).map(esc).join(" · ")}</small></button><button class="x" data-dz9sil="${i}" aria-label="Sil">${IK("x")}</button></div>`).join("");
   const yz = (alan, ad) => { const v = (j[alan] || "").trim(); return `<button class="yz" data-dz9yazi="${alan}"><span><b>${ad}</b><small>${v ? esc(v.slice(0, 90)) + (v.length > 90 ? "…" : "") : "Boş"}</small></span>${IK("kalem")}</button>`; };
   return `<div class="card dz9k"><div class="dz9h">${IK("kalem")}<b>Düzenle</b><span>${D.yil}</span></div>
 <div class="dz9l">${sat || '<div class="bos">Bu yıl KM aralığı yok</div>'}</div>
@@ -6334,6 +6335,7 @@ function kmForm9(id, idx, on){
 <label>Oran</label><div class="seg" id="kf9o"><button type="button" class="${yarim ? "" : "on"}" data-o="0">Tamamı</button><button type="button" class="${yarim ? "on" : ""}" data-o="1">Yarısı</button></div>
 <label for="kf9t">Tarih</label><input id="kf9t" type="date" value="${esc(t)}">
 <label for="kf9c">Açıklama</label><textarea id="kf9c" rows="3" placeholder="İsteğe bağlı">${esc(k ? k.ac || "" : "")}</textarea>
+<label for="kf9k">K.K.No <small class="kk9">(bu girişe özel)</small></label><input id="kf9k" autocomplete="off" placeholder="${esc(j.kk ? "Boşsa işin K.K.No'su: " + j.kk : "İsteğe bağlı")}" value="${esc(k ? k.kk || "" : "")}">
 <label class="sw"><input type="checkbox" id="kf9g"${goster ? " checked" : ""}><span></span>Anasayfada göster</label>
 <div class="hata" id="kf9h" hidden></div>
 <button class="btn" type="submit">${k ? "Kaydet" : "KM Ekle"}</button>
@@ -6370,9 +6372,9 @@ ${k ? `<button type="button" class="sil" data-kf9sil>${IK("cop")}Bu aralığı s
     if(kmSayi(a) === null || kmSayi(e) === null || !a || !e) return hata("Başlangıç ve bitiş KM'yi girin (ör. 12+500).");
     if(!/^\d{4}-\d{2}-\d{2}$/.test(tt)) return hata("Tarihi seçin.");
     if(kmSayi(a) === kmSayi(e)) return hata("Başlangıç ve bitiş aynı olamaz.");
-    const yeni = { s: std, a, e, t: tt, y: oran, ac: $("#kf9c").value.trim(), g: k ? (Number(k.g) || 0) : Date.now(), ...($("#kf9g").checked ? {} : { gz: 0 }) };
+    const yeni = { s: std, a, e, t: tt, y: oran, ac: $("#kf9c").value.trim(), g: k ? (Number(k.g) || 0) : Date.now(), ...($("#kf9g").checked ? {} : { gz: 0 }), ...($("#kf9k").value.trim() ? { kk: $("#kf9k").value.trim() } : {}) };
     try{
-      if(k){ const eski = { ...k }; if(kmEsit9(eski, yeni) && (eski.gz === 0) === (yeni.gz === 0)){ kapatAlt(); return; }
+      if(k){ const eski = { ...k }; if(kmEsit9(eski, yeni) && (eski.gz === 0) === (yeni.gz === 0) && String(eski.kk || "") === String(yeni.kk || "")){ kapatAlt(); return; }
         await degistir9({ tip: "duz", is: id, ad: j.ad, eski, yeni }); kapatAlt(); bildir("KM aralığı güncellendi"); }
       else{ await degistir9({ tip: "ekle", is: id, ad: j.ad, km: yeni }); kapatAlt(); bildir("KM eklendi · " + f2(kmUz9(yeni)) + " km"); }
     }catch(err){ hata(err.message || "Kaydedilemedi"); }
@@ -7414,7 +7416,7 @@ ${onc ? sat("Önceki yıllar", f2(onc) + " km") : ""}
 ${sat("Toplam biten", f2(onc + yap) + " km", "t")}
 ${o.u !== null ? sat("İhale uzunluğu", f2(o.u) + " km") + sat("Kalan", f2(o.kalan) + " km", "k") : ""}
 <div class="kpb9">KM aralıkları · ${D.yil} <span>${L.length} aralık · dokunarak düzenleyin</span></div>
-${L.length ? L.map(({ k, i }) => `<button class="kpa9" data-kmp9d="${i}"><div><b>${esc(k.a)} – ${esc(k.e)}${k.y ? " <em>yarısı</em>" : ""}</b><span>${f2(kmUz9(k))} km</span></div><small><i>${esc(k.s)}</i> · ${tarih(k.t) || "tarih yok"}${k.gz === 0 ? " · anasayfada gizli" : ""}</small>${(k.ac || "").trim() ? `<p>${esc(k.ac.trim())}</p>` : ""}</button>`).join("") : `<div class="kpy9">Bu yıl girilmiş KM aralığı yok.</div>`}
+${L.length ? L.map(({ k, i }) => `<button class="kpa9" data-kmp9d="${i}"><div><b>${esc(k.a)} – ${esc(k.e)}${k.y ? " <em>yarısı</em>" : ""}</b><span>${f2(kmUz9(k))} km</span></div><small><i>${esc(k.s)}</i> · ${tarih(k.t) || "tarih yok"}${k.gz === 0 ? " · anasayfada gizli" : ""}${k.kk ? " · K.K.No " + esc(k.kk) : ""}</small>${(k.ac || "").trim() ? `<p>${esc(k.ac.trim())}</p>` : ""}</button>`).join("") : `<div class="kpy9">Bu yıl girilmiş KM aralığı yok.</div>`}
 </div>
 <button class="kpe9" data-kmp9ekle>${IK("arti")}KM Ekle</button></div>`;
   ov.appendChild(d);

@@ -1585,6 +1585,14 @@ html.dark .krf9{ background:#141c2b; border-color:#334155; color:#e6ebf3; } html
 .kesl9{ pointer-events:auto; display:flex; flex-direction:column; gap:2px; background:rgba(15,23,42,.92); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:4px; }
 .kesl9 button{ font:inherit; font-size:12.5px; font-weight:700; color:#e2e8f0; background:none; border:0; border-radius:9px; padding:8px 10px; text-align:left; white-space:nowrap; } .kesl9 button b{ color:#fbbf24; margin-right:4px; } .kesl9 button:active{ background:rgba(255,255,255,.08); }
 #kf9 small.kk9{ font-weight:600; color:#94a3b8; }
+.cs9{ margin-top:6px; display:flex; flex-direction:column; gap:4px; }
+.cs9b{ font-size:11px; font-weight:700; color:#94a3b8; margin:2px 2px 0; }
+.cs9r{ display:flex; align-items:flex-start; gap:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:7px 6px 7px 10px; }
+.cs9r span{ flex:1; min-width:0; font-size:13px; line-height:1.35; color:#334155; }
+.cs9r button{ flex:none; width:28px; height:28px; border-radius:8px; border:0; background:#fee2e2; color:#b91c1c; font:inherit; font-size:13px; font-weight:800; }
+.cs9g{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12.5px; font-weight:700; color:#0f172a; background:#fef3c7; border-radius:10px; padding:6px 6px 6px 10px; }
+.cs9g button{ display:inline-flex; align-items:center; gap:4px; font:inherit; font-size:12.5px; font-weight:800; color:#ea580c; background:#fff; border:0; border-radius:8px; padding:5px 9px; } .cs9g button svg{ width:14px; height:14px; }
+html.dark .cs9r{ background:#141c2b; border-color:#334155; } html.dark .cs9r span{ color:#cbd5e1; } html.dark .cs9r button{ background:rgba(239,68,68,.18); color:#fca5a5; } html.dark .cs9g{ background:rgba(245,158,11,.18); color:#fde68a; } html.dark .cs9g button{ background:#1e293b; }
 </style>
 </head>
 <body>
@@ -6924,9 +6932,11 @@ function oneriler9(ov){
   const x = EX9.esl.get(EX9.cur.id), j = ISLER.find(y => y.id === EX9.cur.id); if(!x || !j) return out;
   ["devam", "biten"].forEach(alan => {
     const ta = ov.querySelector(`[data-ex9ta="${alan}"]`); if(!ta) return;
-    const satirlar = ta.value.split("\n").filter(l => l.trim()), gor = new Set();
-    parca9(alan === "devam" ? x.c : x.b).forEach(p => {
-      if(satirlar.some(l => nrm9(l).includes(nrm9(p)))) return;          // zaten kutuda
+    // cümle cümle bakılır; yalnız yol tabakası (binder, bitümlü temel, aşınma, sathi kaplama) cümleleri öneri olur
+    const satirlar = cumleler9(ta.value).map(y => y.c).filter(yolTab9), gor = new Set();
+    parca9(alan === "devam" ? x.c : x.b).flatMap(p => cumleler9(p).map(y => y.c)).forEach(p => {
+      if(cumleler9(ta.value).some(y => nrm9(y.c).includes(nrm9(p)))) return;   // zaten kutuda
+      if(!yolTab9(p)) return;                                              // yalnız yol tabakası cümleleri (duvar, menfez… öneri olmaz)
       const ip = iskelet9(p), sp = sayilar9(p);
       for(const l of satirlar){
         if(iskelet9(l) === ip && sp.length){                               // sayıları değişmiş aynı cümle
@@ -6949,7 +6959,7 @@ function oneriler9(ov){
   // Excel'deki aralık uygulamanın KM kayıtlarında yoksa
   const kmler = (j.kmler || []).map(k => { const a = kmSayi(k.a), e = kmSayi(k.e); return a === null || e === null ? null : [Math.min(a, e), Math.max(a, e)]; }).filter(Boolean);
   const gor = new Set();
-  araliklar9((x.c || "") + "\n" + (x.b || "")).forEach(r => {
+  araliklar9(parca9(x.c).concat(parca9(x.b)).flatMap(p => cumleler9(p).map(y => y.c)).filter(yolTab9).join("\n")).forEach(r => {
     const k = r.a + "|" + r.e; if(gor.has(k)) return; gor.add(k);
     if(kmler.some(([a, e]) => a <= r.s + 0.0005 && e >= r.b - 0.0005)) return;
     out.km.push({ tip: "km", a: r.a, e: r.e, yazi: `${r.a} – ${r.e} (${f2(r.b - r.s)} km)` });
@@ -7019,8 +7029,10 @@ function exOlay9(ov){
       if(o.tip === "km"){ await exKaydet9(); if(EX9 && EX9.cur) kmForm9(EX9.cur.id, null, { a: o.a, e: o.e }); return; }
       const ta = ov.querySelector(`[data-ex9ta="${alan}"]`); if(!ta) return;
       const L = ta.value.split("\n"), k = L.indexOf(o.eski);
-      if(k < 0){ bildir("Cümle kutuda değişmiş"); onerCiz9(ov); return; }
-      L[k] = o.yeni; ta.value = L.join("\n"); pcIsaret9(ov); bildir("Güncellendi"); return;
+      if(k >= 0){ L[k] = o.yeni; ta.value = L.join("\n"); }
+      else if(ta.value.includes(o.eski)) ta.value = ta.value.replace(o.eski, () => o.yeni);   // satırın içindeki cümle
+      else { bildir("Cümle kutuda değişmiş"); onerCiz9(ov); return; }
+      ta.dispatchEvent(new Event("input", { bubbles: true })); pcIsaret9(ov); bildir("Güncellendi"); return;
     }
     if(t.closest(".sor9") && !t.closest(".sor9 .kt9")){ ov.querySelector(".sor9")?.remove(); EX9.pcSec = null; return; }
     if((b = t.closest("[data-ex9p]"))){
@@ -8255,6 +8267,64 @@ function kmEsitDugme9(){
 function L_vurgu9(p){ try{ return L.circleMarker(p, { radius: 16, color: "#f59e0b", weight: 3, fillColor: "#f59e0b", fillOpacity: .25, interactive: false, className: "kes9n" }).addTo(hatHarita); }catch(_){ return null; } }
 const _hatGoster83 = hatGoster;
 hatGoster = async function(){ const r = await _hatGoster83.apply(this, arguments); try{ kmEsitDugme9(); }catch(_){} return r; };
+
+// ---------- v88: Devam Eden / Biten yazılarında cümle cümle silme (onaylı, geri alınabilir) ----------
+const KISA9 = /(^|\s)(vb|vs|no|nr|km|m|bkz|yy|sn|dk|st|cad|sok|mah|mh|bul|kv|vd|örn|ör|ort|yak|max|min|tbl)\.$/i;
+// metni satır ve cümlelere böler: [{ s: satır no, c: cümle }]
+function cumleler9(t){
+  const out = [];
+  String(t || "").split("\n").forEach((l, s) => {
+    let parca = [], bas = 0;
+    const re = /([.!?…]+)(\s+)(?=[A-ZÇĞİÖŞÜ0-9"'(“-])/g; let m;
+    while((m = re.exec(l))){
+      const son = m.index + m[1].length, aday = l.slice(bas, son);
+      if(KISA9.test(aday.trim())) continue;                 // "vb." "No." gibi kısaltmada bölme
+      parca.push(aday); bas = son + m[2].length;
+    }
+    parca.push(l.slice(bas));
+    parca.map(x => x.trim()).filter(Boolean).forEach(c => out.push({ s, c }));
+  });
+  return out;
+}
+function cumleSilMetin9(t, i){
+  const C = cumleler9(t), hedef = C[i]; if(!hedef) return t;
+  const satir = String(t || "").split("\n");
+  const kalan = C.filter((x, k) => k !== i && x.s === hedef.s).map(x => x.c).join(" ");
+  satir[hedef.s] = kalan;
+  return satir.filter((l, k) => k !== hedef.s || l.trim()).join("\n");
+}
+function cumleBagla9(ta){
+  if(!ta || ta._cs9) return; ta._cs9 = 1;
+  const kutu = document.createElement("div"); kutu.className = "cs9"; ta.after(kutu);
+  let geri = null, zam = 0;
+  const ciz = () => {
+    const C = cumleler9(ta.value);
+    kutu.innerHTML = (C.length ? `<small class="cs9b">Cümleler · silmek için ✕</small>` + C.map((x, i) => `<div class="cs9r"><span>${esc(x.c)}</span><button type="button" data-cs9="${i}" aria-label="Cümleyi sil">✕</button></div>`).join("") : "")
+      + (geri ? `<div class="cs9g">Silindi<button type="button" data-cs9geri>${IK("geriAl")}Geri al</button></div>` : "");
+  };
+  ta.addEventListener("input", () => { if(!ta._cs9ic) { geri = null; } ciz(); });
+  kutu.addEventListener("click", async e => {
+    const g = e.target.closest("[data-cs9geri]");
+    if(g){ e.stopPropagation(); if(geri !== null){ ta._cs9ic = 1; ta.value = geri; geri = null; ta.dispatchEvent(new Event("input", { bubbles: true })); ta._cs9ic = 0; ciz(); } return; }
+    const b = e.target.closest("[data-cs9]"); if(!b) return; e.stopPropagation();
+    const i = +b.dataset.cs9, C = cumleler9(ta.value), x = C[i]; if(!x) return;
+    const ok = await onay9("Bu cümle silinsin mi?", `<i>${esc(x.c)}</i>`, [{ t: "Vazgeç", v: false }, { t: "Sil", v: true, ana: 1, tehlike: 1 }]);
+    if(!ok) return;
+    const once = ta.value; ta._cs9ic = 1; ta.value = cumleSilMetin9(ta.value, i); ta.dispatchEvent(new Event("input", { bubbles: true })); ta._cs9ic = 0;
+    geri = once; ciz(); clearTimeout(zam); zam = setTimeout(() => { geri = null; ciz(); }, 8000);
+  });
+  ciz();
+}
+// işin "Düzenle" kartındaki yazı formu
+const _yaziForm88 = yaziForm9;
+yaziForm9 = function(){ const r = _yaziForm88.apply(this, arguments); cumleBagla9(document.getElementById("yf9t")); return r; };
+// haftalık Excel incelemesi
+const _exCiz88 = exCiz9;
+exCiz9 = function(){ const r = _exCiz88.apply(this, arguments); document.querySelectorAll("[data-ex9ta]").forEach(cumleBagla9); return r; };
+
+// ---------- v88: öneriler yalnız yol tabakası cümlelerinden (binder, bitümlü temel, aşınma, sathi kaplama) ----------
+const YOLTAB9 = /binder|bit[uü]ml[uü]\s*(temel|s[ıi]cak)|b\.?\s*s\.?\s*k\.?\b|a[şs][ıi]nma|sath[iî]\s*kaplama/i;
+function yolTab9(t){ return YOLTAB9.test(String(t || "")); }
 
 function bildir(m){
   document.querySelectorAll(".bildir").forEach(x => x.remove());

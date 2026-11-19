@@ -1593,6 +1593,12 @@ html.dark .krf9{ background:#141c2b; border-color:#334155; color:#e6ebf3; } html
 .cs9g{ display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:12.5px; font-weight:700; color:#0f172a; background:#fef3c7; border-radius:10px; padding:6px 6px 6px 10px; }
 .cs9g button{ display:inline-flex; align-items:center; gap:4px; font:inherit; font-size:12.5px; font-weight:800; color:#ea580c; background:#fff; border:0; border-radius:8px; padding:5px 9px; } .cs9g button svg{ width:14px; height:14px; }
 html.dark .cs9r{ background:#141c2b; border-color:#334155; } html.dark .cs9r span{ color:#cbd5e1; } html.dark .cs9r button{ background:rgba(239,68,68,.18); color:#fca5a5; } html.dark .cs9g{ background:rgba(245,158,11,.18); color:#fde68a; } html.dark .cs9g button{ background:#1e293b; }
+.csb9{ margin-left:auto; display:inline-flex; align-items:center; gap:4px; font:inherit; font-size:12px; font-weight:800; color:#b91c1c; background:#fee2e2; border:0; border-radius:99px; padding:4px 10px 4px 8px; } .csb9 svg{ width:14px; height:14px; }
+.ebh{ display:flex; align-items:center; gap:8px; }
+.yzw9{ display:flex; gap:6px; align-items:stretch; } .yzw9 .yz{ flex:1; min-width:0; }
+.ys9{ flex:none; width:44px; border:0; border-radius:12px; background:#fee2e2; color:#b91c1c; display:grid; place-items:center; } .ys9 svg{ width:18px; height:18px; }
+.css9{ display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+html.dark .csb9, html.dark .ys9{ background:rgba(239,68,68,.18); color:#fca5a5; }
 </style>
 </head>
 <body>
@@ -6321,7 +6327,7 @@ detaySayfa = function(j, from){
 function kart9(j){
   const cok = new Set(j.kmler.map(k => k.s)).size > 1 || j.cats.length > 1;
   const sat = j.kmler.map((k, i) => `<div class="dz9r"><button class="m" data-dz9km="${i}"><b>${cok ? `<em>${esc(k.s)}</em>` : ""}${esc(k.a)} – ${esc(k.e)}${k.y ? " <u>yarısı</u>" : ""}</b><small>${[tarih(k.t), f2(kmUz9(k)) + " km", k.gz === 0 ? "anasayfada gizli" : "", k.kk ? "K.K.No " + k.kk : "", (k.ac || "").trim()].filter(Boolean).map(esc).join(" · ")}</small></button><button class="x" data-dz9sil="${i}" aria-label="Sil">${IK("x")}</button></div>`).join("");
-  const yz = (alan, ad) => { const v = (j[alan] || "").trim(); return `<button class="yz" data-dz9yazi="${alan}"><span><b>${ad}</b><small>${v ? esc(v.slice(0, 90)) + (v.length > 90 ? "…" : "") : "Boş"}</small></span>${IK("kalem")}</button>`; };
+  const yz = (alan, ad) => { const v = (j[alan] || "").trim(); return `<div class="yzw9"><button class="yz" data-dz9yazi="${alan}"><span><b>${ad}</b><small>${v ? esc(v.slice(0, 90)) + (v.length > 90 ? "…" : "") : "Boş"}</small></span>${IK("kalem")}</button>${v ? `<button class="ys9" data-dz9cs="${alan}" aria-label="Cümle sil">${IK("cop")}</button>` : ""}</div>`; };
   return `<div class="card dz9k"><div class="dz9h">${IK("kalem")}<b>Düzenle</b><span>${D.yil}</span></div>
 <div class="dz9l">${sat || '<div class="bos">Bu yıl KM aralığı yok</div>'}</div>
 <button class="dz9e" data-dz9ekle>${IK("arti")}KM Ekle</button>
@@ -8317,10 +8323,51 @@ function cumleBagla9(ta){
 }
 // işin "Düzenle" kartındaki yazı formu
 const _yaziForm88 = yaziForm9;
-yaziForm9 = function(){ const r = _yaziForm88.apply(this, arguments); cumleBagla9(document.getElementById("yf9t")); return r; };
+yaziForm9 = function(){ return _yaziForm88.apply(this, arguments); };
 // haftalık Excel incelemesi
 const _exCiz88 = exCiz9;
-exCiz9 = function(){ const r = _exCiz88.apply(this, arguments); document.querySelectorAll("[data-ex9ta]").forEach(cumleBagla9); return r; };
+exCiz9 = function(){ const r = _exCiz88.apply(this, arguments);
+  // Excel incelemesi: "Devam Eden" / "Biten" başlığının sağında Sil düğmesi
+  document.querySelectorAll("[data-ex9ta]").forEach(ta => { const h = ta.closest(".eblk")?.querySelector(".ebh"); if(h && !h.querySelector("[data-cs9ac]")) h.insertAdjacentHTML("beforeend", `<button type="button" class="csb9" data-cs9ac="${ta.dataset.ex9ta}">${IK("cop")}Sil</button>`); });
+  return r; };
+// Cümle Sil sayfası: cümleler tek tek, ✕ → onay → silinir; sayfa açık kalır; Geri al; Bitti
+function cumleSayfa9(baslik, altBaslik, oku, yaz){
+  let geri = null, zam = 0;
+  const ov = altSayfa(IK("cop"), "Cümle Sil · " + baslik, altBaslik, `<div class="css9" id="css9"></div><button class="btn" type="button" data-css9bitti>Bitti</button>`);
+  const kutu = ov.querySelector("#css9");
+  const ciz = () => {
+    const C = cumleler9(oku());
+    kutu.innerHTML = (C.length ? C.map((x, i) => `<div class="cs9r"><span>${esc(x.c)}</span><button type="button" data-cs9="${i}" aria-label="Cümleyi sil">✕</button></div>`).join("") : `<p class="dl9n">Yazı boş.</p>`)
+      + (geri !== null ? `<div class="cs9g">Silindi<button type="button" data-cs9geri>${IK("geriAl")}Geri al</button></div>` : "");
+  };
+  ov.addEventListener("click", async e => {
+    if(e.target.closest("[data-css9bitti]")){ kapatAlt(); return; }
+    if(e.target.closest("[data-cs9geri]")){ if(geri !== null){ const g = geri; geri = null; await yaz(g); ciz(); } return; }
+    const b = e.target.closest("[data-cs9]"); if(!b) return;
+    const i = +b.dataset.cs9, once = oku(), x = cumleler9(once)[i]; if(!x) return;
+    const ok = await onay9("Bu cümle silinsin mi?", `<i>${esc(x.c)}</i>`, [{ t: "Vazgeç", v: false }, { t: "Sil", v: true, ana: 1, tehlike: 1 }]);
+    if(!ok) return;
+    await yaz(cumleSilMetin9(once, i)); geri = once; ciz();
+    clearTimeout(zam); zam = setTimeout(() => { geri = null; if(document.body.contains(kutu)) ciz(); }, 8000);
+  });
+  ciz();
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest && e.target.closest("[data-cs9ac]");
+  if(a){ e.stopPropagation(); e.preventDefault();
+    const alan = a.dataset.cs9ac, ta = document.querySelector(`[data-ex9ta="${alan}"]`); if(!ta) return;
+    cumleSayfa9(alan === "devam" ? "Devam Eden" : D.yil + " Biten", EX9 && EX9.cur ? (ISLER.find(y => y.id === EX9.cur.id) || {}).ad || "" : "",
+      () => ta.value, v => { ta.value = v; ta.dispatchEvent(new Event("input", { bubbles: true })); });
+    return; }
+  const d = e.target.closest && e.target.closest("[data-dz9cs]");
+  if(d){ e.stopPropagation(); e.preventDefault();
+    const id = detay && detay.id, j = ISLER.find(y => y.id === id); if(!j) return;
+    const alan = d.dataset.dz9cs, yil = D.yil;
+    cumleSayfa9(alan === "devam" ? "Devam Eden" : yil + " Biten", j.ad, () => (ISLER.find(y => y.id === id) || {})[alan] || "",
+      async v => { const jj = ISLER.find(y => y.id === id), eski = jj[alan] || ""; if(v === eski) return;
+        try{ await degistir9({ tip: "yazi", is: id, ad: jj.ad, alan, yil, onceki: eski, sonraki: v }); }catch(err){ bildir(err.message || "Kaydedilemedi"); } });
+  }
+}, true);
 
 // ---------- v88: öneriler yalnız yol tabakası cümlelerinden (binder, bitümlü temel, aşınma, sathi kaplama) ----------
 const YOLTAB9 = /binder|bit[uü]ml[uü]\s*(temel|s[ıi]cak)|b\.?\s*s\.?\s*k\.?\b|a[şs][ıi]nma|sath[iî]\s*kaplama/i;

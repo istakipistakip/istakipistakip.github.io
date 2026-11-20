@@ -7170,7 +7170,10 @@ async function ihaleOku9(f){
   const bilinen = ekBasliklar9(), kay = lsOku9(IH_SUT9, {});
   // sayfa ve başlık satırı: programda seçilen sütun başlıklarını en çok içeren satır
   let en = null;
-  wb.SheetNames.forEach(ad => {
+  // çok sekmeli dosyada yalnız "GT" sekmesi kullanılır; tek sekmeliyse o sekme
+  const gt = wb.SheetNames.find(ad => String(ad).trim().toLocaleUpperCase("tr") === "GT");
+  if(!gt && wb.SheetNames.length > 1){ bildir("Excel'de GT sekmesi bulunamadı"); return; }
+  (gt ? [gt] : wb.SheetNames).forEach(ad => {
     const ws = wb.Sheets[ad];
     const yazi = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: "", blankrows: true }).map(x => x.map(c => String(c ?? "").replace(/\s+/g, " ").trim()));
     const ham = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: "", blankrows: true });

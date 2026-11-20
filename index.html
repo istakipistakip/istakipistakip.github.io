@@ -2645,11 +2645,54 @@ function itiYazi9(t){
     .replace(/(\d)([A-ZÇĞİÖŞÜ]{3,})/g, "$1 $2")
     .replace(/([^\s(+\-·])\(/g, "$1 (");
 }
-function itiDuzelt9(kok){
+function itiDuzelt9(kok, j){
   if(!ITI_DUZ9 || !kok) return false;
   let degisti = false;
-  kok.querySelectorAll("svg").forEach(svg => { if(svg.parentElement && svg.parentElement.closest("svg")) return; try{ if(itiSvgDuzelt9(svg)) degisti = true; }catch(_){} });
+  kok.querySelectorAll("svg").forEach(svg => { if(svg.parentElement && svg.parentElement.closest("svg")) return;
+    try{ if(j && itiBaslik9(svg, j)) degisti = true; }catch(_){}
+    try{ if(itiSvgDuzelt9(svg)) degisti = true; }catch(_){} });
   return degisti;
+}
+const itiIs9 = kod => ISLER.find(x => (x.iti || []).includes(kod)) || null;
+// Üstteki özet KM Bilgileri'nden, standart standart; alttaki tekrar kaldırılır
+function itiBaslik9(svg, j){
+  if(svg._bas9) return false;
+  const OZ = /^(Toplam|Önceki yıllar|Bu yıl biten|Çalışılan|Hedef)\s*:/i;
+  const eski = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && OZ.test(t.textContent.trim()));
+  if(!eski.length) return false;
+  svg._bas9 = 1;
+  const oz = kmOzet(j);
+  const kol = (oz.u !== null && kmKolonlar(j)) || j.cats || [];
+  const vb = svg.viewBox.baseVal;
+  // ilk (en üstteki) özet satırının yeri
+  const ys = eski.map(t => +t.getAttribute("y") || 0), yUst = Math.min(...ys);
+  const x0 = Math.min(...eski.filter(t => (+t.getAttribute("y") || 0) === yUst).map(t => +t.getAttribute("x") || 0));
+  eski.forEach(t => t.remove());
+  if(!kol.length && oz.u === null) return true;
+  const km = v => f2(v || 0) + " km", Y = D.yil;
+  const satirlar = kol.map(c => [
+    [c.ad, "#0f172a"],
+    ...(oz.o !== null ? [[`${Y} Öncesi: ${km(c.o)}`, "#1a1a1a"]] : []),
+    [`${Y} Hedef: ${c.h > 0 ? km(c.h) : "–"}`, "#27ae60"],
+    [`${yilEki(Y)} Yapılan: ${km(c.b)}`, "#c41e3a"],
+    [`${Y} Kalan: ${c.h > 0 ? km(Math.max(0, c.h - c.b)) : "–"}`, "#e67e22"]
+  ]);
+  if(oz.u !== null) satirlar.push([[`İhale Uzunluğu: ${km(oz.u)}`, "#2c3e50"], [`Toplam Kalan: ${km(oz.kalan)}`, "#e67e22"]]);
+  const NS = "http://www.w3.org/2000/svg", ara = 16, ek = (satirlar.length - 1) * ara;
+  if(ek > 0) svg.setAttribute("viewBox", `${vb.x} ${vb.y - ek} ${vb.width} ${vb.height + ek}`);
+  const g = document.createElementNS(NS, "g"); g.setAttribute("data-bas9", "1");
+  satirlar.forEach((L, i) => {
+    const t = document.createElementNS(NS, "text");
+    t.setAttribute("x", Math.max(8, x0 || 8)); t.setAttribute("y", yUst - ek + i * ara);
+    t.setAttribute("font-size", "12"); t.setAttribute("font-weight", "800");
+    t.setAttribute("stroke", "#fff"); t.setAttribute("stroke-width", "3"); t.setAttribute("paint-order", "stroke");
+    // sütunlar alt alta hizalı: standart adı, sonra eşit aralıklı değerler
+    const bx = Math.max(8, x0 || 8);
+    L.forEach(([yz, renk], k) => { const sp = document.createElementNS(NS, "tspan"); sp.setAttribute("x", L.length === 2 && i === satirlar.length - 1 && oz.u !== null ? bx + k * 180 : (k ? bx + 78 + (k - 1) * 165 : bx)); sp.setAttribute("fill", renk); sp.textContent = yz; t.appendChild(sp); });
+    g.appendChild(t);
+  });
+  svg.appendChild(g);
+  return true;
 }
 function itiSvgDuzelt9(svg){
   if(svg._duz9) return false; svg._duz9 = 1;
@@ -2665,7 +2708,7 @@ function itiSvgDuzelt9(svg){
   // 2) üst üste binen yazılar
   const T = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && t.textContent.trim()).map(t => {
     const b = kutu(t); if(!b) return null; const s = t.textContent.trim();
-    const sabit = /^-?\d+\+\d{3}$/.test(s) || /^(SOL|SAĞ|BY|TY|HER)$/i.test(s) || b.y2 < 34;
+    const sabit = /^-?\d+\+\d{3}$/.test(s) || /^(SOL|SAĞ|BY|TY|HER)$/i.test(s) || b.y2 < vb.y + 34 || !!t.closest("[data-bas9]");
     const agirlik = /bağlantı/i.test(s) ? 3 : /^proje (başı|sonu)$/i.test(s) ? 2 : 1;
     return { t, s, b, o: { ...b }, dx: 0, dy: 0, sabit, agirlik, dik: (b.y2 - b.y1) > (b.x2 - b.x1) * 1.4 };
   }).filter(Boolean);
@@ -2749,7 +2792,7 @@ function itiCiz(){
   host.shadowRoot.innerHTML = `<style>${itiCss()}</style><div class="kap">${pr.html}</div>`;
   itiDurum.z = 1;
   itiBoyut();
-  if(itiDuzelt9(host.shadowRoot)) itiBoyut();
+  if(itiDuzelt9(host.shadowRoot, itiIs9(k))) itiBoyut();
   setTimeout(itiSerit, 30);
   const a = document.getElementById("itialan"); a.scrollLeft = 0; a.scrollTop = 0;
 }
@@ -2901,7 +2944,7 @@ async function itiResimleri(kod){
   for(const s of svgs){
     let vb = s.viewBox.baseVal;
     s.style.width = vb.width + "px"; s.style.height = vb.height + "px";
-    if(itiDuzelt9(s.parentNode)){ vb = s.viewBox.baseVal; s.style.width = vb.width + "px"; s.style.height = vb.height + "px"; }
+    if(itiDuzelt9(s.parentNode, itiIs9(kod))){ vb = s.viewBox.baseVal; s.style.width = vb.width + "px"; s.style.height = vb.height + "px"; }
     const kopya = s.cloneNode(true);
     const kaynak = [s, ...s.querySelectorAll("*")], hedef = [kopya, ...kopya.querySelectorAll("*")];
     kaynak.forEach((el, i) => { const cs = getComputedStyle(el); hedef[i].setAttribute("style", ozellik.map(p => `${p}:${cs.getPropertyValue(p)}`).join(";")); });

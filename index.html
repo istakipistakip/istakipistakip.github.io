@@ -101,7 +101,7 @@ main.dolu .gd{ flex:1; min-height:0; display:flex; flex-direction:column; }
 .gac .gr{ padding:7px 2px 6px; } .gac .gr .st{ font-size:12.5px; font-weight:700; color:#374151; }
 .gi{ display:block; width:100%; text-align:left; background:none; border:none; border-bottom:1px solid #f1f5f9; padding:7px 2px; color:inherit; }
 .gi:last-child{ border-bottom:none; }
-.gi b{ display:block; font-size:12.5px; color:#374151; } .gi small{ font-size:11px; color:#94a3b8; }
+.gi b{ display:block; font-size:12.5px; color:#374151; } .gi small{ display:block; font-size:11px; color:#94a3b8; }
 .gi .st{ display:flex; justify-content:space-between; gap:8px; } .gi .st i{ font-style:normal; color:#dc2626; font-weight:800; font-size:12px; }
 .ayrac{ border-top:2px solid #fed7aa; margin:8px 0 0; }
 .gbos{ font-size:12px; color:#94a3b8; padding:6px 2px; }
@@ -1709,6 +1709,15 @@ function cubuk(ad, h, b, extra, attrs){
 function isMini(j, ad){
   const c = j.cats.find(x => x.ad === ad);
   return `<button class="gi" data-is="${esc(j.id)}"><div class="st"><b>${esc(j.ad)}</b>${c ? `<i>${c.h === 0 && c.b > 0 ? "–" : "%" + yuzde(c.b, c.h)}</i>` : ""}</div><small>${c ? `Biten ${f2(c.b)} · Hedef ${c.h > 0 ? f2(c.h) : "–"} km · ` : ""}${esc(j.il.join(" · "))}</small></button>`;
+}
+// İl Bazlı → İşler: Standartlar'daki iş satırıyla aynı görünüm (yanında %, altında biten · hedef km)
+function isMiniIl(j, ilGoster){
+  const cs = j.cats || [];
+  const tek = cs.length === 1 ? cs[0] : null;
+  const pc = c => c.h === 0 && c.b > 0 ? "–" : "%" + yuzde(c.b, c.h);
+  const alt = cs.map(c => `<small>${cs.length > 1 ? `<span style="font-weight:700">${esc(c.ad)}</span> · ` : ""}Biten ${f2(c.b)} · Hedef ${c.h > 0 ? f2(c.h) : "–"} km${cs.length > 1 ? ` · ${pc(c)}` : ""}${tek && ilGoster ? ` · ${esc(j.il.join(" · "))}` : ""}</small>`).join("");
+  const ilSatir = ilGoster && !tek ? `<small>${esc(j.il.join(" · "))}</small>` : "";
+  return `<button class="gi" data-is="${esc(j.id)}"><div class="st"><b>${esc(j.ad)}</b>${tek ? `<i>${pc(tek)}</i>` : ""}</div>${alt}${ilSatir}</button>`;
 }
 // ---------- Genel Durum (profesyonel görünüm) ----------
 // Standartlar: STANDART · BİTEN · HEDEF · % tablosu + TOPLAM; satıra dokununca
@@ -4326,7 +4335,7 @@ function genelDurum(){
     bas = `<div class="gim9"><button type="button" data-gdilmod="is"${gdIlMod === "is" ? ' class="on"' : ""}>İşler</button><button type="button" data-gdilmod="std"${gdIlMod === "std" ? ' class="on"' : ""}>Standartlar</button></div><div class="tbh il"><span>İL</span><span>${IKON_IS}İŞ</span><span>${IKON_HEDEF}FİZ.</span></div>`;
     const tumIs = ISLER;
     // il / birden fazla il altında iş listesi (İşler düğmesi)
-    const isL = (L, ilGoster) => L.length ? L.slice().sort((a, b) => String(a.ad).localeCompare(String(b.ad), "tr")).map(j => `<button class="gi" data-is="${esc(j.id)}"><b>${esc(j.ad)}</b>${ilGoster ? `<small>${esc(j.il.join(" · "))}</small>` : ""}</button>`).join("") : '<div class="gbos">Bu ilde iş yok.</div>';
+    const isL = (L, ilGoster) => L.length ? L.slice().sort((a, b) => String(a.ad).localeCompare(String(b.ad), "tr")).map(j => isMiniIl(j, ilGoster)).join("") : '<div class="gbos">Bu ilde iş yok.</div>';
     const iller = IL_SIRA.concat([...new Set(tumIs.filter(j => j.il.length === 1).flatMap(j => j.il))].filter(il => !IL_SIRA.includes(il)).sort((a, b) => a.localeCompare(b, "tr")));
     const satir = (key, ad, liste, ic) => { const acik = gdSec === key;
       return `<button class="tr2 ilr2${acik ? " acik" : ""}" data-gd="${esc(key)}"><div class="l"><b><em>${acik ? "▾" : "▸"}</em>${esc(ad)}</b><span>${liste.length}</span><span>${liste.filter(j => j.fh).length}</span></div></button>${acik ? `<div class="gac">${ic()}</div>` : ""}`; };

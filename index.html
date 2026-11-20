@@ -2738,12 +2738,14 @@ function itiBaslik9(svg, j){
 function kmSira9(svg, ters){
   const lab = [...svg.querySelectorAll("text.km-lab")]; if(lab.length < 2) return;
   const sat = [...new Set(lab.map(t => +t.getAttribute("y")))].sort((a, b) => a - b); if(sat.length < 2) return;
-  const gen = t => { const r = t.getBoundingClientRect(), a = new DOMPoint(r.left, r.top).matrixTransform(ters), b = new DOMPoint(r.right, r.bottom).matrixTransform(ters); return Math.abs(b.x - a.x); };
-  const L = lab.map(t => ({ t, x: +t.getAttribute("x"), y: +t.getAttribute("y"), w: gen(t) })).sort((a, b) => a.x - b.x || a.y - b.y);
+  const gen = t => { const r = t.getBoundingClientRect(), a = new DOMPoint(r.left, r.top).matrixTransform(ters), b = new DOMPoint(r.right, r.bottom).matrixTransform(ters); return [Math.abs(b.x - a.x), Math.abs(b.y - a.y)]; };
+  const L = lab.map(t => { const g = gen(t); return { t, x: +t.getAttribute("x"), y: +t.getAttribute("y"), w: g[0], h: g[1] }; }).sort((a, b) => a.x - b.x || a.y - b.y);
   const yer = sat.map(() => []);
   L.forEach(o => {
     let r = sat.findIndex((y, i) => yer[i].every(p => Math.abs(p.x - o.x) >= (p.w + o.w) / 2 + 2));
-    if(r < 0) r = sat.indexOf(o.y);
+    if(r < 0){ // hiçbir sırada yer yok: en alttaki sıranın altına yeni sıra
+      const boy = Math.max(...L.map(q => q.h)) + 8;
+      sat.push(sat[sat.length - 1] + boy); yer.push([]); r = sat.length - 1; }
     yer[r].push(o);
     const ny = sat[r]; if(ny === o.y) return;
     const fark = ny - o.y;
@@ -6635,9 +6637,10 @@ ${k ? `<button type="button" class="sil" data-kf9sil>${IK("cop")}Bu aralığı s
     if(!/^\d{4}-\d{2}-\d{2}$/.test(tt)) return hata("Tarihi seçin.");
     if(kmSayi(a) === kmSayi(e)) return hata("Başlangıç ve bitiş aynı olamaz.");
     const yeni = { s: std, a, e, t: tt, y: oran, ac: $("#kf9c").value.trim(), g: k ? (Number(k.g) || 0) : Date.now(), ...($("#kf9g").checked ? {} : { gz: 0 }), ...($("#kf9k").value.trim() ? { kk: $("#kf9k").value.trim() } : {}), ...($("#kf9dn").value.replace(/\s+/g, " ").trim() ? { dn: $("#kf9dn").value.replace(/\s+/g, " ").trim().slice(0, 80) } : {}) };
+    { const yl = await yolSor9(j, yeni, k); if(yl === false) return; if(yl) yeni.yl = yl; }
     { const zc = await esitSor9(j, yeni, k); if(zc === false) return; if(zc) yeni.zc = zc; }
     try{
-      if(k){ const eski = { ...k }; if(kmEsit9(eski, yeni) && (eski.gz === 0) === (yeni.gz === 0) && String(eski.kk || "") === String(yeni.kk || "") && String(eski.dn || "") === String(yeni.dn || "") && String(eski.zc || "") === String(yeni.zc || "")){ kapatAlt(); return; }
+      if(k){ const eski = { ...k }; if(kmEsit9(eski, yeni) && (eski.gz === 0) === (yeni.gz === 0) && String(eski.kk || "") === String(yeni.kk || "") && String(eski.dn || "") === String(yeni.dn || "") && String(eski.zc || "") === String(yeni.zc || "") && String(eski.yl || "") === String(yeni.yl || "")){ kapatAlt(); return; }
         await degistir9({ tip: "duz", is: id, ad: j.ad, eski, yeni }); kapatAlt(); bildir("KM aralığı güncellendi"); }
       else{ await degistir9({ tip: "ekle", is: id, ad: j.ad, km: yeni }); kapatAlt(); bildir("KM eklendi · " + f2(kmUz9(yeni)) + " km"); }
     }catch(err){ hata(err.message || "Kaydedilemedi"); }
@@ -8506,7 +8509,7 @@ function bkModel9(j){
   kollar.forEach(k => { const { y, r } = enYakinYol(k.jp); k.c = y.kum[r.i] + (yollar.indexOf(y) * 1e9); k.ayr = r.d < 300 ? kmAdi(y, y.kum[r.i]) : null; });
   kollar.sort((a, b) => a.c - b.c);
   let adsiz = 0; kollar.forEach(k => { if(!k.ad) k.ad = "Kol " + (++adsiz); });
-  const paket = h => ({ p: h.p, kop: h.kop, etik: h.et, kmF: h.kmF, esit: h.E, ad: h.ad, ayr: h.ayr || null, kol: h === yollar[0] ? 0 : 1, yol: h.yol ? 1 : 0 });
+  const paket = h => ({ p: h.p, kop: h.kop, etik: h.et, L: h.L, kmF: h.kmF, esit: h.E, ad: h.ad, ayr: h.ayr || null, kol: h === yollar[0] ? 0 : 1, yol: h.yol ? 1 : 0 });
   return (j._bkM9 = { h: j.hat, ana: paket(yollar[0]), kollar: yollar.slice(1).map(paket).concat(kollar.map(paket)), esitN: esN });
 }
 bkZincir9 = function(j){ const M = bkModel9(j); return M ? M.ana : null; };
@@ -8802,8 +8805,9 @@ function kmKayitlar9(j, p){
     if(x.e < p.bas - 1 || x.a > p.bit + 1) return;              // bu projenin aralığında değil
     const sinif = /^TY/i.test(x.k.s) ? "TY" : "BY", tur = turStd9(x.k.s); if(!tur) return;
     const konum = sinif === "TY" ? "TY" : (x.k.y ? (taraf9(x.k.ac) || "HER") : "HER");
+    let yolId = null; try{ const r = kbYolId9(j, p, x.k.yl); if(r === false) return; yolId = r; }catch(_){}
     out.push({ sinif, byTip: sinif === "BY" ? (by && by.byTip) || "2x2" : "", tyTip: sinif === "TY" ? (ty && ty.tyTip) || "2x1" : "", tur, altTur: "", konum,
-      durum: x.yil === D.yil ? "buyil" : "eski", bas: Math.max(p.bas, x.a), bit: Math.min(p.bit, x.e), ad: "", ...(x.k.zc ? { zincir: x.k.zc } : {}), _km9: 1 });
+      durum: x.yil === D.yil ? "buyil" : "eski", bas: Math.max(p.bas, x.a), bit: Math.min(p.bit, x.e), ad: "", ...(x.k.zc ? { zincir: x.k.zc } : {}), ...(yolId ? { yolId } : {}), _km9: 1 });
   });
   return out;
 }
@@ -9255,20 +9259,17 @@ function kbAralik9(h, S, a, e, zc){
 function kbHesap9(j){
   if(!j || !j.hat) return [];
   const km = tumKm9(j).filter(x => x.yil <= D.yil);
-  const imza = D.yil + "|" + km.map(x => [x.a, x.e, x.yil, x.k.s, x.k.y ? 1 : 0, x.k.ac || "", x.k.zc || ""].join(",")).join(";");
+  const imza = D.yil + "|" + km.map(x => [x.a, x.e, x.yil, x.k.s, x.k.y ? 1 : 0, x.k.ac || "", x.k.zc || "", x.k.yl || ""].join(",")).join(";");
   if(j._kb9 && j._kb9.h === j.hat && j._kb9.imza === imza) return j._kb9.out;
   const out = [];
   if(km.length){
-    let M = null; try{ M = bkModel9(j); }catch(_){}
-    const hatlar = M ? [M.ana].concat(M.kollar.filter(k => k.yol)).filter(h => h && h.kmF && h.p.length > 1) : [];
-    const renk = kbRenk9(j);
-    hatlar.forEach(h => {
-      if(!h.kum) h.kum = bkKum9(h.p, h.kop);
-      const T = h.kum[h.kum.length - 1], adim = Math.max(4, T / 6000), S = [];
-      for(let c = 0; c < T + adim; c += adim){ const cc = Math.min(c, T), v = h.kmF(cc); if(Number.isFinite(v)) S.push({ c: cc, m: v * 1000 }); }
+    const Y = kbYollar9(j), renk = kbRenk9(j);
+    Y.forEach(yo => {
+      const h = yo.h, S = yo.S;
       if(S.length < 2) return;
       // önce önceki yıllar, sonra bu yıl (üstte)
       km.slice().sort((x, y) => (x.yil === D.yil) - (y.yil === D.yil)).forEach(x => {
+        if(!kbHatlar9(Y, x).includes(yo)) return;
         const ty = /^TY/i.test(x.k.s || ""), t = !ty && x.k.y ? taraf9(x.k.ac) : null;
         const yan = t === "SOL" ? -1 : t === "SAG" ? 1 : 0, buyil = x.yil === D.yil;
         kbAralik9(h, S, x.a, x.e, x.k.zc).forEach(([c0, c1]) => kbParca9(h, c0, c1).forEach(p => out.push({ p, r: buyil ? renk.buyil : renk.eski, yan, eski: !buyil })));
@@ -9304,6 +9305,91 @@ function kmzBoya9(hedef, j, o){
     const f = () => yarim.forEach(([ly, s]) => { try{ ly.setLatLngs(kbKaydir9(m, s.p, s.yan * W / 4)); }catch(_){} });
     m.on("zoomend", f);
   }
+}
+
+// ---------- v102: KMZ'deki yollar (ana yol, Ana yol 2, kendi km'si olan kollar) ----------
+// Km'nin yeri, iki KM noktası arasındaki çizginin "net" uzunluğuyla bulunur: çizginin daha önce
+// geçtiği yerin üstünden (≤10 m) yeniden geçen kısımları (üst üste / geri dönen parçalar) sayılmaz.
+function kbNet9(h){
+  if(h._net9) return h._net9;
+  if(!h.kum) h.kum = bkKum9(h.p, h.kop);
+  const P = h.p, n = P.length, K = h.kum, la = P[0][0] * Math.PI / 180, kx = Math.cos(la) * 111320, ky = 110540;
+  const X = P.map(q => [q[1] * kx, q[0] * ky]), H = 30, grid = new Map(), net = [0];
+  const ekle = i => { const a = X[i - 1], b = X[i], x0 = Math.floor(Math.min(a[0], b[0]) / H), x1 = Math.floor(Math.max(a[0], b[0]) / H), y0 = Math.floor(Math.min(a[1], b[1]) / H), y1 = Math.floor(Math.max(a[1], b[1]) / H);
+    if((x1 - x0 + 1) * (y1 - y0 + 1) > 400) return;
+    for(let x = x0; x <= x1; x++) for(let y = y0; y <= y1; y++){ const k = x + "," + y; (grid.get(k) || grid.set(k, []).get(k)).push(i); } };
+  const uzak = (p, i) => { const a = X[i - 1], b = X[i], dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy, t0 = L2 ? ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2 : 0, t = Math.max(0, Math.min(1, t0)); return [Math.hypot(a[0] + dx * t - p[0], a[1] + dy * t - p[1]), t0]; };
+  for(let i = 1; i < n; i++){
+    const len = K[i] - K[i - 1];
+    let tekrar = false;
+    if(len > 0){
+      const m = [(X[i - 1][0] + X[i][0]) / 2, (X[i - 1][1] + X[i][1]) / 2], gx = Math.floor(m[0] / H), gy = Math.floor(m[1] / H);
+      outer: for(let x = gx - 1; x <= gx + 1; x++) for(let y = gy - 1; y <= gy + 1; y++){ const L = grid.get(x + "," + y); if(!L) continue;
+        for(const s of L){ const [d, t] = uzak(m, s); if(d < 10 && (K[i - 1] - K[s] > 60 || (t > 0.02 && t < 0.98))){ tekrar = true; break outer; } } }
+    }
+    net.push(net[i - 1] + (tekrar ? 0 : len));
+    if(len > 0) ekle(i);
+  }
+  return (h._net9 = net);
+}
+function kbNetC9(h, c){
+  const K = h.kum, N = kbNet9(h), n = K.length;
+  if(c <= 0) return c; if(c >= K[n - 1]) return N[n - 1] + (c - K[n - 1]);
+  let lo = 0, hi = n - 1; while(hi - lo > 1){ const md = (lo + hi) >> 1; if(K[md] <= c) lo = md; else hi = md; }
+  const d = K[hi] - K[lo]; return d > 0 ? N[lo] + (N[hi] - N[lo]) * (c - K[lo]) / d : N[lo];
+}
+// [{h, ad, lo, hi, ana, S:[{c,m}]}] — km'si belli olan hatlar (önbellekli)
+function kbYollar9(j){
+  if(!j || !j.hat) return [];
+  if(j._kby9 && j._kby9.h === j.hat) return j._kby9.Y;
+  let M = null; try{ M = bkModel9(j); }catch(_){}
+  const Y = [];
+  if(M) [M.ana].concat(M.kollar).forEach(h => {
+    if(!h || !h.kmF || h.p.length < 2) return;
+    if(!h.kum) h.kum = bkKum9(h.p, h.kop);
+    let f = h.kmF;
+    if(h.L && h.L.length){ const g = bkKmFn9(h.L.map(x => ({ c: kbNetC9(h, x.c), v: x.v })), (h.esit || []).map(e => ({ c: kbNetC9(h, e.c), g: e.g, i: e.i }))); if(g) f = c => g(kbNetC9(h, c)); }
+    const T = h.kum[h.kum.length - 1], adim = Math.max(4, T / 6000), S = [];
+    for(let c = 0; c < T + adim; c += adim){ const cc = Math.min(c, T), v = f(cc); if(Number.isFinite(v)) S.push({ c: cc, m: v * 1000 }); if(cc === T) break; }
+    if(S.length < 2) return;
+    const ms = S.map(s => s.m);
+    Y.push({ h, ad: h.ad || (h === M.ana ? "Ana yol" : "Yol"), lo: Math.min(...ms), hi: Math.max(...ms), ana: h === M.ana, S });
+  });
+  // aynı ad iki kez olmasın
+  const say = {}; Y.forEach(y => { say[y.ad] = (say[y.ad] || 0) + 1; if(say[y.ad] > 1) y.ad += " (" + say[y.ad] + ")"; });
+  j._kby9 = { h: j.hat, Y };
+  return Y;
+}
+// bir KM girişinin boyanacağı hatlar: seçilen yol; seçim yoksa aralığı içeren yollardan ana yol (yoksa ilki)
+function kbHatlar9(Y, x){
+  const a = x.a, e = x.e, ust = Y.filter(y => Math.min(e, y.hi) - Math.max(a, y.lo) > 1 || (a === e && a >= y.lo && a <= y.hi));
+  if(x.k && x.k.yl){ const s = Y.find(y => y.ad === x.k.yl); if(s) return [s]; }
+  if(!ust.length) return [];
+  return [ust.find(y => y.ana) || ust[0]];
+}
+async function yolSor9(j, km, eski){
+  const a0 = kmM9(km.a), e0 = kmM9(km.e); if(a0 === null || e0 === null) return null;
+  try{ await agirHazir(); }catch(_){}
+  const lo = Math.min(a0, e0), hi = Math.max(a0, e0);
+  const Y = kbYollar9(j).filter(y => Math.min(hi, y.hi) - Math.max(lo, y.lo) > 1 || (lo === hi && lo >= y.lo && lo <= y.hi));
+  if(Y.length < 2) return null;
+  const once = (eski && eski.yl && Y.find(y => y.ad === eski.yl)) || Y.find(y => y.ana) || Y[0];
+  const v = await onay9("Hangi yol?", `<b>${esc(km.a)} – ${esc(km.e)}</b> aralığı bu işin KMZ'sinde birden fazla yolda var. Girdiğiniz KM hangi yola ait?`,
+    [{ t: "Vazgeç", v: false }].concat(Y.map(y => ({ t: `${y.ad} (${mKm9(y.lo)} – ${mKm9(y.hi)})`, v: y.ad, ana: y === once ? 1 : 0 }))));
+  return typeof v === "string" && v ? v : false;
+}
+// itinererde: seçilen yol → Yol Takip projesinin yolu (km aralığı en çok örtüşen). false: bu projeye ait değil
+function kbYolId9(j, p, yl){
+  if(!yl) return null;
+  const y = kbYollar9(j).find(o => o.ad === yl); if(!y) return null;
+  const iou = (a, b, c, d) => { const o = Math.min(b, d) - Math.max(a, c), u = Math.max(b, d) - Math.min(a, c); return u > 0 ? Math.max(0, o) / u : 0; };
+  if(Array.isArray(p.yollar) && p.yollar.length > 1){
+    let en = null, ep = -1; p.yollar.forEach(r => { const v = iou(+r.bas, +r.bit, y.lo, y.hi); if(v > ep){ ep = v; en = r; } });
+    return en && ep > 0 ? en.id : null;
+  }
+  const kodlar = (j.iti || []); if(kodlar.length < 2) return null;
+  let en = null, ep = -1; kodlar.forEach(k => { const q = ytProje9(k); if(!q) return; const v = iou(+q.bas, +q.bit, y.lo, y.hi); if(v > ep){ ep = v; en = q; } });
+  return en && ep > 0 && en !== p && en.adi !== p.adi ? false : null;
 }
 </script>
 </body>

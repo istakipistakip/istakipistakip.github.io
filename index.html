@@ -1536,7 +1536,7 @@ html.dark .krd9 input, html.dark .krc9 button{ background:#0b1220; border-color:
 .krs9 .sw span{ width:44px; height:26px; border-radius:13px; background:#cbd5e1; position:relative; flex:none; transition:background .15s; }
 .krs9 .sw span::after{ content:""; position:absolute; left:3px; top:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.25); transition:transform .15s; }
 .krs9 .sw input:checked + span{ background:#16a34a; } .krs9 .sw input:checked + span::after{ transform:translateX(18px); }
-html.dark .krs9 .sw{ color:#e6ebf3; } html.dark .krs9 .sw span{ background:#334155; }
+html.dark .krs9 .sw{ color:#e6ebf3; } html.dark .krs9 .sw span{ background:#334155; } html.dark .krs9 .sw input:checked + span{ background:#16a34a; }
 /* v73: rapor sekmeleri, filtre, görsel kart, rapor animasyonu */
 .krs9 .sw[hidden]{ display:none; } .kgi9{ max-height:58vh; overflow:auto; -webkit-overflow-scrolling:touch; border-radius:14px; }
 .krt9{ display:flex; background:#eef1f6; border-radius:13px; padding:4px; margin-bottom:14px; }
@@ -7918,7 +7918,7 @@ kmRaporSayfa9 = function(){
 <button type="button" class="krf9" data-kr9f><span>Filtrele</span><em id="kr9fo">Tümü</em><i>▾</i></button>
 <div class="krfg9" id="kr9fg" hidden>${grup("Birim", "b", O.bir)}${grup("İl", "i", O.il)}${grup("Standart", "s", O.std)}${SEFL.length ? `<div class="fg9"><label>Kontrol Şefi</label><div class="ks9"><input type="search" id="kr9ks" placeholder="Şef adı yazın" autocomplete="off" enterkeyhint="search"><div class="ksl9" id="kr9ksl" hidden></div></div><div class="krc9 ksc9" id="kr9ksc"></div></div>` : ""}<button type="button" class="krfs9" data-kr9fsil>Filtreyi temizle</button></div>
 <label class="sw" id="kr9sw"><input type="checkbox" id="kr9ar"><span></span>KM aralıklarını göster</label>
-<label class="sw" id="kr9isw" hidden><input type="checkbox" id="kr9is"><span></span>İşleri göster</label>
+<label class="sw" id="kr9isw" hidden><input type="checkbox" id="kr9is" checked><span></span>İşleri göster</label>
 <p class="krn9">KM aralığının tarihine göre hesaplanır. "Yarısı" girilen aralıklar yarım sayılır. Birden fazla ildeki işte il filtresi seçilirse o ilin payı sayılır.</p>
 <div class="krh9" id="kr9h" hidden></div>
 <button class="btn" id="kr9git">${IK("pdf")}PDF'i Aç</button></div>`);

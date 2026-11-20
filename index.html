@@ -6443,6 +6443,13 @@ async function dosyaSonrasi9(o, g){
   if(!GUN9.length) return;
   // telefonda yapılan değişiklikler bu dosyada yoksa sor
   await hamAl9();
+  // program "Veriyi Programa Aktar" ile aldığı değişiklikleri bildirir: onlar listeden çıkar
+  const ak = new Set(Array.isArray(HAM9.aktarilan) ? HAM9.aktarilan : []);
+  if(ak.size){
+    const once = GUN9.length; GUN9 = GUN9.filter(e => !ak.has(e.id));
+    if(GUN9.length !== once){ await gunKaydet9(); bildir(`${once - GUN9.length} değişikliği program aldı`); }
+    if(!GUN9.length) return;
+  }
   const deneme = JSON.parse(JSON.stringify(HAM9));
   const n = GUN9.filter(e => { try{ return tekrar9(deneme, e); }catch(_){ return false; } }).length;
   if(!n) return;
@@ -6517,9 +6524,9 @@ function aktarSayfa9(){
 <label class="rd"><input type="radio" name="ak9t" value="degisiklik"${degOlur ? " checked" : " disabled"}><span><b>Değişiklik dosyası</b>${degOlur ? "<small>Küçük; son tam dosyanın yüklü olduğu telefonlarda açılır</small>" : "<small>Önce diğer telefonlara bir kez tam dosya gönderin; sonrakiler değişiklik dosyası olabilir</small>"}</span></label>
 <label class="rd"><input type="radio" name="ak9t" value="tam"${degOlur ? "" : " checked"}><span><b>Tam dosya</b><small>Bütün veri; her telefonda açılır</small></span></label>
 <button class="btn" data-ak9haz>Hazırla</button><div class="sonuc" id="ak9s"></div></div>
-<div class="blk"><b>Program için aktarım dosyası</b><small>${GUN9.length} değişiklik şifreli olarak tek dosyada. Program bunu ileride <b>Veriyi Programa Aktar</b> ile alacak.</small>
+<div class="blk"><b>Program için aktarım dosyası</b><small>${GUN9.length} değişiklik şifreli olarak tek dosyada. Programda <b>Aktarım → Veriyi Programa Aktar</b> ile alınır.</small>
 <button class="btn ikinci" data-ak9akt${GUN9.length ? "" : " disabled"}>Hazırla</button><div class="sonuc" id="ak9a"></div></div>
-<p class="not">Programdan sonra gelen dosyada bu değişiklikler olmaz; yükleyince telefon sorar ve tekrar uygular.</p></div>`;
+<p class="not">Program aldığı değişiklikleri sonraki Telefon Verisi'nde bildirir; telefon onları listeden çıkarır. Programın henüz almadığı değişiklikler yeni dosyada yoksa telefon sorar ve tekrar uygular.</p></div>`;
   const ov = altSayfa(IK("aktar"), "Veri Aktar", GUN9.length + " değişiklik · " + veriTarih(), govde);
   let hazirD = null, hazirA = null;
   ov.addEventListener("click", async ev => {
@@ -7213,6 +7220,7 @@ function ihaleSatirlar9(S){
     G.push({ no: S.bas + 2 + n, ad, r, ham, iller: [] });
   });
   const bag = lsOku9(IH_BAG9, {}), es = eslestirici9(), kullanilan = new Set();
+  const PB = programBag9(S, G);
   const degYaz = (r, i) => paraYaz9(S.hs[i], hucreYaz9(r[i]));
   G.forEach(g => {
     g.key = "ad:" + nAd9(g.ad);
@@ -7222,6 +7230,8 @@ function ihaleSatirlar9(S){
     const k = bag[g.key];
     if(k === "-"){ g.sec = "-"; g.tur = "atla"; }
     else if(k && ISLER.some(j => j.id === k)){ g.sec = k; g.tur = "kayitli"; }
+    // 1b) programda Excel Yükle'de kaydedilmiş bağlantı (Telefon Verisi ile gelir)
+    if(!g.sec && PB){ const id = PB.bul(g); if(id && ISLER.some(j => j.id === id)){ g.sec = id; g.tur = "program"; } }
     // 2) programda bağlanmış satır: işin şimdiki İhale Bilgileri bu satırın değerleriyle büyük ölçüde aynı
     if(!g.sec){
       const sat = {}; S.sec.forEach(i => { const v = String(g.r[i] ?? "").trim(); if(v) sat[nb9(baslikGuzel(S.hs[i]))] = degYaz(g.r, i); });
@@ -7239,12 +7249,47 @@ function ihaleSatirlar9(S){
   G.forEach(g => { g.yeni = !!(onceAd && !(nAd9(g.ad) in onceAd)); });
   S.silinen = onceAd ? Object.keys(onceAd).filter(a => !G.some(g => nAd9(g.ad) === a)).map(a => onceAd[a]) : [];
   S.ilkKez = !once;
-  S.G = G;
+  S.G = G; S._pb = PB;
   G.forEach(g => ilAta9(S, g));
+}
+// Programın Excel Yükle bağlantıları (D.excelBag): masaüstündeki satır anahtarı kuralıyla
+// (eşleştirme sütunundaki değer; o değer birden çok satırda varsa iş adı) iş bulunur.
+// Kayıtlı ad tutmazsa bağlanmaz. Bu telefonda elle yapılan seçim her zaman önce gelir.
+function programBag9(S, G){
+  const B = D && D.excelBag; if(!B || !B.baglar) return null;
+  const foldD = t => String(t || "").toLocaleLowerCase("tr-TR").replace(/ç/g, "c").replace(/ğ/g, "g").replace(/ı/g, "i").replace(/i̇/g, "i").replace(/ö/g, "o").replace(/ş/g, "s").replace(/ü/g, "u");
+  const bosluk = t => String(t ?? "").replace(/\s+/g, " ").trim();
+  const nAd = t => foldD(t).replace(/[^a-z0-9]+/g, " ").trim();
+  const kel = t => nAd(t).split(" ").filter(w => w.length > 1);
+  const benzer = (x, y) => { const A = new Set(kel(x)), C = new Set(kel(y)); if(!A.size || !C.size) return 0; let o = 0; A.forEach(w => { if(C.has(w)) o++; }); return o / Math.max(A.size, C.size); };
+  const nk = k => String(k).startsWith("ad:") ? "ad:" + bosluk(String(k).slice(3)) : bosluk(k);
+  const bag = {}, adlar = {}, ilEsle = {};
+  Object.keys(B.baglar).forEach(k => { bag[nk(k)] = String(B.baglar[k]); if(B.adlar && B.adlar[k]) adlar[nk(k)] = B.adlar[k]; });
+  Object.keys(B.ilEsle || {}).forEach(k => { const i = k.lastIndexOf("|"); if(i > 0) ilEsle[nk(k.slice(0, i)) + "|" + bosluk(k.slice(i + 1))] = B.ilEsle[k]; });
+  const adIndex = {}; Object.keys(bag).forEach(k => { const a = adlar[k]; if(a){ const n = nAd(a); (adIndex[n] = adIndex[n] || []).push(k); } });
+  const isAdIndex = {}; Object.keys(B.isAd || {}).forEach(id => { const n = nAd(B.isAd[id]); if(n) (isAdIndex[n] = isAdIndex[n] || new Set()).add(String(id)); });
+  const ki = B.anahtar ? S.hs.findIndex(h => nb9(h) === nb9(B.anahtar)) : -1;
+  const say = {}; G.forEach(g => { const v = ki >= 0 ? bosluk(g.r[ki]) : ""; if(v) say[v] = (say[v] || 0) + 1; });
+  const anahtar = g => { const v = ki >= 0 ? bosluk(g.r[ki]) : ""; return v && say[v] === 1 ? v : (g.ad ? "ad:" + bosluk(foldD(g.ad)) : v); };
+  const var_ = id => ISLER.some(j => j.id === id);
+  return {
+    bul(g){
+      const k = anahtar(g); g.dkey = k;
+      const id = bag[k];
+      if(id && var_(id)){ const kayAd = adlar[k]; if(!kayAd || !g.ad || nAd(kayAd) === nAd(g.ad) || benzer(kayAd, g.ad) >= 0.6) return id; }
+      if(g.ad){
+        const L = [...new Set((adIndex[nAd(g.ad)] || []).map(x => bag[x]).filter(var_))]; if(L.length === 1) return L[0];
+        const M = [...(isAdIndex[nAd(g.ad)] || [])].filter(var_); if(M.length === 1) return M[0];
+      }
+      return "";
+    },
+    il(g, ilYazi){ return g.dkey ? ilEsle[g.dkey + "|" + bosluk(ilYazi)] || "" : ""; }
+  };
 }
 function ilAta9(S, g){
   const j = ISLER.find(x => x.id === g.sec), iller = j ? j.il || [] : [];
-  g.iller.forEach(s => { const y = fold(s.ilYazi), tum = fold(s.r.join(" ")); s.sec = iller.find(il => y && (y === fold(il) || y.includes(fold(il)))) || iller.find(il => tum.includes(fold(il))) || ""; });
+  const PB = S._pb;
+  g.iller.forEach(s => { const pk = PB && g.tur === "program" ? PB.il(g, s.ilYazi) : ""; if(pk && iller.includes(pk)){ s.sec = pk; return; } const y = fold(s.ilYazi), tum = fold(s.r.join(" ")); s.sec = iller.find(il => y && (y === fold(il) || y.includes(fold(il)))) || iller.find(il => tum.includes(fold(il))) || ""; });
 }
 // Kaydedilecek yeni değerler (masaüstündeki kaydet() ile aynı)
 function ihaleYeni9(S, g){

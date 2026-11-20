@@ -1547,6 +1547,12 @@ html.dark .krs9 .sw{ color:#e6ebf3; } html.dark .krs9 .sw span{ background:#3341
 .krf9 em.on{ color:#ea580c; } .krf9 i{ font-style:normal; color:#64748b; transition:transform .2s; } .krf9.ac i{ transform:rotate(180deg); }
 .krfg9{ border:1px solid #e2e8f0; border-top:0; border-radius:0 0 12px 12px; margin-top:-6px; padding:10px 12px 12px; } .krfg9 .fg9 label{ margin-top:8px; } .krfg9 .krc9{ margin-top:0; }
 .krc9 button.on{ background:#0f172a; color:#fff; border-color:#0f172a; }
+.ks9{ position:relative; } .ks9 input{ width:100%; height:44px; border:1px solid #d6dbe3; border-radius:12px; padding:0 12px; font:inherit; font-size:16px; font-weight:600; background:#fff; color:#0f172a; -webkit-appearance:none; appearance:none; }
+.ksl9{ margin-top:6px; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff; }
+.ksl9 button{ display:flex; width:100%; align-items:center; gap:8px; font:inherit; font-size:14.5px; font-weight:700; text-align:left; background:none; border:0; border-bottom:1px solid #eef1f6; padding:11px 12px; color:#0f172a; }
+.ksl9 button:last-child{ border-bottom:0; } .ksl9 button span{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .ksl9 small{ flex:none; font-size:12.5px; font-weight:700; color:#64748b; }
+.ksl9 p{ margin:0; padding:11px 12px; font-size:13.5px; color:#64748b; } .ksc9:empty{ display:none; } .krfg9 .ksc9{ margin-top:8px; }
+html.dark .ks9 input, html.dark .ksl9{ background:#0b1220; border-color:#334155; color:#e2e8f0; } html.dark .ksl9 button{ color:#e2e8f0; border-color:#1e293b; }
 .krfs9{ margin-top:12px; font:inherit; font-size:13px; font-weight:700; color:#b91c1c; background:none; border:0; padding:0; }
 .kgs9 img{ display:block; width:min(100%, 300px); margin:0 auto; border-radius:14px; box-shadow:0 8px 24px rgba(15,23,42,.3); }
 .kgb9{ display:flex; gap:8px; margin-top:14px; } .kgb9 .btn{ flex:1; display:flex; align-items:center; justify-content:center; gap:7px; background:#16a34a; } .kgb9 .btn svg{ width:18px; height:18px; }
@@ -7502,7 +7508,9 @@ const _exCiz9k = exCiz9;
 exCiz9 = function(){ _exCiz9k.apply(this, arguments); if(EX9 && EX9.kmp && EX9.mod === "isler" && document.getElementById("exr9") && EX9.cur) kmPanel9(); };
 
 // ---------- KM İlerleme Raporu (herkes): iki tarih arasında girilen km'ler → PDF ----------
-const BIRSIZ9 = "Birimi belirtilmemiş";
+const BIRSIZ9 = "Birimi belirtilmemiş", SEFSIZ9 = "Şef belirtilmemiş";
+// kontrol şefi anahtarı (büyük/küçük harf, Türkçe harf ve boşluk farkı yok sayılır)
+const sefK9 = s => { const k = fold(String(s || "").replace(/\s+/g, " ").trim()); return k && !/^[-–—.]+$/.test(k) ? k : "-"; };
 const isoG9 = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
 const trG9 = s => { const m = String(s || "").match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}.${m[2]}.${m[1]}` : ""; };
 function raporAralik9(ad){
@@ -7530,6 +7538,7 @@ function raporVeri9(a, b, F){
   ISLER.forEach(j => {
     if(j.ekleme) return;
     const bk = String(j.birim || "").trim() || BIRSIZ9; if(fB && !fB.has(bk)) return;
+    if(F.k && F.k.size && !F.k.has(sefK9(j.sef))) return;
     const iL = (j.il || []).filter(Boolean), iS = fI ? iL.filter(x => fI.has(x)) : iL;
     if(fI && !iS.length) return;
     const oran = fI ? iS.length / iL.length : 1;   // il filtresinde birden fazla ildeki işin yalnız seçilen illerin payı
@@ -7711,6 +7720,7 @@ function fMetin9(F){
   if(F.b && F.b.size) p.push("Birim: " + [...F.b].join(", "));
   if(F.i && F.i.size) p.push("İl: " + [...F.i].join(", "));
   if(F.s && F.s.size) p.push("Standart: " + [...F.s].join(", "));
+  if(F.k && F.k.size) p.push("Kontrol Şefi: " + [...F.k].map(k => (F.kAd && F.kAd.get(k)) || k).join(", "));
   return p.join(" · ");
 }
 // tarih aralığı başlığı: "16 – 22 Kasım", "28 Ekim – 3 Kasım", "16 Kasım"
@@ -7893,7 +7903,12 @@ function kartGoster9(blob, a, b){
 
 // ---------- rapor ekranı: PDF Rapor / Görsel Kart + filtre ----------
 kmRaporSayfa9 = function(){
-  const [a0, b0] = raporAralik9("ay"), O = fSecenek9(), F = { b: new Set(), i: new Set(), s: new Set() };
+  const [a0, b0] = raporAralik9("ay"), O = fSecenek9(), F = { b: new Set(), i: new Set(), s: new Set(), k: new Set(), kAd: new Map() };
+  // kontrol şefleri: ad ve iş sayısı (aynı kişinin farklı yazılışları birleşir)
+  const SEF = new Map();
+  ISLER.forEach(j => { if(j.ekleme) return; const k = sefK9(j.sef), ad = k === "-" ? SEFSIZ9 : String(j.sef).replace(/\s+/g, " ").trim();
+    const x = SEF.get(k) || { k, ad, n: 0 }; x.n++; SEF.set(k, x); });
+  const SEFL = [...SEF.values()].sort((x, y) => (x.k === "-") - (y.k === "-") || x.ad.localeCompare(y.ad, "tr"));
   let mod = "pdf";
   const grup = (ad, k, L) => L.length ? `<div class="fg9"><label>${ad}</label><div class="krc9">${L.map(v => `<button type="button" data-kr9fc="${k}" data-v="${esc(v)}">${esc(v)}</button>`).join("")}</div></div>` : "";
   const ov = altSayfa(IK("pdf"), "KM İlerleme Raporu", "Seçilen tarihler arasında girilen km'ler", `<div class="krs9">
@@ -7901,7 +7916,7 @@ kmRaporSayfa9 = function(){
 <label>Tarih aralığı</label><div class="krd9"><input type="date" id="kr9a" value="${isoG9(a0)}"><span>→</span><input type="date" id="kr9b" value="${isoG9(b0)}"></div>
 <div class="krc9">${[["hafta", "Bu hafta"], ["gecenhafta", "Geçen hafta"], ["ay", "Bu ay"], ["gecenay", "Geçen ay"], ["yil", "Yıl başından"]].map(([k, t]) => `<button type="button" data-kr9="${k}"${k === "ay" ? ' class="on"' : ""}>${t}</button>`).join("")}</div>
 <button type="button" class="krf9" data-kr9f><span>Filtrele</span><em id="kr9fo">Tümü</em><i>▾</i></button>
-<div class="krfg9" id="kr9fg" hidden>${grup("Birim", "b", O.bir)}${grup("İl", "i", O.il)}${grup("Standart", "s", O.std)}<button type="button" class="krfs9" data-kr9fsil>Filtreyi temizle</button></div>
+<div class="krfg9" id="kr9fg" hidden>${grup("Birim", "b", O.bir)}${grup("İl", "i", O.il)}${grup("Standart", "s", O.std)}${SEFL.length ? `<div class="fg9"><label>Kontrol Şefi</label><div class="ks9"><input type="search" id="kr9ks" placeholder="Şef adı yazın" autocomplete="off" enterkeyhint="search"><div class="ksl9" id="kr9ksl" hidden></div></div><div class="krc9 ksc9" id="kr9ksc"></div></div>` : ""}<button type="button" class="krfs9" data-kr9fsil>Filtreyi temizle</button></div>
 <label class="sw" id="kr9sw"><input type="checkbox" id="kr9ar"><span></span>KM aralıklarını göster</label>
 <label class="sw" id="kr9isw" hidden><input type="checkbox" id="kr9is"><span></span>İşleri göster</label>
 <p class="krn9">KM aralığının tarihine göre hesaplanır. "Yarısı" girilen aralıklar yarım sayılır. Birden fazla ildeki işte il filtresi seçilirse o ilin payı sayılır.</p>
@@ -7918,7 +7933,11 @@ kmRaporSayfa9 = function(){
     if(e.target.closest("[data-kr9f]")){ const g = $("#kr9fg"); g.hidden = !g.hidden; $("[data-kr9f]").classList.toggle("ac", !g.hidden); return; }
     const fc = e.target.closest("[data-kr9fc]");
     if(fc){ const S = F[fc.dataset.kr9fc], v = fc.dataset.v; S.has(v) ? S.delete(v) : S.add(v); fc.classList.toggle("on", S.has(v)); fOzet(); $("#kr9h").hidden = true; return; }
-    if(e.target.closest("[data-kr9fsil]")){ Object.values(F).forEach(S => S.clear()); ov.querySelectorAll("[data-kr9fc]").forEach(x => x.classList.remove("on")); fOzet(); return; }
+    const ka = e.target.closest("[data-kr9ks]");
+    if(ka){ const x = SEF.get(ka.dataset.kr9ks); if(x){ F.k.add(x.k); F.kAd.set(x.k, x.ad); } $("#kr9ks").value = ""; sefAra(); sefCip(); fOzet(); $("#kr9h").hidden = true; return; }
+    const kx = e.target.closest("[data-kr9ksx]");
+    if(kx){ F.k.delete(kx.dataset.kr9ksx); F.kAd.delete(kx.dataset.kr9ksx); sefCip(); sefAra(); fOzet(); $("#kr9h").hidden = true; return; }
+    if(e.target.closest("[data-kr9fsil]")){ Object.values(F).forEach(S => S.clear()); ov.querySelectorAll("[data-kr9fc]").forEach(x => x.classList.remove("on")); if($("#kr9ks")){ $("#kr9ks").value = ""; sefAra(); sefCip(); } fOzet(); return; }
     if(e.target.closest("#kr9git")){
       let a = $("#kr9a").value, b = $("#kr9b").value; const h = $("#kr9h");
       const hata = m => { h.textContent = m; h.hidden = false; };
@@ -7935,6 +7954,22 @@ kmRaporSayfa9 = function(){
     }
   });
   ["#kr9a", "#kr9b"].forEach(s => $(s).addEventListener("change", () => { ov.querySelectorAll("[data-kr9]").forEach(x => x.classList.remove("on")); $("#kr9h").hidden = true; }));
+  // Kontrol Şefi araması: 2 harften sonra eşleşenler (iş sayısıyla) listelenir
+  function sefAra(){
+    const inp = $("#kr9ks"), l = $("#kr9ksl"); if(!inp) return;
+    const q = fold(inp.value).trim().split(/\s+/).filter(Boolean);
+    if(!q.length || q.join("").length < 2){ l.hidden = true; l.innerHTML = ""; return; }
+    const L = SEFL.filter(x => !F.k.has(x.k) && q.every(w => fold(x.ad).includes(w))).slice(0, 8);
+    l.innerHTML = L.length ? L.map(x => `<button type="button" data-kr9ks="${esc(x.k)}"><span>${esc(x.ad)}</span><small>${x.n} iş</small></button>`).join("") : `<p>Eşleşen şef yok</p>`;
+    l.hidden = false;
+    requestAnimationFrame(() => { try{ l.scrollIntoView({ block: "nearest", behavior: "smooth" }); }catch(_){} });
+  }
+  function sefCip(){
+    const c = $("#kr9ksc"); if(!c) return;
+    c.innerHTML = [...F.k].map(k => `<button type="button" class="on" data-kr9ksx="${esc(k)}" aria-label="Kaldır">${esc(F.kAd.get(k) || k)} ✕</button>`).join("");
+  }
+  $("#kr9ks")?.addEventListener("input", sefAra);
+  $("#kr9ks")?.addEventListener("keydown", ev => { if(ev.key === "Enter"){ ev.preventDefault(); const b = $("#kr9ksl [data-kr9ks]"); if(b) b.click(); else ev.target.blur(); } });
 };
 
 // ---------- KM kaydedilince: düğme ✓ olur, ana sayfada yeni halka dolar, toplam akar ----------

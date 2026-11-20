@@ -765,6 +765,10 @@ main.dolu > .ana5{ flex:1; min-height:0; }
 main.dolu > .ana5 > .gd{ flex:0 1 auto; } /* içeriği kadar; sığmazsa küçülür, içinde kaydırılır */
 .ana5{ position:relative; z-index:2; margin-top:-22px; padding:0 12px 10px !important; gap:12px !important; }
 .ana5 .gd{ border-radius:20px !important; box-shadow:0 12px 28px rgba(15,23,42,.12) !important; }
+.gim9{ display:flex; gap:6px; margin:0 14px 4px; flex:none; }
+.gim9 button{ height:26px; padding:0 12px; border-radius:13px; border:1px solid #e2e8f0; background:#fff; font:inherit; font-size:12px; font-weight:700; color:#64748b; }
+.gim9 button.on{ background:#0f172a; border-color:#0f172a; color:#fff; }
+html.dark .gim9 button{ background:#0f1726; border-color:#273246; color:#94a3b8; } html.dark .gim9 button.on{ background:#e6ebf3; border-color:#e6ebf3; color:#0f172a; }
 .ana5 .gsek{ background:#eef1f6; border-radius:12px; padding:3px; border:none; margin:12px 14px 6px; }
 .ana5 .gsek button{ height:32px; border-radius:9px; padding:0; box-shadow:none !important; font-size:12.5px; }
 .ana5 .gsek button.on{ background:#fff; color:#0f172a; box-shadow:0 1px 3px rgba(15,23,42,.14) !important; }
@@ -1687,7 +1691,7 @@ const IL_SIRA = []; // il sırası veri dosyasından gelir (depoda bölge bilgis
 const IKON_IS = '<svg viewBox="0 0 24 24" fill="none"><rect x="5" y="4" width="14" height="17" rx="2" stroke="#ea580c" stroke-width="1.8"/><rect x="9" y="2.5" width="6" height="3" rx="1" fill="#ea580c"/><line x1="8" y1="10" x2="16" y2="10" stroke="#ea580c" stroke-width="1.6" stroke-linecap="round"/><line x1="8" y1="13.5" x2="16" y2="13.5" stroke="#ea580c" stroke-width="1.6" stroke-linecap="round"/><line x1="8" y1="17" x2="13" y2="17" stroke="#ea580c" stroke-width="1.6" stroke-linecap="round"/></svg>';
 const IKON_HEDEF = '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#16a34a" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#16a34a" stroke-width="2"/><circle cx="12" cy="12" r="1" fill="#16a34a"/></svg>';
 const yerel = (k, v) => { try{ if(v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); }catch(e){ return null; } };
-let gdAcik = true, gdSekme = "std", gdSec = null;
+let gdAcik = true, gdSekme = "std", gdSec = null, gdIlMod = "is";
 // Yılı içinde silinen işler o yılın toplamlarında "(silindi)" olarak kalır
 const sayilan = () => ISLER.filter(j => !j.ekleme).concat(((D.silinen || {})[D.yil] || []).map((x, i) => ({ id: "sil" + i, ad: x.ad + " (silindi)", firma: x.firma, il: x.il || [], cats: x.cats || [], fh: 0, kmler: [], kutular: [], silindi: 1 })));
 const stdSirala = ads => ads.sort((a, b) => (STD_SIRA.indexOf(a) + 1 || 99) - (STD_SIRA.indexOf(b) + 1 || 99) || a.localeCompare(b, "tr"));
@@ -3938,7 +3942,8 @@ document.addEventListener("click", e => {
   if(e.target.closest("[data-hatkapat]")){ if(history.state && history.state.hat) history.back(); else hatKapat(); return; }
   if(e.target.closest("[data-geri]")){ geriDon(); return; }
   if(e.target.closest("[data-arama]")){ aramaAcik = !aramaAcik; if(!aramaAcik) isAra = ""; ciz(); ust(); if(aramaAcik) document.getElementById("isAra")?.focus(); return; }
-  const gs = e.target.closest("[data-gdsekme]"); if(gs){ gdSekme = gs.dataset.gdsekme; gdSec = null; yerel("istakip-mobil-gd-sekme", gdSekme); gdYenile(); return; }
+  const gm = e.target.closest("[data-gdilmod]"); if(gm){ if(gdIlMod !== gm.dataset.gdilmod){ gdIlMod = gm.dataset.gdilmod; gdYenile(true); } return; }
+  const gs = e.target.closest("[data-gdsekme]"); if(gs){ gdSekme = gs.dataset.gdsekme; gdSec = null; gdIlMod = "is"; yerel("istakip-mobil-gd-sekme", gdSekme); gdYenile(); return; }
   const gd = e.target.closest("[data-gd]"); if(gd){ gdSec = gdSec === gd.dataset.gd ? null : gd.dataset.gd; gdYenile(true); return; }
   const ky = e.target.closest("[data-kmzyok]"); if(ky){ kmzYokPenceresi(byId(ky.dataset.kmzyok)); return; }
   const it = e.target.closest("[data-iti]"); if(it && byId(it.dataset.iti)){ itinererGoster(byId(it.dataset.iti)); return; }
@@ -4318,18 +4323,20 @@ function genelDurum(){
     bas = `<div class="tbh"><span>STANDART</span><span>BİTEN</span><span>HEDEF</span><span>%</span></div>`;
     govde = stdTablo(jobs, true);
   }else{
-    bas = `<div class="tbh il"><span>İL</span><span>${IKON_IS}İŞ</span><span>${IKON_HEDEF}FİZ.</span></div>`;
+    bas = `<div class="gim9"><button type="button" data-gdilmod="is"${gdIlMod === "is" ? ' class="on"' : ""}>İşler</button><button type="button" data-gdilmod="std"${gdIlMod === "std" ? ' class="on"' : ""}>Standartlar</button></div><div class="tbh il"><span>İL</span><span>${IKON_IS}İŞ</span><span>${IKON_HEDEF}FİZ.</span></div>`;
     const tumIs = ISLER;
+    // il / birden fazla il altında iş listesi (İşler düğmesi)
+    const isL = (L, ilGoster) => L.length ? L.slice().sort((a, b) => String(a.ad).localeCompare(String(b.ad), "tr")).map(j => `<button class="gi" data-is="${esc(j.id)}"><b>${esc(j.ad)}</b>${ilGoster ? `<small>${esc(j.il.join(" · "))}</small>` : ""}</button>`).join("") : '<div class="gbos">Bu ilde iş yok.</div>';
     const iller = IL_SIRA.concat([...new Set(tumIs.filter(j => j.il.length === 1).flatMap(j => j.il))].filter(il => !IL_SIRA.includes(il)).sort((a, b) => a.localeCompare(b, "tr")));
     const satir = (key, ad, liste, ic) => { const acik = gdSec === key;
       return `<button class="tr2 ilr2${acik ? " acik" : ""}" data-gd="${esc(key)}"><div class="l"><b><em>${acik ? "▾" : "▸"}</em>${esc(ad)}</b><span>${liste.length}</span><span>${liste.filter(j => j.fh).length}</span></div></button>${acik ? `<div class="gac">${ic()}</div>` : ""}`; };
     govde = iller.map(il => {
       const tekIl = j => j.il.length === 1 && j.il[0] === il;
       const ilJobs = tumIs.filter(tekIl);
-      return satir("i:" + il, il, ilJobs, () => `<div class="tbh" style="padding:4px 0 2px"><span>STANDART</span><span>BİTEN</span><span>HEDEF</span><span>%</span></div>` + stdTablo(jobs.filter(tekIl), false));
+      return satir("i:" + il, il, ilJobs, () => gdIlMod === "is" ? isL(ilJobs, false) : `<div class="tbh" style="padding:4px 0 2px"><span>STANDART</span><span>BİTEN</span><span>HEDEF</span><span>%</span></div>` + stdTablo(jobs.filter(tekIl), false));
     }).join("");
     const cok = tumIs.filter(j => j.il.length > 1);
-    govde += `<div class="ayrac"></div>` + satir("cok", "Birden Fazla İl", cok, () => cok.map(j => `<button class="gi" data-is="${esc(j.id)}"><b>${esc(j.ad)}</b><small>${esc(j.il.join(" · "))}</small></button>`).join("") || '<div class="gbos">Birden fazla ilde iş yok.</div>');
+    govde += `<div class="ayrac"></div>` + satir("cok", "Birden Fazla İl", cok, () => !cok.length ? '<div class="gbos">Birden fazla ilde iş yok.</div>' : gdIlMod === "is" ? isL(cok, true) : `<div class="tbh" style="padding:4px 0 2px"><span>STANDART</span><span>BİTEN</span><span>HEDEF</span><span>%</span></div>` + stdTablo(jobs.filter(j => j.il.length > 1), false));
   }
   return `<div class="gd" id="gd"><div class="gsek"><button data-gdsekme="std"${gdSekme === "std" ? ' class="on"' : ""}>Standartlar</button><button data-gdsekme="il"${gdSekme === "il" ? ' class="on"' : ""}>İl Bazlı</button></div>${bas}<div class="gdg" id="gdg">${govde}</div></div>`;
 }
@@ -5887,7 +5894,7 @@ function mesgul9(){
 function yerKaydet9(){
   try{
     const m = document.getElementById("main"), hv = document.getElementById("hatv");
-    const y = { t: Date.now(), tab, detay, aramaAcik, isAra, secKutu, mz: { ...mz }, gdSekme, gdSec, yil: secYil, sy: m ? m.scrollTop : 0,
+    const y = { t: Date.now(), tab, detay, aramaAcik, isAra, secKutu, mz: { ...mz }, gdSekme, gdSec, gdIlMod, yil: secYil, sy: m ? m.scrollTop : 0,
       hat: hv && hatIs ? hatIs.id : null, hatTum, gdg: document.getElementById("gdg")?.scrollTop || 0 };
     sessionStorage.setItem(GERI9, JSON.stringify(y));
   }catch(_){}
@@ -5911,7 +5918,7 @@ function sessizGuncelle9(){
     try{
       if(s.yil && typeof yillar === "function" && yillar().includes(s.yil) && s.yil !== secYil){ secYil = s.yil; yilUygula(s.yil); }
       tab = s.tab === "map" ? "map" : "home";
-      gdSekme = s.gdSekme || gdSekme; gdSec = s.gdSec || null;
+      gdSekme = s.gdSekme || gdSekme; gdSec = s.gdSec || null; gdIlMod = s.gdIlMod || "is";
       aramaAcik = !!s.aramaAcik; isAra = s.isAra || "";
       secKutu = s.secKutu && byId(s.secKutu) ? s.secKutu : null;
       detay = s.detay && byId(s.detay.id) ? s.detay : null;

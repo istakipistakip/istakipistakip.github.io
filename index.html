@@ -777,6 +777,40 @@ main.dolu > .ana5 > .gd{ flex:0 1 auto; } /* içeriği kadar; sığmazsa küçü
 .dn9b{ margin-top:12px; align-self:flex-start; font:inherit; font-size:14px; font-weight:800; color:#ea580c; background:#fff7ed; border:1px dashed #fdba74; border-radius:10px; padding:8px 12px; }
 .dn9b[hidden], .dn9w[hidden]{ display:none; } .dn9s{ display:block; text-align:right; font-size:11.5px; color:#94a3b8; margin-top:3px; }
 html.dark .dn9b{ background:#2a1708; border-color:#9a3412; color:#fdba74; }
+/* v99 itinerer: karşılaştır ve düzenleyici */
+.kr9l{ display:flex; flex-direction:column; gap:8px; }
+.kr9i{ border:1px solid #e2e8f0; border-radius:12px; background:#fff; overflow:hidden; }
+.kr9i summary{ list-style:none; display:flex; align-items:center; gap:8px; padding:11px 12px; cursor:pointer; }
+.kr9i summary::-webkit-details-marker{ display:none; }
+.kr9i summary b{ flex:1; min-width:0; font-size:14px; line-height:1.3; }
+.kr9i summary i{ flex:none; font-style:normal; font-size:12px; font-weight:800; color:#fff; background:#ea580c; border-radius:10px; padding:2px 8px; }
+.kr9i summary em{ flex:none; font-style:normal; font-size:12px; font-weight:700; color:#16a34a; }
+.kr9g{ padding:2px 12px 8px; } .kr9g small{ display:block; font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#64748b; margin:6px 0 4px; }
+.kr9f{ display:flex; align-items:center; gap:8px; padding:7px 0; border-top:1px solid #f1f5f9; font-size:13px; line-height:1.35; }
+.kr9f span{ flex:1; min-width:0; } .kr9f button{ flex:none; font:inherit; font-size:12.5px; font-weight:800; color:#ea580c; background:#fff7ed; border:1px solid #fed7aa; border-radius:9px; padding:6px 10px; }
+.kr9ac{ display:block; width:calc(100% - 24px); margin:4px 12px 12px; font:inherit; font-size:13.5px; font-weight:800; color:#1e3a5f; background:#eef2f7; border:0; border-radius:10px; padding:9px; }
+.itd9{ position:fixed; inset:0; z-index:60; background:#f6f7f9; display:flex; flex-direction:column; }
+.itd9h{ display:flex; align-items:center; gap:10px; padding:calc(10px + env(safe-area-inset-top)) 12px 10px; background:#0f1f38; color:#fff; }
+.itd9h > button:first-child{ width:38px; height:38px; border:0; border-radius:12px; background:rgba(255,255,255,.12); color:#fff; display:grid; place-items:center; }
+.itd9h > div{ flex:1; min-width:0; } .itd9h b{ display:block; font-size:16px; } .itd9h small{ display:block; font-size:12px; opacity:.75; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.itd9h .kyd{ font:inherit; font-weight:800; font-size:14px; border:0; border-radius:11px; padding:9px 14px; background:#ea580c; color:#fff; }
+.itd9o{ flex:none; height:210px; overflow:auto; background:#fff; border-bottom:1px solid #e2e8f0; -webkit-overflow-scrolling:touch; }
+.itd9oi{ display:inline-block; min-width:100%; }
+.itd9g{ flex:1; overflow:auto; padding:12px 12px calc(24px + env(safe-area-inset-bottom)); }
+.itd9b, .itd9s{ background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:12px; margin-bottom:10px; }
+.itd9b label{ display:block; font-size:12.5px; font-weight:700; color:#475569; margin:8px 0 4px; }
+.itd9b input, .itd9y input{ width:100%; height:42px; border:1px solid #d6dbe3; border-radius:10px; padding:0 10px; font:inherit; font-size:16px; background:#fff; color:#0f172a; }
+.itd9s > b{ display:block; font-size:14px; margin-bottom:6px; } .itd9s > b small{ font-weight:600; color:#94a3b8; font-size:11.5px; }
+.itd9r{ display:flex; width:100%; align-items:center; gap:8px; text-align:left; background:none; border:0; border-top:1px solid #f1f5f9; padding:9px 2px; font:inherit; color:inherit; }
+.itd9r span{ flex:1; min-width:0; } .itd9r b{ display:block; font-size:13.5px; } .itd9r small{ display:block; font-size:12px; color:#64748b; }
+.itd9ok{ font-style:normal; font-size:20px; color:#94a3b8; }
+.itd9y{ display:flex; gap:6px; align-items:center; margin-bottom:6px; } .itd9y input:nth-child(2){ width:110px; flex:none; }
+.itd9y button{ flex:none; width:36px; height:36px; border:0; border-radius:10px; background:#fee2e2; color:#b91c1c; font-weight:800; }
+.itd9s .btn{ margin-top:8px; }
+.itd9sil{ display:block; width:100%; margin-top:10px; font:inherit; font-size:14px; font-weight:800; color:#b91c1c; background:#fff; border:1px solid #fecaca; border-radius:12px; padding:11px; }
+html.dark .kr9i, html.dark .itd9b, html.dark .itd9s, html.dark .itd9o{ background:#0f1726; border-color:#273246; }
+html.dark .itd9{ background:#0b1220; } html.dark .kr9f{ border-color:#1e293b; } html.dark .kr9ac{ background:#1e293b; color:#e2e8f0; }
+html.dark .itd9b input, html.dark .itd9y input{ background:#0b1220; border-color:#334155; color:#e2e8f0; }
 .gim9{ display:flex; gap:6px; margin:0 14px 4px; flex:none; }
 .gim9 button{ height:26px; padding:0 12px; border-radius:13px; border:1px solid #e2e8f0; background:#fff; font:inherit; font-size:12px; font-weight:700; color:#64748b; }
 .gim9 button.on{ background:#0f172a; border-color:#0f172a; color:#fff; }
@@ -2657,7 +2691,7 @@ const itiIs9 = kod => ISLER.find(x => (x.iti || []).includes(kod)) || null;
 // Üstteki özet KM Bilgileri'nden, standart standart; alttaki tekrar kaldırılır
 function itiBaslik9(svg, j){
   if(svg._bas9) return false;
-  const OZ = /^(Toplam|Önceki yıllar|Bu yıl biten|Çalışılan|Hedef)\s*:/i;
+  const OZ = /^(Toplam|Önceki yıllar|Bu yıl biten|Çalışılan|Hedef|Kalan|Yapılan|İş yok)[^:]{0,20}:\s*-?[\d.,]+\s*km$/i;
   const eski = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && OZ.test(t.textContent.trim()));
   if(!eski.length) return false;
   svg._bas9 = 1;
@@ -6482,7 +6516,7 @@ anasayfa = function(){
 function serit9(){
   const n = GUN9.length;
   return `<div class="dz9s"><div class="t"><span class="i">${IK("kalem")}</span><div><b>Düzenleme modu</b><small>${n ? n + " değişiklik bu telefonda" : "İşe girip KM ve yazıları düzenleyin"}</small></div><button class="kp" data-duzen9 aria-label="Düzenleme modunu kapat">${IK("x")}</button></div>
-<div class="b"><button data-dz9excel>${IK("tablo")}Excel</button><button data-dz9aktar>${IK("aktar")}Veri Aktar</button><button data-dz9liste>${IK("liste")}Liste${n ? `<i>${n}</i>` : ""}</button></div></div>`;
+<div class="b"><button data-dz9excel>${IK("tablo")}Excel</button><button data-dz9iti>${IK("iti")}İtinerer</button><button data-dz9aktar>${IK("aktar")}Veri Aktar</button><button data-dz9liste>${IK("liste")}Liste${n ? `<i>${n}</i>` : ""}</button></div></div>`;
 }
 async function duzenDegis9(){
   if(!YON9) return;
@@ -6519,16 +6553,16 @@ function kmForm9(id, idx, on){
   const j = ISLER.find(x => x.id === id); if(!j) return;
   const k = idx === undefined || idx === null ? null : j.kmler[idx];
   const stdler = [...new Set(j.cats.map(c => c.ad).concat(j.kmler.map(x => x.s)).concat(STD9))];
-  const sec = k ? k.s : (j.cats[0] && j.cats[0].ad) || (j.kmler[0] && j.kmler[0].s) || "BY-BSK";
-  const yarim = k ? !!k.y : false, goster = k ? k.gz !== 0 : true;
-  const t = k && /^\d{4}-\d{2}-\d{2}/.test(k.t || "") ? k.t.slice(0, 10) : bugun9();
+  const sec = k ? k.s : (on && on.s) || (j.cats[0] && j.cats[0].ad) || (j.kmler[0] && j.kmler[0].s) || "BY-BSK";
+  const yarim = k ? !!k.y : !!(on && on.y), goster = k ? k.gz !== 0 : true;
+  const t = k && /^\d{4}-\d{2}-\d{2}/.test(k.t || "") ? k.t.slice(0, 10) : (on && on.t) || bugun9();
   const govde = `<form class="kf9" id="kf9" autocomplete="off">
 <label>Standart</label><div class="ch" id="kf9s">${stdler.map(s => `<button type="button" class="${s === sec ? "on" : ""}${j.cats.some(c => c.ad === s) ? " is" : ""}" data-s="${esc(s)}">${esc(s)}</button>`).join("")}</div>
 <div class="ik2"><div><label for="kf9a">Başlangıç KM</label><input id="kf9a" inputmode="numeric" pattern="[0-9+]*" placeholder="12500 → 12+500" value="${esc(k ? k.a : on ? on.a : "")}"></div><div><label for="kf9e">Bitiş KM</label><input id="kf9e" inputmode="numeric" pattern="[0-9+]*" placeholder="14000 → 14+000" value="${esc(k ? k.e : on ? on.e : "")}"></div></div>
 <div class="uz" id="kf9u"></div>
 <label>Oran</label><div class="seg" id="kf9o"><button type="button" class="${yarim ? "" : "on"}" data-o="0">Tamamı</button><button type="button" class="${yarim ? "on" : ""}" data-o="1">Yarısı</button></div>
 <label for="kf9t">Tarih</label><input id="kf9t" type="date" value="${esc(t)}">
-<label for="kf9c">Açıklama</label><textarea id="kf9c" rows="3" placeholder="İsteğe bağlı">${esc(k ? k.ac || "" : "")}</textarea>
+<label for="kf9c">Açıklama</label><textarea id="kf9c" rows="3" placeholder="İsteğe bağlı">${esc(k ? k.ac || "" : on && on.ac || "")}</textarea>
 <label for="kf9k">K.K.No <small class="kk9">(bu girişe özel)</small></label><input id="kf9k" autocomplete="off" placeholder="${esc(j.kk ? "Boşsa işin K.K.No'su: " + j.kk : "İsteğe bağlı")}" value="${esc(k ? k.kk || "" : "")}">
 <button type="button" class="dn9b" data-kf9dn${k && k.dn ? " hidden" : ""}>＋ Dipnot ekle</button>
 <div class="dn9w" id="kf9dnw"${k && k.dn ? "" : " hidden"}><label for="kf9dn">Dipnot <small class="kk9">(ana sayfadaki halkada akar)</small></label><input id="kf9dn" maxlength="80" autocomplete="off" placeholder="Kısa not" value="${esc(k ? k.dn || "" : "")}"><small class="dn9s" id="kf9dns"></small></div>
@@ -8670,6 +8704,424 @@ if("serviceWorker" in navigator && location.protocol === "https:"){
     document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") reg.update().catch(() => {}); });
   }).catch(() => {});
 }
+
+// ===================== v99: İtinerer telefonda (yalnız düzenleme modu) =====================
+// Yol Takip'in ham verisi (yol_veri.json) bu telefona yüklenir ve YALNIZ burada
+// saklanır (hiçbir sunucuya gitmez). Bu telefonda itinererler Yol Takip'in kendi
+// çizim koduyla (iti-cizim.html) çizilir: biten kesimler KM girişlerinden boyanır,
+// itinerer sıfırdan oluşturulur / düzenlenir, KM girişleriyle karşılaştırılır.
+// Diğer telefonlar güncel çizimleri "Diğer telefonlar için" dosyasıyla alır.
+const kmBicim9 = inp => { const v = inp.value, d = v.replace(/\D/g, "");
+  if(/[,.]/.test(v) || !d) return;
+  const yeni = d.length >= 4 ? d.slice(0, -3).replace(/^0+(?=\d)/, "") + "+" + d.slice(-3) : d;
+  if(yeni !== v){ inp.value = yeni; try{ inp.setSelectionRange(yeni.length, yeni.length); }catch(_){} } };
+let YT9 = null;                      // { tarih, ad, raw, duz: {kod: proje}, yeni: {kod: jobId} }
+let ytHazir9 = null;
+function ytOku9(){
+  if(!ytHazir9) ytHazir9 = idbOku("yt9").then(v => { YT9 = v || null; return YT9; }).catch(() => null);
+  return ytHazir9;
+}
+async function ytYaz9(){ try{ await idbYaz9("yt9", YT9); }catch(_){ } }
+const ytProjeler9 = () => (YT9 && YT9.raw && YT9.raw.veriler) || {};
+function ytProje9(kod){
+  if(!YT9) return null;
+  if(YT9.duz && YT9.duz[kod]) return YT9.duz[kod];
+  const p = ytProjeler9()[kod];
+  return p && typeof p === "object" && Array.isArray(p.kayitlar) ? p : null;
+}
+// işin bu telefonda çizilebilen itinerer kodları
+function ytKodlar9(j){
+  if(!YT9 || !j) return [];
+  const L = (j.iti || []).filter(k => ytProje9(k));
+  Object.keys(YT9.yeni || {}).forEach(k => { if(String(YT9.yeni[k]) === String(j.id) && !L.includes(k)) L.push(k); });
+  return L;
+}
+// yeni oluşturulan itinererler işe ve D.itiKod'a eklenir (yalnız bellekte)
+function ytBagla9(){
+  if(!D || !YT9) return;
+  if(!D.itiKod) D.itiKod = new Set();
+  Object.keys(YT9.yeni || {}).forEach(k => {
+    const j = ISLER.find(x => String(x.id) === String(YT9.yeni[k])); if(!j) return;
+    if(!(j.iti || []).includes(k)) j.iti = (j.iti || []).concat(k);
+    D.itiKod.add(k);
+  });
+  ISLER.forEach(j => (j.iti || []).forEach(k => { if(ytProje9(k)) D.itiKod.add(k); }));
+}
+
+// ---------- KM girişleri → Yol Takip kayıtları ----------
+const kmM9 = s => { const m = String(s || "").match(/^\s*(-?\d+)\s*\+\s*(\d{1,3})/); return m ? (+m[1]) * 1000 + (m[1].startsWith("-") ? -1 : 1) * (+m[2]) : (Number.isFinite(+s) ? +s * 1000 : null); };
+const mKm9 = m => { m = Math.round(m); const n = m < 0 ? "-" : ""; m = Math.abs(m); return n + Math.floor(m / 1000) + "+" + String(m % 1000).padStart(3, "0"); };
+const turStd9 = s => { const t = String(s || "").toUpperCase().replace(/^(BY|TY)-/, ""); return t === "BSK" ? "BSK" : t === "SK" ? "SK" : t === "SK-BSK" ? "SK>BSK" : t === "BSK-ON" ? "BSK-On" : null; };
+const stdTur9 = (sinif, tur) => { const t = { "BSK": "BSK", "SK": "SK", "SK>BSK": "SK-BSK", "BSK-On": "BSK-ON" }[tur]; return t ? sinif + "-" + t : null; };
+const YOLTUR9 = new Set(["BSK", "SK", "SK>BSK", "BSK-On"]);
+function taraf9(ac){ const t = fold(ac || ""); const sl = /\bsol/.test(t), sg = /\bsag/.test(t); return sl && !sg ? "SOL" : sg && !sl ? "SAG" : null; }
+// işin bütün yıllardaki KM girişleri (tarih yılıyla)
+function tumKm9(j){
+  const out = [], gor = new Set();
+  const ekle = (k, y) => { const a = kmM9(k.a), e = kmM9(k.e); if(a === null || e === null) return; const anahtar = [k.s, k.a, k.e, k.t, k.y].join("|"); if(gor.has(anahtar)) return; gor.add(anahtar);
+    const yil = /^\d{4}/.test(k.t || "") ? +String(k.t).slice(0, 4) : y; out.push({ k, a: Math.min(a, e), e: Math.max(a, e), yil }); };
+  if(j.yillik) Object.keys(j.yillik).forEach(y => (j.yillik[y].kmler || []).forEach(k => ekle(k, +y)));
+  else (j.kmler || []).forEach(k => ekle(k, D.yil));
+  return out;
+}
+function kmKayitlar9(j, p){
+  const by = (p.kayitlar || []).find(r => r.sinif === "BY" && r.byTip) , ty = (p.kayitlar || []).find(r => r.sinif === "TY" && r.tyTip);
+  const out = [];
+  tumKm9(j).forEach(x => {
+    if(x.yil > D.yil) return;
+    if(x.e < p.bas - 1 || x.a > p.bit + 1) return;              // bu projenin aralığında değil
+    const sinif = /^TY/i.test(x.k.s) ? "TY" : "BY", tur = turStd9(x.k.s); if(!tur) return;
+    const konum = sinif === "TY" ? "TY" : (x.k.y ? (taraf9(x.k.ac) || "HER") : "HER");
+    out.push({ sinif, byTip: sinif === "BY" ? (by && by.byTip) || "2x2" : "", tyTip: sinif === "TY" ? (ty && ty.tyTip) || "2x1" : "", tur, altTur: "", konum,
+      durum: x.yil === D.yil ? "buyil" : "eski", bas: Math.max(p.bas, x.a), bit: Math.min(p.bit, x.e), ad: "", _km9: 1 });
+  });
+  return out;
+}
+// çizilecek proje: Yol Takip kaydı + KM girişleri (KM'ler her zaman üstte çizilir)
+function cizimProje9(kod){
+  const p = ytProje9(kod); if(!p) return null;
+  const j = ISLER.find(x => ytKodlar9(x).includes(kod));
+  const q = JSON.parse(JSON.stringify(p));
+  if(j) q.kayitlar = (q.kayitlar || []).concat(kmKayitlar9(j, q));
+  return q;
+}
+
+// ---------- Yol Takip çizim kodu (gizli çerçevede) ----------
+let ytCerceve9 = null;
+function ytCizici9(){
+  if(ytCerceve9) return ytCerceve9;
+  ytCerceve9 = (async () => {
+    const r = await fetch("iti-cizim.html", { cache: "force-cache" }); if(!r.ok) throw new Error("Çizim kodu yüklenemedi");
+    let h = await r.text();
+    const kopru = `<script>
+window.addEventListener("message", function(e){
+  var d = e.data || {}; if(d.tip !== "yt-ciz") return;
+  var out = {}, lejant = "";
+  try{ uygulaVeriPaketi(d.veri, true); }catch(err){}
+  (d.kodlar || []).forEach(function(k){
+    try{ var p = DB[k]; if(!p){ out[k] = { hata: "proje yok" }; return; }
+      var h = drawItiAkilli(p, false);
+      var m = h.match(/<div class="leg-box leg-table-wrap">[\\s\\S]*?<\\/table><\\/div>/); if(m && !lejant) lejant = m[0];
+      out[k] = { ad: p.adi || k, html: h.replace(/<div class="leg-box leg-table-wrap">[\\s\\S]*?<\\/table><\\/div>/, "").replace(/ title="Tıklayınca tam ekran \\(büyüt\\)"/, "").replace(/ id="itiWrapMain"/, "").replace(/(\\d+\\.\\d)\\d{3,}/g, "$1") };
+    }catch(err){ out[k] = { hata: String(err && err.message || err) }; }
+  });
+  var css = Array.prototype.map.call(document.querySelectorAll("style"), function(s){ return s.textContent; }).join("\\n");
+  parent.postMessage({ tip: "yt-sonuc", id: d.id, out: out, lejant: lejant, css: css }, "*");
+});
+parent.postMessage({ tip: "yt-hazir" }, "*");
+<\/script>`;
+    h = h.includes("</body>") ? h.replace(/<\/body>(?![\s\S]*<\/body>)/, kopru + "</body>") : h + kopru;
+    const f = document.createElement("iframe");
+    f.setAttribute("sandbox", "allow-scripts"); f.setAttribute("aria-hidden", "true");
+    f.style.cssText = "position:fixed;left:-20000px;top:0;width:1500px;height:1000px;visibility:hidden;border:0";
+    const hazir = new Promise((ok, no) => {
+      const t = setTimeout(() => no(new Error("Çizim kodu açılmadı")), 20000);
+      const d = e => { if(e.source === f.contentWindow && e.data && e.data.tip === "yt-hazir"){ clearTimeout(t); window.removeEventListener("message", d); ok(f); } };
+      window.addEventListener("message", d);
+    });
+    f.srcdoc = h; document.body.appendChild(f);
+    return hazir;
+  })();
+  ytCerceve9.catch(() => { ytCerceve9 = null; });
+  return ytCerceve9;
+}
+async function ytCiz9(projeler){
+  const f = await ytCizici9();
+  const id = "c" + Date.now() + Math.random().toString(36).slice(2, 6);
+  const veri = { ...(YT9 && YT9.raw ? YT9.raw : {}), veriler: { ...projeler } };
+  return new Promise((ok, no) => {
+    const t = setTimeout(() => { window.removeEventListener("message", d); no(new Error("Çizim zaman aşımı")); }, 30000);
+    const d = e => { if(e.source !== f.contentWindow || !e.data || e.data.tip !== "yt-sonuc" || e.data.id !== id) return; clearTimeout(t); window.removeEventListener("message", d); ok(e.data); };
+    window.addEventListener("message", d);
+    f.contentWindow.postMessage({ tip: "yt-ciz", id, veri, kodlar: Object.keys(projeler) }, "*");
+  });
+}
+// verilen kodları çizer ve D.iti'ye koyar (yalnız bellekte; kaydedilmez)
+async function ytHazirla9(kodlar){
+  await ytOku9(); if(!YT9 || !D) return;
+  const P = {}; kodlar.forEach(k => { const q = cizimProje9(k); if(q) P[k] = q; });
+  if(!Object.keys(P).length) return;
+  const s = await ytCiz9(P);
+  if(!D.iti) D.iti = { projeler: {}, css: "", lejant: "" };
+  if(!D.iti.projeler) D.iti.projeler = {};
+  if(!D.iti.css) D.iti.css = s.css || "";
+  if(!D.iti.lejant) D.iti.lejant = s.lejant || "";
+  Object.keys(P).forEach(k => { const o = s.out && s.out[k]; if(o && !o.hata) D.iti.projeler[k] = { ad: o.ad, html: o.html, _yerel: 1 }; });
+  ytBagla9();
+}
+// itinerer açılmadan / PDF'ten önce bu telefondaki güncel çizim hazırlanır
+const _itinererGoster99 = itinererGoster;
+itinererGoster = async function(j){
+  try{ await agirHazir(); await ytOku9(); if(YT9){ ytBagla9(); const L = ytKodlar9(j); if(L.length) await ytHazirla9(L); } }catch(e){ bildir("İtinerer çizilemedi: " + (e.message || e)); }
+  return _itinererGoster99.apply(this, arguments);
+};
+const _itiResimleri99 = itiResimleri;
+itiResimleri = async function(kod){
+  try{ await ytOku9(); if(YT9 && ytProje9(kod)) await ytHazirla9([kod]); }catch(_){}
+  return _itiResimleri99.apply(this, arguments);
+};
+// diğer telefonlar için dosyaya güncel çizimler konur
+const _telefonDosyasi99 = telefonDosyasi9;
+telefonDosyasi9 = async function(tur){
+  await ytOku9();
+  if(!YT9) return _telefonDosyasi99.apply(this, arguments);
+  const kodlar = [...new Set(ISLER.flatMap(j => ytKodlar9(j)))];
+  if(kodlar.length){ bildir("İtinererler çiziliyor…"); await ytHazirla9(kodlar); }
+  const eskiTam = tamOku9;
+  tamOku9 = async function(){
+    const v = await eskiTam(); if(!v) return v;
+    if(D.iti){
+      v.iti = { ...(v.iti || {}), css: (v.iti && v.iti.css) || D.iti.css, lejant: (v.iti && v.iti.lejant) || D.iti.lejant, tarih: (v.iti && v.iti.tarih) || null, projeler: { ...((v.iti && v.iti.projeler) || {}) } };
+      kodlar.forEach(k => { const p = D.iti.projeler[k]; if(p && p.html) v.iti.projeler[k] = { ad: p.ad, html: p.html }; });
+      v.isler = (v.isler || []).map(j => { const yeni = Object.keys((YT9 && YT9.yeni) || {}).filter(k => String(YT9.yeni[k]) === String(j.id) && !(j.iti || []).includes(k)); return yeni.length ? { ...j, iti: (j.iti || []).concat(yeni) } : j; });
+    }
+    return v;
+  };
+  const eskiFark = FARK9;
+  if(tur === "degisiklik" && FARK9) FARK9 = { ...FARK9, keys: [...new Set((FARK9.keys || []).concat(kodlar.map(k => "i:" + k)))] };
+  try{ return await _telefonDosyasi99.apply(this, arguments); }
+  finally{ tamOku9 = eskiTam; FARK9 = eskiFark; }
+};
+
+// ---------- Yol Takip Verisi Yükle ----------
+function ytYukle9(){
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = ".json,application/json";
+  inp.addEventListener("change", async () => {
+    const f = inp.files && inp.files[0]; if(!f) return;
+    try{
+      const raw = JSON.parse(await f.text());
+      if(!raw || !raw.veriler || typeof raw.veriler !== "object") throw new Error("Bu bir Yol Takip veri dosyası değil (yol_veri.json)");
+      const n = Object.values(raw.veriler).filter(p => p && Array.isArray(p.kayitlar)).length;
+      await ytOku9();
+      const eski = YT9 || {};
+      YT9 = { tarih: raw._tarih || null, ad: f.name, yuklendi: Date.now(), raw, duz: eski.duz || {}, yeni: eski.yeni || {} };
+      await ytYaz9(); ytHazir9 = Promise.resolve(YT9); ytBagla9();
+      const dz = Object.keys(YT9.duz).length + Object.keys(YT9.yeni).length;
+      bildir(`Yol Takip verisi yüklendi: ${n} proje${dz ? ` · telefonda düzenlenen ${dz} itinerer korundu` : ""}`);
+      itiMenu9();
+    }catch(e){ bildir(e.message || "Dosya okunamadı"); }
+  });
+  inp.click();
+}
+async function itiMenu9(){
+  await ytOku9();
+  const t = YT9 ? `${esc(YT9.ad || "yol_veri.json")}${YT9.tarih ? " · " + esc(String(YT9.tarih).slice(0, 10).split("-").reverse().join(".")) : ""}` : "Henüz yüklenmedi";
+  const ov = altSayfa(IK("iti"), "İtinerer", "Yol Takip verisi yalnız bu telefonda saklanır", `<div class="exm9">
+<button data-it9="yukle"><b>Yol Takip Verisi Yükle</b><small>${t}</small></button>
+<button data-it9="kars"${YT9 ? "" : " disabled"}><b>İtinerer – KM Karşılaştır</b><small>KM girişleriyle itinerer arasındaki farklar, iş iş</small></button></div>
+<p class="not" style="margin:10px 2px 0;font-size:12.5px;color:#64748b">Biten kesimler KM girişlerinden boyanır. İtinereri oluşturmak / düzenlemek için işin İtinerer düğmesini kullanın. Diğer telefonlar güncel çizimleri Veri Aktar → "Diğer telefonlar için" dosyasıyla alır.</p>`);
+  ov.addEventListener("click", e => { const b = e.target.closest("[data-it9]"); if(!b || b.disabled) return; kapatAlt(); b.dataset.it9 === "yukle" ? ytYukle9() : karsilastir9(); });
+}
+document.addEventListener("click", e => { if(e.target.closest("[data-dz9iti]")){ e.stopPropagation(); hazir9.then(itiMenu9); } }, true);
+
+// ---------- İtinerer – KM Karşılaştır ----------
+function farklar9(j){
+  const F = [];
+  ytKodlar9(j).forEach(kod => {
+    const p = ytProje9(kod); if(!p) return;
+    const el = (p.kayitlar || []).filter(r => YOLTUR9.has(r.tur) && (r.durum === "buyil" || r.durum === "eski") && !r._km9);
+    const km = tumKm9(j).filter(x => x.yil <= D.yil && !(x.e < p.bas - 1 || x.a > p.bit + 1));
+    const ort = (a1, b1, a2, b2) => Math.max(0, Math.min(b1, b2) - Math.max(a1, a2));
+    // itinererde biten, KM girişi yok
+    el.forEach(r => {
+      const L = Math.max(1, r.bit - r.bas);
+      const kap = km.filter(x => (/^TY/i.test(x.k.s) ? "TY" : "BY") === r.sinif).reduce((t, x) => t + ort(r.bas, r.bit, x.a, x.e), 0);
+      if(kap / L < 0.8) F.push({ tip: "kmyok", kod, r, m: `${r.sinif} ${r.tur} · ${mKm9(r.bas)} – ${mKm9(r.bit)} · ${r.durum === "buyil" ? "Bu yıl biten" : "Önceki yıllar"}${r.konum && r.konum !== "HER" && r.konum !== "TY" ? " · " + (r.konum === "SAG" ? "Sağ" : "Sol") : ""}` });
+    });
+    km.forEach(x => {
+      const sinif = /^TY/i.test(x.k.s) ? "TY" : "BY", tur = turStd9(x.k.s);
+      const ust = el.filter(r => r.sinif === sinif && ort(r.bas, r.bit, x.a, x.e) > 0);
+      const ad = `${x.k.s} ${mKm9(x.a)} – ${mKm9(x.e)}${x.k.y ? " (yarısı)" : ""} · ${x.yil}`;
+      if(x.k.y && sinif === "BY" && !taraf9(x.k.ac)) F.push({ tip: "taraf0", kod, x, m: ad + " · açıklamada sol / sağ yok" });
+      if(!ust.length){ F.push({ tip: "itiyok", kod, x, m: ad + " · Yol Takip'te çizili değil (artık KM'den boyanıyor)" }); return; }
+      if(tur && ust.every(r => r.tur !== tur)) F.push({ tip: "std", kod, x, m: `${ad} · itinererde ${ust[0].tur}` });
+      const tf = x.k.y ? taraf9(x.k.ac) : null;
+      if(tf && ust.every(r => r.konum !== tf && r.konum !== "HER")) F.push({ tip: "taraf", kod, x, m: `${ad} · itinererde ${ust[0].konum === "SAG" ? "sağ" : "sol"} taraf` });
+      const dz = x.yil === D.yil ? "buyil" : "eski";
+      if(ust.every(r => r.durum !== dz)) F.push({ tip: "yil", kod, x, m: `${ad} · itinererde ${ust[0].durum === "buyil" ? "Bu yıl biten" : "Önceki yıllar"}` });
+    });
+  });
+  return F;
+}
+const FARKAD9 = { kmyok: "İtinererde biten, KM girişi yok", itiyok: "KM girişi var, Yol Takip'te çizili değil", std: "Standart farkı", taraf: "Taraf farkı", taraf0: "Yarısı · taraf belirtilmemiş", yil: "Yıl farkı" };
+async function karsilastir9(){
+  await ytOku9(); if(!YT9){ bildir("Önce Yol Takip verisini yükleyin"); return; }
+  ytBagla9();
+  const L = ISLER.filter(j => ytKodlar9(j).length).map(j => ({ j, F: farklar9(j) })).sort((a, b) => (b.F.length > 0) - (a.F.length > 0) || String(a.j.ad).localeCompare(String(b.j.ad), "tr"));
+  const n = L.filter(x => x.F.length).length;
+  const govde = `<div class="kr9l">${L.map(({ j, F }) => `<details class="kr9i"${F.length ? "" : ' data-uy="1"'}><summary><b>${esc(j.ad)}</b>${F.length ? `<i>${F.length} fark</i>` : `<em>uyumlu</em>`}</summary>
+${Object.keys(FARKAD9).map(t => { const G = F.filter(f => f.tip === t); return G.length ? `<div class="kr9g"><small>${FARKAD9[t]}</small>${G.map(f => `<div class="kr9f"><span>${esc(f.m)}</span>${f.tip === "kmyok" ? `<button type="button" data-kr9km="${esc(j.id)}" data-a="${f.r.bas}" data-e="${f.r.bit}" data-s="${esc(stdTur9(f.r.sinif, f.r.tur) || "")}" data-y="${f.r.konum === "SOL" || f.r.konum === "SAG" ? 1 : 0}" data-ac="${f.r.konum === "SOL" ? "sol" : f.r.konum === "SAG" ? "sağ" : ""}" data-d="${f.r.durum}">KM ekle</button>` : ""}</div>`).join("")}</div>` : ""; }).join("")}
+<button type="button" class="kr9ac" data-kr9iti="${esc(j.id)}">İtinereri aç</button></details>`).join("") || '<p class="gbos">Yol Takip projesine bağlı iş yok.</p>'}</div>`;
+  const ov = altSayfa(IK("iti"), "İtinerer – KM Karşılaştır", `${L.length} iş · ${n} işte fark · Yol Takip ${esc(YT9.tarih ? String(YT9.tarih).slice(0, 10).split("-").reverse().join(".") : "")}`, govde);
+  ov.addEventListener("click", e => {
+    const k = e.target.closest("[data-kr9km]");
+    if(k){ const d = k.dataset, buyil = d.d === "buyil";
+      kapatAlt(); kmForm9(d.kr9km, null, { a: mKm9(+d.a), e: mKm9(+d.e), s: d.s, y: +d.y, ac: d.ac, t: buyil ? bugun9() : (D.yil - 1) + "-12-31" }); return; }
+    const o = e.target.closest("[data-kr9iti]");
+    if(o){ const j = ISLER.find(x => String(x.id) === o.dataset.kr9iti); kapatAlt(); if(j) itinererGoster(j); }
+  });
+}
+
+// ---------- İtinerer oluştur / düzenle ----------
+const TURLER9 = ["BSK", "SK", "SK>BSK", "BSK-On", "Heyelan Is", "Tünel", "Köprü", "Viyadük", "Aç Kapa", "Kavşak", "FSK", "Altgeçit", "Üstgeçit", "Menfez"];
+const DURUM9 = [["eski", "Önceki yıllar"], ["buyil", "Bu yıl biten"], ["calisan", "Çalışılan"], ["hedef", "Hedef"], ["isyok", "İş yok"]];
+const KONUM9 = [["HER", "Her iki"], ["SOL", "Sol"], ["SAG", "Sağ"], ["TY", "TY"]];
+function bosProje9(j){
+  const km = tumKm9(j), a = km.length ? Math.min(...km.map(x => x.a)) : 0, e = km.length ? Math.max(...km.map(x => x.e)) : 1000;
+  return { adi: j.ad, bas: a, bit: Math.max(e, a + 100), basTaraf: "", bitTaraf: "", turler: TURLER9.slice(), kayitlar: [], yerlesimler: [], ilSinirlari: [], musavat: [], istikametBas: "", istikametBit: "", iller: (j.il || []).slice() };
+}
+async function itiDuzenle9(j, kod){
+  await ytOku9();
+  if(!YT9) YT9 = { tarih: null, ad: "", raw: { veriler: {} }, duz: {}, yeni: {} };
+  let yeni = false;
+  if(!kod){ kod = "T" + String(j.id).replace(/[^\w]/g, "").slice(-10) + Date.now().toString(36).slice(-3); yeni = true; }
+  const ilk = ytProje9(kod);
+  const P = JSON.parse(JSON.stringify(ilk || bosProje9(j)));
+  P.kayitlar = (P.kayitlar || []).filter(r => !r._km9);
+  const ov = document.createElement("div"); ov.className = "itd9"; ov.id = "itd9";
+  ov.innerHTML = `<div class="itd9h"><button type="button" data-itd9kapat>${IK("geri")}</button><div><b>${yeni ? "İtinerer oluştur" : "İtinereri düzenle"}</b><small>${esc(j.ad)}</small></div><button type="button" class="kyd" data-itd9kaydet>Kaydet</button></div>
+<div class="itd9o" id="itd9o"><div class="itd9oi" id="itd9oi"></div></div>
+<div class="itd9g" id="itd9g"></div>`;
+  document.body.appendChild(ov);
+  history.pushState({ itd9: 1 }, "");
+  const $ = s => ov.querySelector(s);
+  let zam = 0, degisti = false;
+  const onizle = () => { clearTimeout(zam); zam = setTimeout(async () => {
+    try{ const q = JSON.parse(JSON.stringify(P)); q.kayitlar = q.kayitlar.concat(kmKayitlar9(j, q)); const s = await ytCiz9({ [kod]: q }); const o = s.out[kod];
+      const host = $("#itd9oi"); if(!host.shadowRoot) host.attachShadow({ mode: "open" });
+      host.shadowRoot.innerHTML = `<style>${String(s.css || "").replace(/:root/g, ":host")} :host{display:block}.iti-wrap{border:none!important;margin:0!important;padding:0!important;overflow:visible!important}.iti-wrap svg{display:block;max-width:none!important;height:200px!important;width:auto!important}</style>${o && !o.hata ? o.html : `<p style="padding:12px;color:#b91c1c">${esc(o ? o.hata : "çizilemedi")}</p>`}`;
+      try{ itiDuzelt9(host.shadowRoot, j); }catch(_){}
+    }catch(e){ $("#itd9oi").textContent = e.message || "Önizleme yok"; }
+  }, 350); };
+  const kmIn = (id, v) => `<input id="${id}" inputmode="numeric" value="${esc(v === null || v === undefined || v === "" ? "" : mKm9(v))}" placeholder="12+500">`;
+  const ciz = () => {
+    $("#itd9g").innerHTML = `<div class="itd9b"><label>Proje adı</label><input id="itpA" value="${esc(P.adi || "")}">
+<div class="ik2"><div><label>Başlangıç km</label>${kmIn("itpB", P.bas)}</div><div><label>Bitiş km</label>${kmIn("itpE", P.bit)}</div></div>
+<div class="ik2"><div><label>Başlangıç istikameti</label><input id="itpIB" value="${esc(P.istikametBas || "")}" placeholder="ör. batı"></div><div><label>Bitiş istikameti</label><input id="itpIE" value="${esc(P.istikametBit || "")}" placeholder="ör. doğu"></div></div></div>
+<div class="itd9s"><b>Kayıtlar <small>(biten yol kesimleri KM girişlerinden gelir)</small></b>${P.kayitlar.map((r, i) => `<button type="button" class="itd9r" data-itd9r="${i}"><span><b>${esc(r.sinif)} · ${esc(r.tur)}${r.ad ? " · " + esc(r.ad) : ""}</b><small>${mKm9(r.bas)} – ${mKm9(r.bit)} · ${esc((KONUM9.find(x => x[0] === r.konum) || [0, r.konum])[1])} · ${esc((DURUM9.find(x => x[0] === r.durum) || [0, r.durum])[1])}</small></span><i class="itd9ok">›</i></button>`).join("") || '<p class="gbos">Kayıt yok</p>'}
+<button type="button" class="btn ikinci" data-itd9ekle>＋ Kayıt ekle</button></div>
+${["yerlesimler:Yerleşimler", "ilSinirlari:İl sınırları"].map(x => { const [k, ad] = x.split(":"); return `<div class="itd9s"><b>${ad}</b>${(P[k] || []).map((y, i) => `<div class="itd9y"><input data-itd9y="${k}:${i}:ad" value="${esc(y.ad || "")}" placeholder="Ad"><input data-itd9y="${k}:${i}:km" inputmode="numeric" value="${esc(y.km === undefined ? "" : mKm9(y.km))}" placeholder="km"><button type="button" data-itd9ysil="${k}:${i}" aria-label="Sil">✕</button></div>`).join("")}<button type="button" class="btn ikinci" data-itd9yekle="${k}">＋ Ekle</button></div>`; }).join("")}
+${ilk && !yeni ? `<button type="button" class="itd9sil" data-itd9tumsil>Telefondaki düzenlemeyi geri al</button>` : ""}`;
+  };
+  const kayitForm = i => {
+    const r = i === null ? { sinif: "BY", byTip: "2x2", tyTip: "", tur: "Köprü", altTur: "", konum: "HER", durum: "isyok", bas: P.bas, bit: P.bas, ad: "" } : { ...P.kayitlar[i] };
+    const ch = (ad, liste, sec) => `<div class="ch">${liste.map(([v, t]) => `<button type="button" data-${ad}="${esc(v)}"${v === sec ? ' class="on"' : ""}>${esc(t)}</button>`).join("")}</div>`;
+    const s = altSayfa(IK("iti"), i === null ? "Kayıt ekle" : "Kaydı düzenle", esc(j.ad), `<form class="kf9" id="itk9" autocomplete="off">
+<label>Sınıf</label>${ch("ks", [["BY", "BY"], ["TY", "TY"]], r.sinif)}
+<label>Tip</label><input id="itkT" value="${esc(r.sinif === "TY" ? r.tyTip || "" : r.byTip || "")}" placeholder="2x2, 2x1, Çift…">
+<label>Tür</label>${ch("kt", TURLER9.map(t => [t, t]), r.tur)}
+<label>Taraf</label>${ch("kk", KONUM9, r.konum)}
+<label>Durum</label>${ch("kd", DURUM9, r.durum)}
+<div class="ik2"><div><label>Başlangıç km</label>${kmIn("itkB", r.bas)}</div><div><label>Bitiş km</label>${kmIn("itkE", r.bit)}</div></div>
+<label>Ad <small class="kk9">(isteğe bağlı, ör. köprü adı)</small></label><input id="itkA" value="${esc(r.ad || "")}">
+<button class="ok9" type="submit">${i === null ? "Ekle" : "Kaydet"}</button>${i === null ? "" : `<button type="button" class="itd9sil" data-itksil>Kaydı sil</button>`}</form>`);
+    const f = s.querySelector("#itk9");
+    f.addEventListener("click", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
+      if(b.hasAttribute("data-itksil")){ P.kayitlar.splice(i, 1); degisti = true; kapatAlt(); ciz(); onizle(); return; }
+      ["ks", "kt", "kk", "kd"].forEach(a => { if(b.dataset[a] !== undefined){ b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); } }); });
+    ["#itkB", "#itkE"].forEach(q => f.querySelector(q).addEventListener("input", e => kmBicim9(e.target)));
+    f.addEventListener("submit", e => { e.preventDefault();
+      const sec = a => (f.querySelector(`[data-${a}].on`) || {}).dataset;
+      const sinif = sec("ks").ks, b = kmM9(f.querySelector("#itkB").value), en = kmM9(f.querySelector("#itkE").value);
+      if(b === null){ bildir("Başlangıç km'sini yazın"); return; }
+      const tip = f.querySelector("#itkT").value.trim();
+      const yeniR = { ...r, sinif, byTip: sinif === "BY" ? tip : "", tyTip: sinif === "TY" ? tip : "", tur: sec("kt").kt, konum: sec("kk").kk, durum: sec("kd").kd, bas: Math.min(b, en === null ? b : en), bit: Math.max(b, en === null ? b : en), ad: f.querySelector("#itkA").value.trim() };
+      if(i === null) P.kayitlar.push(yeniR); else P.kayitlar[i] = yeniR;
+      P.kayitlar.sort((x, y) => x.bas - y.bas);
+      degisti = true; kapatAlt(); ciz(); onizle(); });
+  };
+  const kapat = async () => {
+    if(degisti){ const ok = await onay9("Değişiklikler kaydedilmedi", "Çıkılsın mı?", [{ t: "Vazgeç", v: false }, { t: "Kaydetmeden çık", v: true, ana: 1, tehlike: 1 }]); if(!ok) return; }
+    ov.remove(); if(history.state && history.state.itd9) history.back();
+  };
+  ov.addEventListener("input", e => {
+    const t = e.target; degisti = true;
+    if(t.id === "itpA") P.adi = t.value;
+    else if(t.id === "itpIB") P.istikametBas = t.value;
+    else if(t.id === "itpIE") P.istikametBit = t.value;
+    else if(t.id === "itpB" || t.id === "itpE"){ kmBicim9(t); const v = kmM9(t.value); if(v !== null) P[t.id === "itpB" ? "bas" : "bit"] = v; }
+    else if(t.dataset.itd9y){ const [k, i, a] = t.dataset.itd9y.split(":"); if(a === "km"){ kmBicim9(t); const v = kmM9(t.value); if(v !== null) P[k][+i].km = v; } else P[k][+i].ad = t.value; }
+    else return;
+    onizle();
+  });
+  ov.addEventListener("click", async e => {
+    const b = e.target.closest("button"); if(!b) return;
+    if(b.hasAttribute("data-itd9kapat")){ kapat(); return; }
+    if(b.dataset.itd9r !== undefined){ kayitForm(+b.dataset.itd9r); return; }
+    if(b.hasAttribute("data-itd9ekle")){ kayitForm(null); return; }
+    if(b.dataset.itd9yekle){ const k = b.dataset.itd9yekle; P[k] = (P[k] || []).concat({ ad: "", km: P.bas }); degisti = true; ciz(); return; }
+    if(b.dataset.itd9ysil){ const [k, i] = b.dataset.itd9ysil.split(":"); P[k].splice(+i, 1); degisti = true; ciz(); onizle(); return; }
+    if(b.hasAttribute("data-itd9tumsil")){
+      const ok = await onay9("Telefondaki düzenleme geri alınsın mı?", "İtinerer Yol Takip dosyasındaki hâline döner.", [{ t: "Vazgeç", v: false }, { t: "Geri al", v: true, ana: 1, tehlike: 1 }]); if(!ok) return;
+      const once = YT9.duz[kod] || null; delete YT9.duz[kod]; await ytYaz9();
+      await itiDegisiklik9(j, kod, once, null); ov.remove(); if(history.state && history.state.itd9) history.back(); bildir("Yol Takip hâline döndü"); return;
+    }
+    if(b.hasAttribute("data-itd9kaydet")){
+      if(!(P.bit > P.bas)){ bildir("Bitiş km'si başlangıçtan büyük olmalı"); return; }
+      P.kayitlar = P.kayitlar.filter(r => !r._km9);
+      const once = YT9.duz[kod] ? JSON.parse(JSON.stringify(YT9.duz[kod])) : null;
+      YT9.duz[kod] = JSON.parse(JSON.stringify(P));
+      if(yeni) YT9.yeni[kod] = String(j.id);
+      await ytYaz9(); ytBagla9();
+      await itiDegisiklik9(j, kod, once, YT9.duz[kod]);
+      degisti = false; ov.remove(); if(history.state && history.state.itd9) history.back();
+      bildir(yeni ? "İtinerer oluşturuldu" : "İtinerer kaydedildi");
+      try{ yenidenKur9(); }catch(_){}
+    }
+  });
+  window.addEventListener("popstate", function pp(){ if(document.getElementById("itd9")){ ov.remove(); } window.removeEventListener("popstate", pp); });
+  ciz(); onizle();
+}
+// itinerer değişikliği listeye girer (Veri Aktar ile programa gider)
+async function itiDegisiklik9(j, kod, onceki, sonraki){
+  await hazir9;
+  const e = { id: "d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), t: Date.now(), tip: "iti", is: String(j.id), kod, onceki, sonraki, yeni: !!(YT9.yeni && YT9.yeni[kod]) };
+  GUN9.push(e); await gunKaydet9(); guncelYaz9();
+}
+const _tanim99 = tanim9;
+tanim9 = function(e){
+  if(e && e.tip === "iti"){ const j = ISLER.find(x => String(x.id) === String(e.is)); return [e.sonraki ? (e.yeni && !e.onceki ? "İtinerer oluşturuldu" : "İtinerer düzenlendi") : "İtinerer düzenlemesi geri alındı", (j ? j.ad : "") + " · " + e.kod]; }
+  return _tanim99.apply(this, arguments);
+};
+const _geriAl99 = geriAl9;
+geriAl9 = async function(id){
+  const e = GUN9.find(x => x.id === id);
+  if(e && e.tip === "iti"){
+    await ytOku9(); if(!YT9) return;
+    if(e.onceki) YT9.duz[e.kod] = e.onceki; else { delete YT9.duz[e.kod]; if(YT9.yeni && YT9.yeni[e.kod] && !e.onceki){ delete YT9.yeni[e.kod]; } }
+    await ytYaz9();
+    GUN9 = GUN9.filter(x => x.id !== id); await gunKaydet9(); guncelYaz9();
+    try{ yenidenKur9(); }catch(_){}
+    bildir("Geri alındı"); return;
+  }
+  return _geriAl99.apply(this, arguments);
+};
+// İtinerer düğmesi: düzenleme modunda itinereri olmayan işte "İtinerer oluştur"; görüntüleyicide "Düzenle"
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-itd9ac]"); if(!b) return; e.stopPropagation();
+  const j = ISLER.find(x => String(x.id) === b.dataset.itd9ac); if(!j) return;
+  const kod = b.dataset.kod || null; if(document.getElementById("itiv")) itiKapat(); itiDuzenle9(j, kod);
+}, true);
+const _itiCiz99 = itiCiz;
+itiCiz = function(){
+  const r = _itiCiz99.apply(this, arguments);
+  try{
+    const v = document.getElementById("itiv"), bar = v && v.querySelector(".hatbar"); if(!bar) return r;
+    bar.querySelector("[data-itd9ac]")?.remove();
+    if(DUZ9 && YON9){ const k = itiDurum.kodlar[itiDurum.i], j = itiIs9(k) || ISLER.find(x => ytKodlar9(x).includes(k));
+      if(j){ const d = document.createElement("button"); d.className = "lj"; d.dataset.itd9ac = j.id; if(ytProje9(k) || (YT9 && YT9.yeni && YT9.yeni[k])) d.dataset.kod = k; else d.dataset.kod = "";
+        d.innerHTML = IK("kalem") + (ytProje9(k) ? "Düzenle" : "Yol Takip verisi yok"); if(!ytProje9(k)){ d.disabled = true; d.style.opacity = ".5"; }
+        bar.insertBefore(d, bar.querySelector("[data-lejant]")); } }
+  }catch(_){}
+  return r;
+};
+// açılışta bu telefonun Yol Takip verisi okunur, yeni itinererler işlere bağlanır
+hazir9.then(() => ytOku9()).then(() => { if(YT9 && D){ ytBagla9(); try{ yenidenKur9(); }catch(_){} } }).catch(() => {});
+
+// düzenleme modunda itinereri olmayan işte İtinerer düğmesi "oluştur" olarak açılır
+const _daDugmeler99 = daDugmeler;
+daDugmeler = function(j){ let h = _daDugmeler99.apply(this, arguments); if(DUZ9 && YON9 && j && !itiVar(j)) h = h.replace(/class="da it bos" data-yok="İtinerer"/, `class="da it" data-itd9ac="${esc(j.id)}" data-kod=""`); return h; };
+
 </script>
 </body>
 </html>

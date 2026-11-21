@@ -10130,6 +10130,143 @@ document.addEventListener("click", async e => {
   st.textContent = `.fh9{display:inline-flex;border:1px solid #cbd5e1;border-radius:9px;overflow:hidden}.fh9 button{border:0;background:#fff;color:#475569;font:inherit;font-size:13px;font-weight:700;padding:5px 14px}.fh9 button.on{background:#ea580c;color:#fff}
 html.dark .fh9{border-color:#334155}html.dark .fh9 button{background:#0f172a;color:#cbd5e1}html.dark .fh9 button.on{background:#ea580c;color:#fff}`;
   document.head.appendChild(st); })();
+
+// ---------- v117: Anasayfa "Toplam İş" / "Fiziksel Hedefli" basılı tut → kaydırmalı iş kartları ----------
+// İşler Genel Durum'daki il sırasıyla (il içinde alfabetik); birden fazla ildeki işler en sonda, etikette illerin adları.
+// Kartın üstünde işin PDF'teki harita resmi (yalnız ekrandaki ve yanındaki kartlar için hazırlanır).
+const KR9 = { resim: new Map() };
+function krSira9(L){
+  const ix = il => { const i = IL_SIRA.indexOf(il); return i < 0 ? 999 : i; };
+  const iller = j => (j.il || []).slice().sort((a, b) => ix(a) - ix(b) || a.localeCompare(b, "tr"));
+  return L.slice().sort((a, b) => {
+    const ca = (a.il || []).length > 1 ? 1 : 0, cb = (b.il || []).length > 1 ? 1 : 0; if(ca !== cb) return ca - cb;
+    const ia = iller(a), ib = iller(b);
+    for(let k = 0; k < Math.max(ia.length, ib.length); k++){ const d = ix(ia[k]) - ix(ib[k]); if(d) return d; if(ia[k] !== ib[k]) return String(ia[k] || "").localeCompare(String(ib[k] || ""), "tr"); }
+    return String(a.ad).localeCompare(String(b.ad), "tr");
+  }).map(j => ({ j, il: iller(j).join(" · ") }));
+}
+function krKart9(o, i){
+  const j = o.j, cs = j.cats || [];
+  const bar = cs.map(c => { const yok = !(c.h > 0), p = yok ? 100 : Math.min(100, yuzde(c.b, c.h));
+    return `<div class="kqb7"><div class="kqs7"><b>${esc(c.ad)}</b><i data-p="${yok ? -1 : yuzde(c.b, c.h)}">${yok ? "–" : "%0"}</i></div><div class="kqc7${yok ? " yok" : ""}"><i data-w="${p}"></i></div><small>Biten ${f2(c.b)} · Hedef ${c.h > 0 ? f2(c.h) : "–"} km</small></div>`; }).join("") || '<div class="kqbos7">Bu yıl için km bilgisi yok.</div>';
+  const fh = fhYok9(j) ? '<span class="kqf7 yok">Fiziksel hedef yok</span>' : '<span class="kqf7">Fiziksel hedef var</span>';
+  return `<div class="kqk7" data-kr9="${i}"><div class="kqh7"><div class="kqz7"><span>${esc(o.il || "")}</span></div><em class="kqil7">${esc(o.il || "–")}</em></div>
+<div class="kqg7"><b class="kqad7">${esc(j.ad)}</b><div class="kqme7">${esc(j.firma || "–")}${j.sef ? ` · ${esc(j.sef)}` : ""}</div>${fh}${bar}<div class="kqdt7">İşin detayı için dokunun ›</div></div></div>`;
+}
+async function krResim9(j){
+  if(KR9.resim.has(j.id)) return KR9.resim.get(j.id);
+  const soz = (async () => {
+    const r = await haritaResmiAl(j); if(!r) return null;
+    const im = await new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = r; }); if(!im) return null;
+    const W = im.width, H = im.height, m = kirmiziMerkez(im) || [W / 2, H / 2];
+    const kw = Math.min(W, H * 16 / 9), kh = kw * 9 / 16;
+    const kx = Math.min(Math.max(m[0] - kw / 2, 0), W - kw), ky = Math.min(Math.max(m[1] - kh / 2, 0), H - kh);
+    const c = document.createElement("canvas"); c.width = 720; c.height = 405;
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, 720, 405); g.drawImage(im, kx, ky, kw, kh, 0, 0, 720, 405);
+    return c.toDataURL("image/jpeg", 0.85);
+  })().catch(() => null);
+  KR9.resim.set(j.id, soz); return soz;
+}
+function krAc9(tur, kutu){
+  document.getElementById("isk117")?.remove();
+  const L = krSira9(tur === "fh" ? ISLER.filter(j => j.fh) : ISLER);
+  if(!L.length){ bildir(tur === "fh" ? "Fiziksel hedefli iş yok" : "İş yok"); return; }
+  const ov = document.createElement("div"); ov.id = "isk117"; ov.className = "isk117";
+  ov.innerHTML = `<div class="kqu7"><div><b>${tur === "fh" ? "Fiziksel Hedefli" : "Toplam İş"}</b><small>${D.yil} · ${L.length} iş</small></div><button type="button" data-krk9 aria-label="Kapat">✕</button></div>
+<div class="kqt7" id="kqt7">${L.map(krKart9).join("")}</div><div class="kqa7"><span id="kqn7">1 / ${L.length}</span><div class="kqi7"><i id="kqp7"></i></div></div>`;
+  document.body.appendChild(ov);
+  const tr = ov.querySelector("#kqt7"), kartlar = [...tr.children];
+  // açılış: basılan kutudan büyüyerek
+  if(kutu){ const r = kutu.getBoundingClientRect(); tr.style.transformOrigin = `${r.left + r.width / 2}px ${r.top + r.height / 2 - tr.offsetTop}px`; }
+  const t0 = Date.now();
+  ov.dataset.kutu = tur;
+  requestAnimationFrame(() => ov.classList.add("ac"));
+  let simdi = -1;
+  const yerles = () => {
+    const vw = tr.clientWidth, mx = tr.scrollLeft + vw / 2;
+    let en = 0, enD = 1e9;
+    kartlar.forEach((k, i) => { const c = k.offsetLeft + k.offsetWidth / 2, d = (c - mx) / k.offsetWidth, a = Math.min(1, Math.abs(d));
+      if(Math.abs(d) < 2.2){ k.style.transform = `scale(${(1 - a * 0.08).toFixed(3)})`; k.style.opacity = (1 - a * 0.45).toFixed(3); }
+      if(Math.abs(d) < enD){ enD = Math.abs(d); en = i; } });
+    if(en !== simdi){ simdi = en; aktif(en); }
+  };
+  const aktif = i => {
+    document.getElementById("kqn7").textContent = `${i + 1} / ${L.length}`;
+    document.getElementById("kqp7").style.width = `${((i + 1) / L.length) * 100}%`;
+    kartlar.forEach((k, n) => { if(n !== i) k.classList.remove("on"); });
+    const k = kartlar[i]; if(!k.classList.contains("on")){ k.classList.add("on");
+      k.querySelectorAll(".kqc7 i").forEach(b => { b.style.width = "0%"; requestAnimationFrame(() => requestAnimationFrame(() => { b.style.width = b.dataset.w + "%"; })); });
+      k.querySelectorAll(".kqs7 i[data-p]").forEach(x => { const p = +x.dataset.p; if(p < 0) return; const t0 = performance.now();
+        const f = t => { const q = Math.min(1, (t - t0) / 600); x.textContent = "%" + Math.round(p * (1 - Math.pow(1 - q, 3))); if(q < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); }); }
+    for(let n = Math.max(0, i - 2); n <= Math.min(L.length - 1, i + 2); n++){ const kz = kartlar[n].querySelector(".kqz7"); if(kz.dataset.y) continue; kz.dataset.y = "1";
+      krResim9(L[n].j).then(u => { if(u){ const im = new Image(); im.alt = ""; im.onload = () => { kz.appendChild(im); requestAnimationFrame(() => im.classList.add("g")); }; im.src = u; } }); }
+  };
+  let ra = 0; tr.addEventListener("scroll", () => { if(!ra) ra = requestAnimationFrame(() => { ra = 0; yerles(); }); }, { passive: true });
+  yerles();
+  const kapat = () => { if(ov.classList.contains("kap")) return; ov.classList.remove("ac"); ov.classList.add("kap"); setTimeout(() => ov.remove(), 300); };
+  ov.addEventListener("click", e => {
+    if(Date.now() - t0 < 450) return;   // basılı tutmanın bırakılması kapatmasın
+    if(e.target.closest("[data-krk9]") || e.target === ov || e.target === tr || e.target.classList.contains("kqa7")){ kapat(); return; }
+    const k = e.target.closest("[data-kr9]"); if(!k) return;
+    const i = +k.dataset.kr9;
+    if(i !== simdi){ tr.scrollTo({ left: k.offsetLeft - (tr.clientWidth - k.offsetWidth) / 2, behavior: "smooth" }); return; }
+    const id = L[i].j.id; ov.remove(); isAc(id);
+  });
+}
+// basılı tutma (yaklaşık yarım saniye); kaydırırken iptal
+(() => {
+  let t = null, bas = null, el = null;
+  const iptal = () => { clearTimeout(t); t = null; if(el) el.classList.remove("bas9"); el = null; };
+  document.addEventListener("pointerdown", e => {
+    const k = e.target.closest && e.target.closest(".h5 .hs > div"); if(!k || !D || D.yetki === "kmz") return;
+    iptal(); el = k; bas = { x: e.clientX, y: e.clientY }; k.classList.add("bas9");
+    const tur = k.parentNode.firstElementChild === k ? "tum" : "fh";
+    t = setTimeout(() => { const kutu = el; iptal(); krAc9(tur, kutu); }, 480);
+  }, true);
+  document.addEventListener("pointermove", e => { if(t && bas && Math.hypot(e.clientX - bas.x, e.clientY - bas.y) > 9) iptal(); }, true);
+  ["pointerup", "pointercancel", "scroll"].forEach(ev => document.addEventListener(ev, () => { if(t) iptal(); }, true));
+})();
+(() => { const st = document.createElement("style");
+  st.textContent = `
+.h5 .hs > div{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; transition:transform .18s ease; }
+.h5 .hs > div.bas9{ transform:scale(.95); }
+.isk117{ position:fixed; inset:0; z-index:400; background:rgba(15,23,42,0); -webkit-backdrop-filter:blur(0); backdrop-filter:blur(0); transition:background .3s ease, backdrop-filter .3s ease, -webkit-backdrop-filter .3s ease; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom); }
+.isk117.ac{ background:rgba(15,23,42,.72); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+.isk117 .kqu7{ display:flex; align-items:center; justify-content:space-between; padding:14px 18px 6px; color:#fff; opacity:0; transform:translateY(-8px); transition:opacity .3s ease .05s, transform .3s ease .05s; }
+.isk117.ac .kqu7{ opacity:1; transform:none; }
+.isk117 .kqu7 b{ display:block; font-size:18px; font-weight:800; } .isk117 .kqu7 small{ font-size:12.5px; color:#cbd5e1; font-weight:600; }
+.isk117 .kqu7 button{ width:38px; height:38px; border-radius:50%; border:0; background:rgba(255,255,255,.14); color:#fff; font-size:17px; }
+.isk117 .kqt7{ position:relative; flex:1; display:flex; align-items:center; gap:12px; overflow-x:auto; overflow-y:hidden; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; padding:0 9vw; scrollbar-width:none; overscroll-behavior:contain;
+  opacity:0; transform:scale(.35); transition:transform .38s cubic-bezier(.2,.85,.25,1), opacity .25s ease; }
+.isk117 .kqt7::-webkit-scrollbar{ display:none; }
+.isk117.ac .kqt7{ opacity:1; transform:none; }
+.isk117.kap .kqt7{ opacity:0; transform:scale(.35); transition:transform .28s cubic-bezier(.4,0,.8,.4), opacity .25s ease .03s; }
+.isk117.kap{ background:rgba(15,23,42,0); }
+.kqk7{ flex:0 0 82vw; max-width:460px; max-height:calc(100% - 24px); scroll-snap-align:center; scroll-snap-stop:normal; background:#fff; border-radius:20px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 18px 40px rgba(0,0,0,.35); will-change:transform, opacity; transition:box-shadow .3s ease; }
+.kqk7.on{ box-shadow:0 24px 54px rgba(0,0,0,.45); }
+.kqh7{ position:relative; }
+.kqz7{ position:relative; aspect-ratio:16/9; background:linear-gradient(135deg,#1e3a5f,#2c5282 55%,#ea580c 160%); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.kqz7 > span{ color:rgba(255,255,255,.55); font-weight:800; font-size:20px; padding:0 18px; text-align:center; }
+.kqz7 img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; opacity:0; transform:scale(1.04); transition:opacity .4s ease, transform .6s ease; }
+.kqz7 img.g{ opacity:1; transform:none; }
+.kqil7{ position:absolute; left:10px; bottom:10px; right:10px; width:fit-content; max-width:calc(100% - 20px); font-style:normal; background:rgba(15,23,42,.82); color:#fff; font-size:12px; font-weight:800; padding:4px 10px; border-radius:999px; line-height:1.35; overflow-wrap:anywhere; }
+.kqg7{ padding:14px 16px 12px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+.kqad7{ font-size:16.5px; line-height:1.3; color:#0f172a; }
+.kqme7{ font-size:12.5px; color:#475569; font-weight:600; }
+.kqf7{ align-self:flex-start; font-size:11.5px; font-weight:800; color:#15803d; background:#dcfce7; border-radius:999px; padding:3px 9px; }
+.kqf7.yok{ color:#64748b; background:#f1f5f9; }
+.kqb7 .kqs7{ display:flex; justify-content:space-between; font-size:13px; color:#0f172a; } .kqb7 .kqs7 i{ font-style:normal; font-weight:800; color:#ea580c; }
+.kqb7 .kqc7{ height:8px; border-radius:6px; background:#e2e8f0; overflow:hidden; margin:4px 0 3px; } .kqb7 .kqc7 i{ display:block; height:100%; width:0; border-radius:6px; background:linear-gradient(90deg,#f97316,#ea580c); transition:width .7s cubic-bezier(.2,.8,.2,1); }
+.kqb7 .kqc7.yok i{ background:#94a3b8; }
+.kqb7 small{ font-size:11.5px; color:#64748b; font-weight:600; }
+.kqbos7{ font-size:12.5px; color:#64748b; }
+.kqdt7{ font-size:12px; color:#ea580c; font-weight:700; margin-top:2px; }
+.isk117 .kqa7{ display:flex; align-items:center; gap:12px; padding:8px 22px 16px; color:#e2e8f0; font-size:12.5px; font-weight:700; opacity:0; transition:opacity .3s ease .1s; }
+.isk117.ac .kqa7{ opacity:1; }
+.kqi7{ flex:1; height:3px; border-radius:3px; background:rgba(255,255,255,.18); overflow:hidden; } .kqi7 i{ display:block; height:100%; width:0; background:#f97316; transition:width .25s ease; }
+html.dark .kqk7{ background:#0f172a; } html.dark .kqad7{ color:#f1f5f9; } html.dark .kqme7{ color:#94a3b8; } html.dark .kqb7 .kqs7{ color:#e2e8f0; } html.dark .kqb7 .kqc7{ background:#1e293b; } html.dark .kqf7.yok{ background:#1e293b; color:#94a3b8; } html.dark .kqf7{ background:#14532d; color:#bbf7d0; }
+@media (prefers-reduced-motion: reduce){ .isk117 .kqt7, .kqz7 img, .kqb7 .kqc7 i{ transition:none !important; } }`;
+  document.head.appendChild(st); })();
 </script>
 </body>
 </html>

@@ -800,7 +800,7 @@ html.dark .dn9b{ background:#2a1708; border-color:#9a3412; color:#fdba74; }
 .itd9b, .itd9s{ background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:12px; margin-bottom:10px; }
 .itd9b label{ display:block; font-size:12.5px; font-weight:700; color:#475569; margin:8px 0 4px; }
 .itd9b input, .itd9y input{ width:100%; height:42px; border:1px solid #d6dbe3; border-radius:10px; padding:0 10px; font:inherit; font-size:16px; background:#fff; color:#0f172a; }
-.itd9s > b{ display:block; font-size:14px; margin-bottom:6px; } .itd9s > b small{ font-weight:600; color:#94a3b8; font-size:11.5px; }
+.itd9s > b{ display:block; font-size:14px; margin-bottom:6px; } .itd9uy{ font-style:normal; font-size:11px; font-weight:700; color:#b45309; background:#fef3c7; border-radius:6px; padding:1px 6px; margin-left:4px; } .itd9s > b small{ font-weight:600; color:#94a3b8; font-size:11.5px; }
 .itd9r{ display:flex; width:100%; align-items:center; gap:8px; text-align:left; background:none; border:0; border-top:1px solid #f1f5f9; padding:9px 2px; font:inherit; color:inherit; }
 .itd9r span{ flex:1; min-width:0; } .itd9r b{ display:block; font-size:13.5px; } .itd9r small{ display:block; font-size:12px; color:#64748b; }
 .itd9ok{ font-style:normal; font-size:20px; color:#94a3b8; }
@@ -8993,11 +8993,14 @@ function farklar9(j){
       if(ust.every(r => r.durum !== dz)) F.push({ tip: "yil", kod, x, m: `${ad} · itinererde ${ust[0].durum === "buyil" ? "Bu yıl biten" : "Önceki yıllar"}` });
     });
   });
+  try{ ytKodlar9(j).forEach(kod => { const p = ytProje9(kod); if(!p || !Array.isArray(p.yollar) || p.yollar.length < 2) return;
+    kmzYolOneri9(j, p).forEach(o => o.satir.forEach(t => F.push({ tip: "yol", kod, m: t }))); }); }catch(_){}
   return F;
 }
-const FARKAD9 = { kmyok: "İtinererde biten, KM girişi yok", itiyok: "KM girişi var, Yol Takip'te çizili değil", std: "Standart farkı", taraf: "Taraf farkı", taraf0: "Yarısı · taraf belirtilmemiş", yil: "Yıl farkı" };
+const FARKAD9 = { yol: "Yol bağlantısı KMZ'den farklı", kmyok: "İtinererde biten, KM girişi yok", itiyok: "KM girişi var, Yol Takip'te çizili değil", std: "Standart farkı", taraf: "Taraf farkı", taraf0: "Yarısı · taraf belirtilmemiş", yil: "Yıl farkı" };
 async function karsilastir9(){
   await ytOku9(); if(!YT9){ bildir("Önce Yol Takip verisini yükleyin"); return; }
+  try{ await agirHazir(); }catch(_){}
   ytBagla9();
   const L = ISLER.filter(j => ytKodlar9(j).length).map(j => ({ j, F: farklar9(j) })).sort((a, b) => (b.F.length > 0) - (a.F.length > 0) || String(a.j.ad).localeCompare(String(b.j.ad), "tr"));
   const n = L.filter(x => x.F.length).length;
@@ -9077,6 +9080,9 @@ async function itiDuzenle9(j, kod){
   const P = JSON.parse(JSON.stringify(ilk || bosProje9(j)));
   P.kayitlar = (P.kayitlar || []).filter(r => !r._km9); P.musavat = P.musavat || [];
   const oneri = yeni && !ilk ? kmzOneri9(j, P) : 0;
+  try{ await agirHazir(); }catch(_){}
+  let yolBel = null;
+  const yolOn = () => { const k = JSON.stringify(P.yollar || []); if(yolBel && yolBel.k === k) return yolBel.v; let v = []; try{ v = kmzYolOneri9(j, P); }catch(_){} yolBel = { k, v }; return v; };
   const ov = document.createElement("div"); ov.className = "itd9"; ov.id = "itd9";
   ov.innerHTML = `<div class="itd9h"><button type="button" data-itd9kapat>${IK("geri")}</button><div><b>${yeni ? "İtinerer oluştur" : "İtinereri düzenle"}</b><small>${esc(j.ad)}</small></div><button type="button" class="kyd" data-itd9kaydet>Kaydet</button></div>
 <div class="itd9o" id="itd9o"><div class="itd9oi" id="itd9oi"></div></div>
@@ -9098,6 +9104,8 @@ async function itiDuzenle9(j, kod){
 <div class="ik2"><div><label>Başlangıç km</label>${kmIn("itpB", P.bas)}</div><div><label>Bitiş km</label>${kmIn("itpE", P.bit)}</div></div>
 <div class="ik2"><div><label>Başlangıç istikameti</label><input id="itpIB" value="${esc(P.istikametBas || "")}" placeholder="ör. batı"></div><div><label>Bitiş istikameti</label><input id="itpIE" value="${esc(P.istikametBit || "")}" placeholder="ör. doğu"></div></div></div>
 ${oneri ? `<div class="itd9not">KMZ'den önerildi: başlangıç / bitiş, km eşitlikleri ve adı yapı olan noktalar. Yapıların km'leri yaklaşıktır (en yakın KM etiketlerinden); kontrol edin, istemediğinizi silin.</div>` : ""}
+${Array.isArray(P.yollar) && P.yollar.length > 1 ? (() => { const O = yolOn(); return `<div class="itd9s"><b>Yollar <small>(birleşik itinerer)</small></b>${O.length ? `<div class="itd9not">KMZ'ye göre ${O.length} farklılık var. Yola dokunup "KMZ'ye göre doldur" diyebilirsiniz.</div>` : ""}${P.yollar.map((y, i) => { const o = O.filter(x => x.i === i);
+  return `<button type="button" class="itd9r" data-itd9yol="${i}"><span><b>${esc(y.adi || y.id || "Yol " + (i + 1))}${i ? " · " + esc(SEKIL9[y.sekil] || "Ayrı") : " · Ana yol"}${o.length ? ' <em class="itd9uy">KMZ farkı</em>' : ""}</b><small>${mKm9(y.bas)} – ${mKm9(y.bit)}${i && y.sekil && y.sekil !== "ayri" ? ` · ${esc(yolAd9(P, y.bagliYolId))} ${mKm9(y.kavsakKm)}${(y.sekil === "T" || y.sekil === "+") ? " × bu yol " + (y.dalKm == null ? "–" : mKm9(y.dalKm)) : ""}` : ""}</small></span><i class="itd9ok">›</i></button>`; }).join("")}</div>`; })() : ""}
 <div class="itd9s"><b>Kayıtlar <small>(biten yol kesimleri KM girişlerinden gelir)</small></b>${P.kayitlar.map((r, i) => `<button type="button" class="itd9r" data-itd9r="${i}"><span><b>${esc(r.sinif)} · ${esc(r.tur)}${r.ad ? " · " + esc(r.ad) : ""}</b><small>${mKm9(r.bas)} – ${mKm9(r.bit)} · ${esc((KONUM9.find(x => x[0] === r.konum) || [0, r.konum])[1])} · ${esc((DURUM9.find(x => x[0] === r.durum) || [0, r.durum])[1])}</small></span><i class="itd9ok">›</i></button>`).join("") || '<p class="gbos">Kayıt yok</p>'}
 <button type="button" class="btn ikinci" data-itd9ekle>＋ Kayıt ekle</button></div>
 <div class="itd9s"><b>Km eşitlikleri <small>(İleri = Geri)</small></b>${(P.musavat || []).map((m, i) => `<div class="itd9y"><input data-itd9m="${i}:ileri" inputmode="numeric" value="${esc(m.ileri || "")}" placeholder="İleri"><input data-itd9m="${i}:geri" inputmode="numeric" value="${esc(m.geri || "")}" placeholder="Geri"><button type="button" data-itd9msil="${i}" aria-label="Sil">✕</button></div>`).join("")}<button type="button" class="btn ikinci" data-itd9mekle>＋ Ekle</button></div>
@@ -9131,6 +9139,59 @@ ${ilk && !yeni ? `<button type="button" class="itd9sil" data-itd9tumsil>Telefond
       P.kayitlar.sort((x, y) => x.bas - y.bas);
       degisti = true; kapatAlt(); ciz(); onizle(); });
   };
+  const yolForm = i => {
+    const y = { ...P.yollar[i] }, ana = i === 0, O = yolOn().filter(x => x.i === i);
+    const ch = (ad, liste, sec) => `<div class="ch">${liste.map(([v, t]) => `<button type="button" data-${ad}="${esc(v)}"${v === sec ? ' class="on"' : ""}>${esc(t)}</button>`).join("")}</div>`;
+    const digerler = P.yollar.map((q, k) => ({ q, k })).filter(o => o.k !== i);
+    const s = altSayfa(IK("iti"), esc(y.adi || y.id || "Yol"), esc(j.ad), `<form class="kf9" id="ity9" autocomplete="off">
+${O.length ? `<div class="itd9not"><b>KMZ'ye göre:</b><br>${O.map(o => esc(o.m)).join("<br>")}<button type="button" class="btn ikinci" data-ityoneri style="margin-top:8px;width:100%">KMZ'ye göre doldur</button></div>` : ""}
+<label>Yol adı</label><input id="ityA" value="${esc(y.adi || "")}">
+<div class="ik2"><div><label>Başlangıç km</label>${kmIn("ityB", y.bas)}</div><div><label>Bitiş km</label>${kmIn("ityE", y.bit)}</div></div>
+${ana ? "" : `<label>Bağlantı şekli</label>${ch("ys", [["ayri", "Ayrı"], ["L", "L"], ["T", "T"], ["+", "+ (kesişim)"]], y.sekil || "ayri")}
+<div id="ityBag">${digerler.length > 1 ? `<label>Hangi yola bağlı</label>${ch("yb", digerler.map(o => [o.q.id, o.q.adi || o.q.id]), y.bagliYolId || P.yollar[0].id)}` : ""}
+<div class="ik2"><div><label>Bağlandığı yolda km</label>${kmIn("ityK", y.kavsakKm)}</div><div id="ityDk"><label>Bu yolda km <small class="kk9">(T / +)</small></label>${kmIn("ityD", y.dalKm)}</div></div>
+<label>Çizimde</label>${ch("yt", [["alt", "Altına"], ["ust", "Üstüne"]], y.taraf === "ust" ? "ust" : "alt")}</div>`}
+<button class="ok9" type="submit">Kaydet</button></form>`);
+    const f = s.querySelector("#ity9");
+    const goster = () => { const sk = (f.querySelector("[data-ys].on") || {}).dataset; const v = sk ? sk.ys : "ayri";
+      const bg = f.querySelector("#ityBag"); if(bg) bg.style.display = v === "ayri" ? "none" : "";
+      const dk = f.querySelector("#ityDk"); if(dk) dk.style.visibility = v === "T" || v === "+" ? "" : "hidden"; };
+    f.addEventListener("click", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
+      if(b.hasAttribute("data-ityoneri")){ O.forEach(o => { Object.entries(o.deg).forEach(([k, v]) => {
+          if(k === "bas") f.querySelector("#ityB").value = mKm9(v); else if(k === "bit") f.querySelector("#ityE").value = mKm9(v);
+          else if(k === "kavsakKm") f.querySelector("#ityK").value = mKm9(v); else if(k === "dalKm"){ f.querySelector("#ityD").value = v == null ? "" : mKm9(v); }
+          else if(k === "sekil") f.querySelectorAll("[data-ys]").forEach(x => x.classList.toggle("on", x.dataset.ys === v)); }); });
+        goster(); bildir("KMZ değerleri yazıldı — kontrol edip kaydedin"); return; }
+      ["ys", "yb", "yt"].forEach(a => { if(b.dataset[a] !== undefined) b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); });
+      goster(); });
+    f.querySelectorAll("#ityB,#ityE,#ityK,#ityD").forEach(x => x.addEventListener("input", e => kmBicim9(e.target)));
+    goster();
+    f.addEventListener("submit", e => { e.preventDefault();
+      const b0 = kmM9(f.querySelector("#ityB").value), e0 = kmM9(f.querySelector("#ityE").value);
+      if(b0 === null || e0 === null || !(e0 > b0)){ bildir("Başlangıç ve bitiş km'sini doğru yazın"); return; }
+      const n = { ...y, adi: f.querySelector("#ityA").value.trim() || y.adi, bas: b0, bit: e0 };
+      if(!ana){
+        const sec = a => (f.querySelector(`[data-${a}].on`) || {}).dataset || {};
+        n.sekil = sec("ys").ys || "ayri";
+        if(n.sekil === "ayri"){ n.kavsakKm = null; n.dalKm = null; }
+        else {
+          n.bagliYolId = sec("yb").yb || y.bagliYolId || P.yollar[0].id;
+          const hed = P.yollar.find(q => q.id === n.bagliYolId) || P.yollar[0];
+          const k = kmM9(f.querySelector("#ityK").value);
+          if(k === null){ bildir("Bağlandığı yoldaki km'yi yazın"); return; }
+          if(k < hed.bas - 1 || k > hed.bit + 1){ bildir(`Bağlantı km'si ${hed.adi || hed.id} aralığında olmalı (${mKm9(hed.bas)} – ${mKm9(hed.bit)})`); return; }
+          n.kavsakKm = k;
+          if(n.sekil === "T" || n.sekil === "+"){ const d = kmM9(f.querySelector("#ityD").value);
+            if(d === null){ bildir("Bu yoldaki birleşme km'sini yazın"); return; }
+            if(d < b0 - 1 || d > e0 + 1){ bildir(`Bu yoldaki km ${mKm9(b0)} – ${mKm9(e0)} aralığında olmalı`); return; }
+            n.dalKm = d; } else n.dalKm = null;
+          n.taraf = sec("yt").yt === "ust" ? "ust" : "alt";
+        }
+      }
+      P.yollar[i] = n;
+      P.bas = Math.min(...P.yollar.map(q => +q.bas)); P.bit = Math.max(...P.yollar.map(q => +q.bit));
+      degisti = true; kapatAlt(); ciz(); onizle(); });
+  };
   const kapat = async () => {
     if(degisti){ const ok = await onay9("Değişiklikler kaydedilmedi", "Çıkılsın mı?", [{ t: "Vazgeç", v: false }, { t: "Kaydetmeden çık", v: true, ana: 1, tehlike: 1 }]); if(!ok) return; }
     ov.remove(); if(history.state && history.state.itd9) history.back();
@@ -9150,6 +9211,7 @@ ${ilk && !yeni ? `<button type="button" class="itd9sil" data-itd9tumsil>Telefond
     const b = e.target.closest("button"); if(!b) return;
     if(b.hasAttribute("data-itd9kapat")){ kapat(); return; }
     if(b.dataset.itd9r !== undefined){ kayitForm(+b.dataset.itd9r); return; }
+    if(b.dataset.itd9yol !== undefined){ yolForm(+b.dataset.itd9yol); return; }
     if(b.hasAttribute("data-itd9ekle")){ kayitForm(null); return; }
     if(b.hasAttribute("data-itd9mekle")){ P.musavat.push({ ileri: "", geri: "", aciklama: "" }); degisti = true; ciz(); return; }
     if(b.dataset.itd9msil){ P.musavat.splice(+b.dataset.itd9msil, 1); degisti = true; ciz(); onizle(); return; }
@@ -9623,6 +9685,74 @@ function itiOne9(svg){
   svg.querySelectorAll("text.km-lab").forEach(t => { const b = kutu(t);
     if(kalin.some(o => sonra(t, o.l) && kes(b, o.b))){ if(!t.getAttribute("stroke")){ t.setAttribute("stroke", "#fff"); t.setAttribute("stroke-width", "3"); t.setAttribute("paint-order", "stroke"); } one(t); n++; } });
   return n > 0;
+}
+
+// ---------- v107: itinerer yolları (birleşik itinerer) — KMZ'ye göre öneri ----------
+const SEKIL9 = { ayri: "Ayrı", L: "L bağlantı", T: "T bağlantı", "+": "+ kesişim", ana: "Ana yol" };
+function yolAd9(P, id){ const y = (P.yollar || []).find(q => q.id === id) || (P.yollar || [])[0]; return y ? (y.adi || y.id) : "1. yol"; }
+function kbNokta9(h, c){
+  const K = h.kum, P = h.p, n = K.length; if(c <= 0) return P[0]; if(c >= K[n - 1]) return P[n - 1];
+  let lo = 0, hi = n - 1; while(hi - lo > 1){ const m = (lo + hi) >> 1; if(K[m] <= c) lo = m; else hi = m; }
+  const d = K[hi] - K[lo], t = d > 0 ? (c - K[lo]) / d : 0; return [P[lo][0] + (P[hi][0] - P[lo][0]) * t, P[lo][1] + (P[hi][1] - P[lo][1]) * t];
+}
+// [{i, m: açıklama, satir: [..], deg: {bas, bit, sekil, kavsakKm, dalKm}}] — KMZ'den farklı olan kol yolları.
+// Doğrudan KMZ çizgi parçaları ve km etiketleri kullanılır: her yolun etiketleri (km'si o yolun aralığında olanlar)
+// en yakın çizgi parçasına oturtulur; yolun parçası en çok etiketi taşıyan parçadır.
+function kmzYolOneri9(j, P){
+  if(!j || !j.hat || !Array.isArray(P.yollar) || P.yollar.length < 2) return [];
+  const R = v => Math.round(v);
+  const par = (j.hat.cizgi || []).filter(c => !c.i && c.p && c.p.length > 1).map(c => { const K = [0]; for(let q = 1; q < c.p.length; q++) K.push(K[q - 1] + mesafe6(c.p[q - 1], c.p[q])); return { p: c.p, kum: K }; });
+  if(!par.length) return [];
+  const et = [];
+  (j.hat.nok || []).forEach(n => { const ad = String(n[2] || ""); if(/İ\s*:|G\s*:/i.test(ad)) return; const m = /(-?\d+)\s*\+\s*(\d{3})/.exec(ad); if(!m) return;
+    const v = (+m[1]) * 1000 + (+m[2]) * (m[1].startsWith("-") ? -1 : 1), pt = [n[0], n[1]];
+    let en = null; par.forEach((q, k) => { const r = bkIz9(pt, q.p, q.kum, null); if(!en || r.d < en.d) en = { d: r.d, c: r.c, k }; });
+    if(en && en.d < 60) et.push({ v, p: pt, k: en.k, c: en.c }); });
+  const araliklar = P.yollar.map(y => [+y.bas, +y.bit]);
+  const yolEt = i => { const [b, e] = araliklar[i], pay = Math.max(300, (e - b) * .3);
+    return et.filter(x => x.v >= b - pay && x.v <= e + pay && !araliklar.some((r, k) => k !== i && x.v >= r[0] - 100 && x.v <= r[1] + 100)); };
+  // bir yolun parçası ve o parça üzerinde km fonksiyonu
+  const yolHat = i => { const E = yolEt(i); if(!E.length) return null;
+    const say = {}; E.forEach(x => say[x.k] = (say[x.k] || 0) + 1);
+    const k = +Object.keys(say).sort((a, b) => say[b] - say[a])[0], L = E.filter(x => x.k === k).sort((a, b) => a.c - b.c);
+    const q = par[k], T = q.kum[q.kum.length - 1];
+    const f = c => { if(L.length === 1) return null;
+      let a = L[0], b = L[1]; for(let t = 1; t < L.length; t++){ b = L[t]; a = L[t - 1]; if(c <= L[t].c) break; }
+      const d = b.c - a.c; if(Math.abs(d) < 1) return a.v; return a.v + (b.v - a.v) * (c - a.c) / d; };
+    return { k, q, L, T, f, E }; };
+  const ok = [];
+  P.yollar.forEach((y, i) => {
+    if(i === 0) return;
+    const H = yolHat(i); if(!H || H.L.length < 2) return;
+    const deg = {}, m = [];
+    const lo = R(Math.min(H.f(0), H.f(H.T))), hi = R(Math.max(H.f(0), H.f(H.T)));
+    if(Math.abs(lo - y.bas) > 20 || Math.abs(hi - y.bit) > 20){ deg.bas = lo; deg.bit = hi; m.push(`${y.adi || y.id}: KMZ'de ${mKm9(lo)} – ${mKm9(hi)} (itinererde ${mKm9(y.bas)} – ${mKm9(y.bit)})`); }
+    // bağlandığı yol
+    const hi0 = Math.max(0, P.yollar.findIndex(q => q.id === (y.bagliYolId || P.yollar[0].id))), hy = P.yollar[hi0];
+    const HE = yolEt(hi0); if(!HE.length) { if(m.length) ok.push({ i, m: m.join(" · "), satir: m, deg }); return; }
+    const hPar = [...new Set(HE.map(x => x.k))].filter(k => k !== H.k);
+    let en = null;
+    for(let c = 0; c <= H.T; c += Math.max(5, H.T / 400)){ const pt = kbNokta9(H.q, c);
+      hPar.forEach(k => { const r = bkIz9(pt, par[k].p, par[k].kum, null); if(!en || r.d < en.d) en = { d: r.d, c, pt, k, hc: r.c }; }); }
+    if(en && en.d < 150){
+      const dal = R(H.f(en.c));
+      // bağlandığı yoldaki km: o parçada iki etiket varsa aralarından, yoksa en yakın etiketten
+      const L2 = HE.filter(x => x.k === en.k).sort((a, b) => a.c - b.c);
+      let kav;
+      if(L2.length >= 2){ let a = L2[0], b = L2[1]; for(let t = 1; t < L2.length; t++){ a = L2[t - 1]; b = L2[t]; if(en.hc <= b.c) break; } kav = a.v + (b.v - a.v) * (en.hc - a.c) / ((b.c - a.c) || 1); }
+      else { const yk = HE.slice().sort((a, b) => mesafe6(a.p, en.pt) - mesafe6(b.p, en.pt))[0]; kav = yk.v; }
+      kav = R(Math.max(+hy.bas, Math.min(+hy.bit, kav)));
+      const bLo = deg.bas != null ? deg.bas : +y.bas, bHi = deg.bit != null ? deg.bit : +y.bit;
+      const dalUc = Math.abs(dal - bLo) < 50 || Math.abs(dal - bHi) < 50, kavUc = Math.abs(kav - hy.bas) < 50 || Math.abs(kav - hy.bit) < 50;
+      const sk = dalUc ? "L" : (kavUc ? "T" : "+");
+      const kavY = kavUc ? (Math.abs(kav - hy.bas) < 50 ? +hy.bas : +hy.bit) : kav;
+      if((y.sekil || "ayri") !== sk){ deg.sekil = sk; m.push(`Bağlantı şekli: KMZ'de ${SEKIL9[sk]} (itinererde ${SEKIL9[y.sekil] || "Ayrı"})`); }
+      if(y.kavsakKm == null || Math.abs(kavY - y.kavsakKm) > 50){ deg.kavsakKm = kavY; m.push(`${hy.adi || hy.id} üzerindeki bağlantı: KMZ'de ${mKm9(kavY)} (itinererde ${y.kavsakKm == null ? "yok" : mKm9(y.kavsakKm)})`); }
+      if(sk === "T" || sk === "+"){ if(y.dalKm == null || Math.abs(dal - y.dalKm) > 50){ deg.dalKm = dal; deg.sekil = sk; m.push(`${y.adi || y.id} üzerindeki birleşme: KMZ'de ≈${mKm9(dal)} (itinererde ${y.dalKm == null ? "yok" : mKm9(y.dalKm)}) — yaklaşık, kontrol edin`); } }
+    }
+    if(m.length) ok.push({ i, m: m.join(" · "), satir: m, deg });
+  });
+  return ok;
 }
 </script>
 </body>

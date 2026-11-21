@@ -8422,7 +8422,7 @@ function bkModel9(j){
       });
       par = yeni;
     });
-    par = par.filter(q => q.p.length >= 2); }
+    par = par.filter(q => q.p.length >= 2);}
   par.forEach(q => q.u = uz(q.p));
   par.sort((a, b) => b.u - a.u);
   // Üst üste çizilmiş parçalar (ör. tam boy yolun üstüne ayrıca çizilen biten kısımlar, bölünmüş yolun
@@ -8455,7 +8455,8 @@ function bkModel9(j){
   const pbYakin = pt => pbN.some(b => mesafe6(b, pt) < 150);
   // v135: iki parça uç uca gelse de ayrı yol mu? Birleşme yerinde 0+000 / proje başı varsa ya da km iki yana doğru da
   // artıyor / azalıyorsa (yolun bir ucu değil iki yolun başı) ayrı yoldur. Km eşitliği yakınındaysa ayırmaz.
-  const kmEgim = p => { const L = []; kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d < 80) L.push([r.i, n.v]); }); if(L.length < 2) return 0;
+  const kmEgim = p => { const L = [], c = bkKum9(p), T = c[c.length - 1];   // v143: uçlardaki 0+000 / PB yazıları (kavşakta başlayan yollarındır) sayılmaz
+    kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d < 80 && ((c[r.i] >= 60 && T - c[r.i] >= 60) || Math.abs(n.v) > 0.005)) L.push([r.i, n.v]); }); if(L.length < 2) return 0;
     const mi = L.reduce((t, x) => t + x[0], 0) / L.length, mv = L.reduce((t, x) => t + x[1], 0) / L.length; return L.reduce((t, x) => t + (x[0] - mi) * (x[1] - mv), 0); };
   const ayriYol = (zp, zSon, qp, qBas) => {
     const jt = zSon ? zp[zp.length - 1] : zp[0];
@@ -8466,7 +8467,7 @@ function bkModel9(j){
     // İki yanda da km birleşme yerinden sayılıyorsa (iki yolun 0+000'ı) ya da km atlıyorsa bunlar ayrı yollardır.
     // v139: aradaki boşluk da hesaba katılır ve km'nin yönü (artıyor / azalıyor) birleşmeden sonra da aynı kalmalı
     const yan = (p, ucSon) => { const c = bkKum9(p), T = c[c.length - 1], L = [];
-      kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d >= 80) return; const s = ucSon ? T - c[r.i] : c[r.i]; if(s >= 60 && s < 4000) L.push({ s, v: n.v }); }); return L.sort((a, b) => a.s - b.s); };   // birleşme yerindeki yazı iki yana da düşer: sayılmaz
+      kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d >= 80) return; const s = ucSon ? T - c[r.i] : c[r.i]; if(s >= 60 && (T - s >= 60 || Math.abs(n.v) > 0.005) && s < 4000) L.push({ s, v: n.v }); }); return L.sort((a, b) => a.s - b.s); };   // v143: parçanın öbür ucundaki 0+000 / PB yazısı (kavşakta başlayan yollarındır) o parçanın sayılmaz   // birleşme yerindeki yazı iki yana da düşer: sayılmaz
     const A = yan(zp, zSon), B = yan(qp, !qBas);
     if(A.length && B.length){
       // v142: pay yeniden geniş (v141'deki dar pay gerçek yolları böldü); km'nin 0'a indiği başlangıç kuralı ayrı

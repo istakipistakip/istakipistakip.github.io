@@ -5563,7 +5563,9 @@ async function boyKesit(j){
     if(sinirlar.length){ g.save(); g.strokeStyle = koyu ? "rgba(226,232,240,.45)" : "rgba(15,23,42,.35)"; g.lineWidth = 1; g.setLineDash([2, 3]); sinirlar.forEach(d => { const x = Math.round(X(d)) + .5; g.beginPath(); g.moveTo(x, T); g.lineTo(x, H - B); g.stroke(); }); g.restore(); }
     const gr = g.createLinearGradient(0, T, 0, H - B); gr.addColorStop(0, "rgba(234,88,12,.35)"); gr.addColorStop(1, "rgba(234,88,12,.02)");
     g.beginPath(); g.moveTo(X(0), H - B); S.forEach(s => g.lineTo(X(s.d), Y(s.h))); g.lineTo(X(top), H - B); g.closePath(); g.fillStyle = gr; g.fill();
-    g.beginPath(); S.forEach((s, i) => i ? g.lineTo(X(s.d), Y(s.h)) : g.moveTo(X(s.d), Y(s.h))); g.strokeStyle = "#ea580c"; g.lineWidth = 2; g.stroke();
+    // v137: hatta boşluk (kopukluk) olan yerde grafik çizgisi kesilir; iki yan düz çizgiyle birleştirilmez
+    const kopuk = i => i > 0 && sinirlar.some(d => d > S[i - 1].d + 1e-6 && d <= S[i].d + 1e-6);
+    g.beginPath(); S.forEach((s, i) => (i && !kopuk(i)) ? g.lineTo(X(s.d), Y(s.h)) : g.moveTo(X(s.d), Y(s.h))); g.strokeStyle = "#ea580c"; g.lineWidth = 2; g.stroke();
     if(ix !== undefined){ const s = S[ix], x = X(s.d), y = Y(s.h); g.strokeStyle = koyu ? "#e2e8f0" : "#0f172a"; g.lineWidth = 1; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(x, T); g.lineTo(x, H - B); g.stroke(); g.setLineDash([]); g.fillStyle = "#fff"; g.beginPath(); g.arc(x, y, 4.5, 0, 7); g.fill(); g.strokeStyle = "#ea580c"; g.lineWidth = 2.5; g.stroke(); }
   };
   ciz();
@@ -8400,6 +8402,27 @@ function bkModel9(j){
   const uz = p => { let t = 0; for(let i = 1; i < p.length; i++) t += mesafe6(p[i - 1], p[i]); return t; };
   let par = anaCizgiler(j).filter(c => c && c.p && c.p.length >= 2).map(c => ({ p: c.p.map(q => [q[0], q[1]]), a: String(c.a || "").trim() }));
   if(!par.length) return null;
+  // v137: bir çizginin ORTASINDA 0+000 / proje başı / proje sonu işareti varsa çizgi orada ikiye bölünür
+  // (0'dan başlayan yol bittiği yere kadar tek yol; öncesi başka yol)
+  { const RX = /(^|[\s(])P\s*\.?\s*[BS][ıiIİ]?\s*\.?\s*[:=]|proje\s*(başı|sonu|basi)/i;
+    const bol = (j.hat.nok || []).filter(q => RX.test(q[2] || "") || (() => { const m = !bkEsit9(q[2]) && KMRX9.exec(q[2] || ""); return m && +m[1] === 0 && +m[2] === 0; })()).map(q => [q[0], q[1]]);
+    bol.forEach(b => {
+      const yeni = [];
+      par.forEach(q => {
+        const kx = Math.cos(b[0] * Math.PI / 180) * 111320, ky = 110540, px = b[1] * kx, py = b[0] * ky;
+        let en = { d: Infinity }, kum = 0, T = uz(q.p);
+        for(let i = 1; i < q.p.length; i++){
+          const ax = q.p[i - 1][1] * kx, ay = q.p[i - 1][0] * ky, dx = q.p[i][1] * kx - ax, dy = q.p[i][0] * ky - ay, L2 = dx * dx + dy * dy;
+          const t = L2 ? Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / L2)) : 0, d = Math.hypot(ax + dx * t - px, ay + dy * t - py), sl = Math.sqrt(L2);
+          if(d < en.d) en = { d, i, t, c: kum + sl * t, x: [q.p[i - 1][0] + (q.p[i][0] - q.p[i - 1][0]) * t, q.p[i - 1][1] + (q.p[i][1] - q.p[i - 1][1]) * t] };
+          kum += sl;
+        }
+        if(en.d > 35 || en.c < 80 || T - en.c < 80){ yeni.push(q); return; }
+        yeni.push({ p: q.p.slice(0, en.i).concat([en.x]), a: q.a }, { p: [en.x].concat(q.p.slice(en.i)), a: q.a });
+      });
+      par = yeni;
+    });
+    par = par.filter(q => q.p.length >= 2); }
   par.forEach(q => q.u = uz(q.p));
   par.sort((a, b) => b.u - a.u);
   // Üst üste çizilmiş parçalar (ör. tam boy yolun üstüne ayrıca çizilen biten kısımlar, bölünmüş yolun
@@ -8408,6 +8431,9 @@ function bkModel9(j){
   par.forEach(q => {
     if(!tut.length){ tut.push(q); return; }
     const ust = q.p.map(o => tut.some(t => bkHatUzak9(o, t.p) < 40));
+    // v137: kısa yakınlık (kavşakta birleşen yolun ilk / son metreleri) üst üste sayılmaz: yol kavşağa kadar gelir
+    for(let i = 0; i < ust.length;){ if(!ust[i]){ i++; continue; } let k = i; while(k < ust.length && ust[k]) k++;
+      const L = uz(q.p.slice(Math.max(0, i - 1), Math.min(q.p.length, k + 1))); if(L < 100) for(let x = i; x < k; x++) ust[x] = false; i = k; }
     if(!ust.includes(true)){ tut.push(q); return; }
     for(let i = 0; i < q.p.length;){
       if(ust[i]){ i++; continue; }
@@ -8433,8 +8459,9 @@ function bkModel9(j){
     const mi = L.reduce((t, x) => t + x[0], 0) / L.length, mv = L.reduce((t, x) => t + x[1], 0) / L.length; return L.reduce((t, x) => t + (x[0] - mi) * (x[1] - mv), 0); };
   const ayriYol = (zp, zSon, qp, qBas) => {
     const jt = zSon ? zp[zp.length - 1] : zp[0];
-    if(esN.some(e => mesafe6(e.p, jt) < 150)) return false;
+    // v137: proje başı / sonu / 0+000 önce gelir ("PS= G:36+000/İ:39+000" gibi eşitlik yazılı proje sonu da ayırır)
     if(kmN.some(n => Math.abs(n.v) < 0.005 && mesafe6(n.p, jt) < 60) || pbN.some(b => mesafe6(b, jt) < 60)) return true;
+    if(esN.some(e => mesafe6(e.p, jt) < 150)) return false;
     const ez = kmEgim(zp), eq = kmEgim(qp); if(!ez || !eq) return false;
     return (zSon ? ez > 0 : ez < 0) !== (qBas ? eq > 0 : eq < 0);
   };
@@ -8562,7 +8589,7 @@ function bkModel9(j){
     if(!sec || en > 0.3) sec = yak.find(x => x.h.yol) || yak[0];
     sec.h.L.push({ c: sec.c, v: n.v, pb: PBBAS.test(n.q[2] || "") }); sec.h.et.push(n.q);
   });
-  esN.forEach(e => { const ds = hatlar.map(h => { const r = izd(h, e.p); return { h, d: r.d, c: cBul(h, r) }; }).sort((a, b) => a.d - b.d);
+  esN.filter(e => !PBRX.test(e.q[2] || "")).forEach(e => { const ds = hatlar.map(h => { const r = izd(h, e.p); return { h, d: r.d, c: cBul(h, r) }; }).sort((a, b) => a.d - b.d);
     if(ds.length && ds[0].d < 300) ds[0].h.E.push({ c: ds[0].c, g: e.g, i: e.i }); });
   // ---- yön: küçük km'den büyüğe (eşitlikler hesaba katılarak); kolda KM yoksa kavşaktan başlar
   const cevir = h => { const N = h.p.length, T = h.kum[h.kum.length - 1]; h.p = h.p.slice().reverse(); h.kop = new Set([...h.kop].map(i => N - i)); h.kum = bkKum9(h.p, h.kop); h.L.forEach(x => x.c = T - x.c); h.E.forEach(e => e.c = T - e.c); };

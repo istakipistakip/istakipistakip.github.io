@@ -2217,6 +2217,7 @@ let hatHarita = null, hatIs = null, hatMod = "2b", hatTum = false, hatSinir = []
 // kapalı başlar (seçimler hatırlanmaz).
 let kat = null;
 async function hatGoster(id, korun){
+  try{ await ytOku9(); }catch(_){}
   const j = byId(id); if(!j || !j.hat) return;
   if(!korun){ hatMod = "2b"; hatTum = false; ucKam = null; }
   else if(uc){ ucKam = uc.kamera(); }
@@ -9413,9 +9414,30 @@ function kbAralik9(h, S, a, e, zc){
   return R.filter(r => r[1] - r[0] > 1);
 }
 // işin boyanacak parçaları (önbellekli): [{p:[[lat,lng]..], r, yan: 0|-1|1, eski}]
+// v128: KMZ boyası itinererle aynı kaynaktan — Yol Takip / telefonda düzenlenen itinererin bitmiş yol kayıtları
+// (önceki yıllar = eski, bu yıl = buyil) KM girişleriyle birlikte boyanır; KM girişleri üstte çizilir.
+// Yalnız ana yolun (ilk yol) kayıtları; köy yollarının otomatik itinereri zaten KM'den.
+function itiKm9(j){
+  const out = []; if(!YT9 || !j) return out;
+  const Y0 = new Date().getFullYear();
+  let kodlar = []; try{ kodlar = ytKodlar9(j); }catch(_){}
+  kodlar.forEach(kod => {
+    const q = ytProje9(kod); if(!q || !Array.isArray(q.kayitlar)) return;
+    const ana = (q.yollar && q.yollar[0] && q.yollar[0].id) || null;
+    q.kayitlar.forEach(r => {
+      if(r._km9 || r._taban9 || !YOLTUR9.has(r.tur) || (r.durum !== "eski" && r.durum !== "buyil")) return;
+      if(r.yolId && ana && r.yolId !== ana) return;
+      const a = +r.bas, e = +r.bit; if(!(e > a)) return;
+      const yan = r.konum === "SOL" ? "sol" : r.konum === "SAG" ? "sağ" : "";
+      out.push({ a, e, yil: r.durum === "buyil" ? Y0 : Y0 - 1, k: { s: `${r.sinif === "TY" ? "TY" : "BY"}-${r.tur}`, y: yan ? 1 : 0, ac: yan, zc: r.zincir || "", _iti9: 1 } });
+    });
+  });
+  return out;
+}
 function kbHesap9(j){
   if(!j || !j.hat) return [];
-  const km = tumKmIti9(j).filter(x => x.yil <= D.yil);
+  let ik = []; try{ ik = itiKm9(j); }catch(_){}
+  const km = ik.concat(tumKmIti9(j)).filter(x => x.yil <= D.yil);
   const imza = D.yil + "|" + km.map(x => [x.a, x.e, x.yil, x.k.s, x.k.y ? 1 : 0, x.k.ac || "", x.k.zc || "", x.k.yl || ""].join(",")).join(";");
   if(j._kb9 && j._kb9.h === j.hat && j._kb9.imza === imza) return j._kb9.out;
   const out = [];
@@ -10327,7 +10349,7 @@ html.dark .kqk7{ background:#0f172a; } html.dark .kqad7{ color:#f1f5f9; } html.d
 .h5 .hs, .h5 .hs *{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 .isk117, .isk117 *{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
 .isk117 img{ -webkit-user-drag:none; pointer-events:none; }
-#main.ara9{ overscroll-behavior-y:auto; }
+#main.ara9{ overscroll-behavior-y:auto; touch-action:pan-y; }
 .jr{ transition:transform .16s ease, filter .16s ease; -webkit-tap-highlight-color:transparent; }
 .jr:active{ transition-delay:.11s; }
 @keyframes ara9ust{ from{ opacity:0; transform:translateY(-18px); } to{ opacity:1; transform:none; } }
@@ -10374,30 +10396,35 @@ img, svg{ -webkit-user-drag:none; }`;
   const arama = () => !!aramaAcik && tab === "home" && !detay;
   const digerAcik = () => document.getElementById("bsov") || document.getElementById("hatv") || document.getElementById("itiv") || document.getElementById("hikv") || document.getElementById("onz") || document.getElementById("isk117");
   const kapat = () => { try{ const a = document.getElementById("isAra"); if(a && document.activeElement === a) a.blur(); }catch(_){} };
-  // (1) sol kenar geri kaydırma
+  // (1) sol kenar geri kaydırma — v128: liste kayarken de çalışır, parmağı takip eder, daha geniş kenar ve çapraz tolerans
   let kb = null;
+  const mEl = () => document.getElementById("main");
+  const birak = (geri) => { const m = mEl(); if(!m) return; m.style.transition = "transform .22s cubic-bezier(.2,.8,.2,1), opacity .22s ease"; m.style.transform = ""; m.style.opacity = "";
+    setTimeout(() => { m.style.transition = ""; }, 240); };
+  const don = () => { const m = mEl(); kapat(); try{ navigator.vibrate && navigator.vibrate(6); }catch(_){}
+    if(m){ m.style.transition = "transform .18s ease-out, opacity .18s ease-out"; m.style.transform = "translateX(40%)"; m.style.opacity = "0"; }
+    setTimeout(() => { aramaAcik = false; isAra = ""; ciz(); ust(); const m2 = mEl(); if(m2){ m2.style.transition = ""; m2.style.transform = ""; m2.style.opacity = ""; } }, 170); };
   document.addEventListener("touchstart", e => {
     kb = null;
     if(!arama() || e.touches.length !== 1 || digerAcik()) return;
     const t = e.touches[0];
-    if(t.clientX < 18) kb = { x: t.clientX, y: t.clientY, aktif: false };
-  }, { passive: true });
+    if(t.clientX < 34) kb = { x: t.clientX, y: t.clientY, aktif: false, dx: 0, dy: 0 };
+  }, { passive: true, capture: true });
   document.addEventListener("touchmove", e => {
     if(!kb) return;
     const t = e.touches[0], dx = t.clientX - kb.x, dy = Math.abs(t.clientY - kb.y);
-    if(!kb.aktif && dx > 8 && dx > dy) kb.aktif = true;
-  }, { passive: true });
-  document.addEventListener("touchend", e => {
+    kb.dx = dx; kb.dy = dy;
+    if(!kb.aktif){ if(dx > 10 && dx > dy * 0.8) kb.aktif = true; else if(dy > 30 && dy > dx * 2){ kb = null; return; } }
+    if(kb.aktif){ if(e.cancelable) e.preventDefault(); const m = mEl(); if(m){ m.style.transition = ""; m.style.transform = `translateX(${Math.max(0, dx) * 0.9}px)`; m.style.opacity = String(1 - Math.min(.5, Math.max(0, dx) / (window.innerWidth * 1.4))); } }
+  }, { passive: false, capture: true });
+  const bitti = () => {
     if(!kb) return;
     const k = kb; kb = null;
-    if(!k.aktif || !arama()) return;
-    const dx = e.changedTouches[0].clientX - k.x, dy = Math.abs(e.changedTouches[0].clientY - k.y);
-    if(dx > Math.min(110, window.innerWidth * .28) && dx > dy * 1.4){
-      kapat();
-      try{ navigator.vibrate && navigator.vibrate(6); }catch(_){}
-      aramaAcik = false; isAra = ""; ciz(); ust();
-    }
-  });
+    if(!k.aktif || !arama()){ birak(); return; }
+    if(k.dx > Math.min(90, window.innerWidth * .22) && k.dx > k.dy) don(); else birak();
+  };
+  document.addEventListener("touchend", bitti, { capture: true });
+  document.addEventListener("touchcancel", bitti, { capture: true });
 })();
 // ---------- v127: KM boyası KMZ çizgisinin kendi üstünde, iki yarım olarak ----------
 // KM girilmiş aralıklarda KMZ'nin renkli çizgisi (mavi ya da KMZ'deki kendi kırmızısı) kaldırılır, aynı noktalar

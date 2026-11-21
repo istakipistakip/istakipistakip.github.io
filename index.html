@@ -10607,7 +10607,10 @@ function kbCiz10(m, hedef, j, W, WB, o){
   // (km'si hiçbir yolun km'sine düşmeyen ara parça, ör. ana yolun sonu ile devam eden yolun ilk km etiketi arası)
   // aynı KM / itinerer aralığının içindeyse o da boyalı sayılır, kendi geometrisiyle boyanır.
   const KMx = (j._kb9 && j._kb9.km) || [], dolgu = [], RK = kbRenk9(j);
-  const ucBul = q => { let en = null, ed = 45; parcalar.forEach(t => { [[t.p[0], t.m0, t], [t.p[t.p.length - 1], t.m1, t]].forEach(([u, mv, tt]) => { const d = Math.hypot(xy(u)[0] - xy(q)[0], xy(u)[1] - xy(q)[1]); if(d < ed && mv != null){ ed = d; en = { mv, t: tt }; } }); }); return en; };
+  // açık parçanın ucu hangi boyalı parçaya değiyor (parçanın herhangi bir noktasına 45 m'den yakın; en yakın uç km'si)
+  const ucBul = q => { let en = null, ed = 45; const Q = xy(q);
+    parcalar.forEach(t => { for(let i = 0; i < t.p.length; i++){ const A = xy(t.p[i]), d = Math.hypot(A[0] - Q[0], A[1] - Q[1]); if(d < ed){ ed = d;
+      const uc = i < t.p.length / 2 ? t.m0 : t.m1; en = { mv: uc, t }; } } }); return en; };
   const yanRenk = (lo, hi, yanIst) => { let r = null; KMx.forEach(x => { const a = Math.min(x.a, x.e), e = Math.max(x.a, x.e); if(a > lo + 60 || e < hi - 60) return;
     const ty = /^TY/i.test(x.k.s || "") || koyYolu9(j), t2 = !ty && x.k.y ? taraf9(x.k.ac) : null, yan = t2 === "SOL" ? -1 : t2 === "SAG" ? 1 : 0;
     if(yan === 0 || yan === yanIst) r = RK[x.yil === D.yil ? "buyil" : "eski"]; }); return r; };
@@ -10615,8 +10618,15 @@ function kbCiz10(m, hedef, j, W, WB, o){
     let uz = 0; for(let i = 1; i < p.length; i++){ const A = xy(p[i - 1]), B = xy(p[i]); uz += Math.hypot(B[0] - A[0], B[1] - A[1]); }
     const u0 = uz < 2500 ? ucBul(p[0]) : null, u1 = u0 ? ucBul(p[p.length - 1]) : null;
     if(u0 && u1 && u0.t !== u1.t){
-      const lo = Math.min(u0.mv, u1.mv), hi = Math.max(u0.mv, u1.mv), sol = yanRenk(lo, hi, -1), sag = yanRenk(lo, hi, 1);
-      if(sol || sag){ dolgu.push({ p, sol, sag, by: u0.t.by || u1.t.by }); return; }
+      // (a) aradaki km aralığı tek bir KM / itinerer aralığının içinde
+      if(u0.mv != null && u1.mv != null){
+        const lo = Math.min(u0.mv, u1.mv), hi = Math.max(u0.mv, u1.mv), sol = yanRenk(lo, hi, -1), sag = yanRenk(lo, hi, 1);
+        if(sol || sag){ dolgu.push({ p, sol, sag, by: u0.t.by || u1.t.by }); return; }
+      }
+      // (b) iki yandaki boyalı parça aynı renkte ve ikisi de AYNI KM / itinerer aralığından geliyor (aralık ikisine de uzanıyor)
+      const ayniKaynak = KMx.some(x => { const a = Math.min(x.a, x.e), e = Math.max(x.a, x.e);
+        const ust = t => t.m0 != null && t.m1 != null && Math.min(e, Math.max(t.m0, t.m1)) - Math.max(a, Math.min(t.m0, t.m1)) > 5; return ust(u0.t) && ust(u1.t); });
+      if(ayniKaynak && u0.t.sol === u1.t.sol && u0.t.sag === u1.t.sag && uz < 1500){ dolgu.push({ p, sol: u0.t.sol, sag: u0.t.sag, by: u0.t.by || u1.t.by }); return; }
     }
     ekle(L.polyline(p, { ...ortak, color: c.r, weight: W, lineCap: "butt", lineJoin: "round" }));
   }));

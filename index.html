@@ -2691,6 +2691,7 @@ function itiDuzelt9(kok, j){
     try{ if(itiSvgDuzelt9(svg)) degisti = true; }catch(_){}
     try{ if(itiTers9(svg)) degisti = true; }catch(_){}
     try{ if(itiMusavat9(svg)) degisti = true; }catch(_){}
+    try{ if(itiSikistir9(svg)) degisti = true; }catch(_){}
     try{ if(itiBag9(svg)) degisti = true; }catch(_){}   // düzeltmeden sonra yerleri yeniden (km yazıları değişmiş olabilir)
     try{ if(itiProje9(svg)) degisti = true; }catch(_){}
     try{ if(itiOne9(svg)) degisti = true; }catch(_){}
@@ -8835,8 +8836,27 @@ function cizimProje9(kod){
   const p = ytProje9(kod); if(!p) return null;
   const j = ISLER.find(x => ytKodlar9(x).includes(kod));
   const q = JSON.parse(JSON.stringify(p));
-  if(j) q.kayitlar = (q.kayitlar || []).concat(kmKayitlar9(j, q));
+  if(j){ itiUzat9(j, q, kod); q.kayitlar = (q.kayitlar || []).concat(kmKayitlar9(j, q)); }
   return q;
+}
+// Yol Takip'te olmayan (telefonda oluşturulan) itinererler: KMZ'de proje başı / sonu yoksa
+// yol 0+000'dan İhale Uzunluğu'na (KM'ler daha ilerideyse en son KM'ye) kadar çizilir; kayıt girilmemiş
+// kısımlar yolun standardıyla "iş yok" (mavi) görünür — önceki yıllar / bu yıl KM'lerden boyanır, kalan mavi kalır.
+// (ör. 1. Grup / 2. Grup köy yolları: dağınık kesimler tek sürekli km'de 0'dan toplam km'ye)
+function itiUzat9(j, q, kod, zorla){
+  if(!zorla && !(YT9 && YT9.yeni && YT9.yeni[kod])) return;
+  if(Array.isArray(q.yollar) && q.yollar.length > 1) return;
+  const N = (j.hat && j.hat.nok) || [];
+  if(N.some(n => /^(PB[ıi]?|PS|Proje\s*Ba[şs])/i.test(String(n[2] || "").trim()))) return;
+  const oz = kmOzet(j), U = oz.u ? Math.round(oz.u * 1000) : 0;
+  const km = tumKmIti9(j), son = km.length ? Math.max(...km.map(x => x.e)) : 0;
+  if(!U && !son) return;
+  q.bas = 0; q.bit = Math.max(U, son, q.bit || 0, 100);
+  if(!(q.kayitlar || []).some(r => !r._km9)){
+    const s = ((j.uz || []).find(r => r.s) || {}).s || ((j.cats || [])[0] || {}).s || ((j.cats || [])[0] || {}).ad || "";
+    const sinif = /^TY/i.test(s) ? "TY" : "BY";
+    q.kayitlar = [{ sinif, byTip: sinif === "BY" ? "2x2" : "", tyTip: sinif === "TY" ? "2x1" : "", tur: turStd9(s) || "BSK", altTur: "", konum: sinif === "TY" ? "TY" : "HER", durum: "isyok", bas: q.bas, bit: q.bit, ad: "", _taban9: 1 }];
+  }
 }
 
 // ---------- Yol Takip çizim kodu (gizli çerçevede) ----------
@@ -9041,7 +9061,8 @@ const TURLER9 = ["BSK", "SK", "SK>BSK", "BSK-On", "Heyelan Is", "Tünel", "Köpr
 const DURUM9 = [["eski", "Önceki yıllar"], ["buyil", "Bu yıl biten"], ["calisan", "Çalışılan"], ["hedef", "Hedef"], ["isyok", "İş yok"]];
 const KONUM9 = [["HER", "Her iki"], ["SOL", "Sol"], ["SAG", "Sağ"], ["TY", "TY"]];
 function bosProje9(j){
-  const km = tumKmIti9(j), a = km.length ? Math.min(...km.map(x => x.a)) : 0, e = km.length ? Math.max(...km.map(x => x.e)) : 1000;
+  const km = tumKmIti9(j), oz = kmOzet(j), U = oz.u ? Math.round(oz.u * 1000) : 0;
+  const a = U ? 0 : (km.length ? Math.min(...km.map(x => x.a)) : 0), e = Math.max(U, km.length ? Math.max(...km.map(x => x.e)) : 0) || 1000;
   return { adi: j.ad, bas: a, bit: Math.max(e, a + 100), basTaraf: "", bitTaraf: "", turler: TURLER9.slice(), kayitlar: [], yerlesimler: [], ilSinirlari: [], musavat: [], istikametBas: "", istikametBit: "", iller: (j.il || []).slice() };
 }
 // KMZ'den yeni itinerer önerisi: PB / PS, km eşitlikleri, adı yapı olan noktalar
@@ -9093,7 +9114,7 @@ async function itiDuzenle9(j, kod){
   const $ = s => ov.querySelector(s);
   let zam = 0, degisti = false;
   const onizle = () => { clearTimeout(zam); zam = setTimeout(async () => {
-    try{ const q = JSON.parse(JSON.stringify(P)); q.kayitlar = q.kayitlar.concat(kmKayitlar9(j, q)); const s = await ytCiz9({ [kod]: q }); const o = s.out[kod];
+    try{ const q = JSON.parse(JSON.stringify(P)); itiUzat9(j, q, kod, yeni); q.kayitlar = q.kayitlar.concat(kmKayitlar9(j, q)); const s = await ytCiz9({ [kod]: q }); const o = s.out[kod];
       const host = $("#itd9oi"); if(!host.shadowRoot) host.attachShadow({ mode: "open" });
       host.shadowRoot.innerHTML = `<style>${String(s.css || "").replace(/:root/g, ":host")} :host{display:block}.iti-wrap{border:none!important;margin:0!important;padding:0!important;overflow:visible!important}.iti-wrap svg{display:block;max-width:none!important;height:200px!important;width:auto!important}</style>${o && !o.hata ? o.html : `<p style="padding:12px;color:#b91c1c">${esc(o ? o.hata : "çizilemedi")}</p>`}`;
       try{ itiDuzelt9(host.shadowRoot, j); }catch(_){}
@@ -9771,30 +9792,36 @@ function itiMusavat9(svg){
   const buyuk = b => (b.y2 - b.y1) > vb.height * .6;
   const cubuk = [...svg.querySelectorAll("rect,circle,polygon")].filter(e => !e.closest("defs")).map(kutu).filter(b => !buyuk(b) && b.y1 < vb.y + vb.height);
   const kesik = [...svg.querySelectorAll("line")].filter(l => !l.closest("defs") && l.getAttribute("stroke-dasharray"));
-  const yer = [];
   let n = 0;
-  mus.map(t => ({ t, b: kutu(t) })).sort((a, b) => a.b.x1 - b.b.x1).forEach(({ t, b }) => {
-    const w = b.x2 - b.x1, h = b.y2 - b.y1; if(h < w) return;                         // dik yazı değilse dokunma
-    const x1 = b.x1 - 4, x2 = b.x2 + 4;
-    let alt = -1e9;
-    diger.concat(cubuk).forEach(c => { if(c.x1 < x2 && c.x2 > x1 && c.y2 < b.y1 + 1) alt = Math.max(alt, c.y2); });
-    if(alt < -1e8) return;
-    let ust = alt + 10;
-    // başka bir eşitlik yazısıyla çakışmasın
-    for(let d = 0; d < 20; d++){ const c = yer.find(o => o.x1 < b.x2 + 3 && o.x2 > b.x1 - 3 && o.y1 < ust + h + 3 && o.y2 > ust - 3); if(!c) break; ust = c.y2 + 6; }
-    const dy = ust - b.y1; if(dy > -12) { yer.push(b); return; }                      // zaten yakın
-    // dikey öteleme: yazının üst grubundaki koordinatlarda
-    const pm = M(t.parentNode), v = new DOMPoint(0, dy).matrixTransform(new DOMMatrix([pm.a, pm.b, pm.c, pm.d, 0, 0]).inverse());
-    const tr = t.getAttribute("transform") || "";
-    t.setAttribute("transform", `translate(${v.x.toFixed(2)} ${v.y.toFixed(2)})` + (tr ? " " + tr : ""));
-    const yb = { x1: b.x1, x2: b.x2, y1: b.y1 + dy, y2: b.y2 + dy }; yer.push(yb);
-    // kılavuz çizgisi: yazının hizasında, alt ucu eski yazıya yakın olan kesikli dikey çizgi
-    const cx = (b.x1 + b.x2) / 2;
-    kesik.forEach(l => { const m = M(l), p1 = new DOMPoint(+l.getAttribute("x1"), +l.getAttribute("y1")).matrixTransform(m), p2 = new DOMPoint(+l.getAttribute("x2"), +l.getAttribute("y2")).matrixTransform(m);
-      if(Math.abs(p1.x - p2.x) > 1 || Math.abs(p1.x - cx) > w / 2 + 3) return;
-      const altP = p1.y > p2.y ? 1 : 2, ay = Math.max(p1.y, p2.y); if(ay < yb.y1 - 4 || ay > b.y1 + 4) return;
-      const q = new DOMPoint(p1.x, yb.y1 - 3).matrixTransform(m.inverse()); l.setAttribute("x" + altP, q.x.toFixed(1)); l.setAttribute("y" + altP, q.y.toFixed(1)); });
-    n++;
+  // her yol grubunda (alt alta yollar ayrı) eşitlik yazıları aynı hizaya: en aşağıda durması gerekenin hizası
+  const gruplar = new Map();
+  mus.forEach(t => { const g = t.closest("g.iti-yatay") || svg; (gruplar.get(g) || gruplar.set(g, []).get(g)).push(t); });
+  gruplar.forEach(liste => {
+    const L = liste.map(t => ({ t, b: kutu(t) })).filter(o => (o.b.y2 - o.b.y1) >= (o.b.x2 - o.b.x1)).sort((a, b) => a.b.x1 - b.b.x1);
+    if(!L.length) return;
+    L.forEach(o => { const x1 = o.b.x1 - 4, x2 = o.b.x2 + 4; let alt = -1e9;
+      diger.concat(cubuk).forEach(c => { if(c.x1 < x2 && c.x2 > x1 && c.y2 < o.b.y1 + 1) alt = Math.max(alt, c.y2); });
+      o.gerek = alt < -1e8 ? null : alt + 10; });
+    const G = L.filter(o => o.gerek !== null); if(!G.length) return;
+    const hiza = Math.max(...G.map(o => o.gerek)), sira = Math.max(...L.map(o => o.b.y2 - o.b.y1)) + 8;
+    const satir = [];
+    L.forEach(o => {
+      const w = o.b.x2 - o.b.x1, h = o.b.y2 - o.b.y1;
+      let r = 0; while(satir[r] && satir[r].some(c => c.x1 < o.b.x2 + 3 && c.x2 > o.b.x1 - 3)) r++;
+      (satir[r] = satir[r] || []).push(o.b);
+      const ust = hiza + r * sira, dy = ust - o.b.y1; if(Math.abs(dy) < 1) return;
+      const t = o.t, b = o.b;
+      const pm = M(t.parentNode), v = new DOMPoint(0, dy).matrixTransform(new DOMMatrix([pm.a, pm.b, pm.c, pm.d, 0, 0]).inverse());
+      const tr = t.getAttribute("transform") || "";
+      t.setAttribute("transform", `translate(${v.x.toFixed(2)} ${v.y.toFixed(2)})` + (tr ? " " + tr : ""));
+      const yb = { x1: b.x1, x2: b.x2, y1: b.y1 + dy, y2: b.y2 + dy };
+      const cx = (b.x1 + b.x2) / 2;
+      kesik.forEach(l => { const m = M(l), p1 = new DOMPoint(+l.getAttribute("x1"), +l.getAttribute("y1")).matrixTransform(m), p2 = new DOMPoint(+l.getAttribute("x2"), +l.getAttribute("y2")).matrixTransform(m);
+        if(Math.abs(p1.x - p2.x) > 1 || Math.abs(p1.x - cx) > w / 2 + 3) return;
+        const altP = p1.y > p2.y ? 1 : 2, ay = Math.max(p1.y, p2.y); if(ay < Math.min(yb.y1, b.y1) - 6 || ay > Math.max(yb.y1, b.y1) + 6) return;
+        const q = new DOMPoint(p1.x, yb.y1 - 3).matrixTransform(m.inverse()); l.setAttribute("x" + altP, q.x.toFixed(1)); l.setAttribute("y" + altP, q.y.toFixed(1)); });
+      n++;
+    });
   });
   if(!n) return false;
   // alttaki boş alan: görünür içeriğin en altı + pay
@@ -9804,6 +9831,40 @@ function itiMusavat9(svg){
   const yeniH = Math.min(vb.height, enAlt + 16 - vb.y);
   if(vb.height - yeniH > 40) svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.width} ${yeniH}`);
   return true;
+}
+
+// alt alta çizilen yollar: bir yolun altında kalan boş alan kapatılır (sonraki yol yukarı alınır), en alttaki boşluk kırpılır
+function itiSikistir9(svg){
+  const G = [...svg.children].filter(e => e.tagName.toLowerCase() === "g" && e.classList.contains("iti-yatay"));
+  if(G.length < 2) return false;
+  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse(), vb = svg.viewBox.baseVal;
+  const kutu = el => { const b = el.getBBox(), m = ki.multiply(el.getCTM()); let y1 = 1e9, y2 = -1e9;
+    [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m); y1 = Math.min(y1, q.y); y2 = Math.max(y2, q.y); });
+    return { y1, y2 }; };
+  // grubun görünen alanı (kırpma kutusu) ve içeriğinin en altı
+  const alan = g => { const cp = g.getAttribute("clip-path"), id = cp && (cp.match(/#([^)]+)/) || [])[1], r = id && svg.querySelector("#" + CSS.escape(id) + " rect");
+    const m = ki.multiply(g.getCTM()), ust = new DOMPoint(0, 0).matrixTransform(m).y, h = r ? +r.getAttribute("height") : null;
+    let enAlt = -1e9;
+    g.querySelectorAll("text,rect,line,path,circle,polygon").forEach(e => { const b = kutu(e); if(h !== null && (b.y2 - b.y1) > h * .9) return; if(b.y1 > ust + (h || 1e9)) return; enAlt = Math.max(enAlt, Math.min(b.y2, h !== null ? ust + h : 1e9)); });
+    return { ust, enAlt }; };
+  let n = 0;
+  for(let i = 0; i < G.length - 1; i++){
+    const a = alan(G[i]), sonraki = alan(G[i + 1]);
+    // sonraki yolun başlığı (grubun hemen önündeki yazı) dahil üst sınır
+    const basl = G[i + 1].previousElementSibling && G[i + 1].previousElementSibling.tagName.toLowerCase() === "text" ? kutu(G[i + 1].previousElementSibling).y1 : sonraki.ust;
+    const kay = basl - (a.enAlt + 26);
+    if(kay < 20) continue;
+    // G[i]'den sonra gelen her şey yukarı
+    let e = G[i].nextElementSibling;
+    while(e){ if(!e.hasAttribute("data-bas9") && e.tagName.toLowerCase() !== "clippath" && e.tagName.toLowerCase() !== "defs"){
+        const tr = e.getAttribute("transform") || ""; e.setAttribute("transform", `translate(0 ${(-kay).toFixed(1)})` + (tr ? " " + tr : "")); }
+      e = e.nextElementSibling; }
+    n++;
+  }
+  // en alttaki yolun altı
+  const son = alan(G[G.length - 1]), yeniH = son.enAlt + 16 - vb.y;
+  if(vb.height - yeniH > 30){ svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.width} ${yeniH}`); n++; }
+  return n > 0;
 }
 </script>
 </body>

@@ -3509,7 +3509,7 @@ function drawItiAkilli(p, allowSearch){
 }
 /* Düz/ayrı çoklu yollar: tek itiner kutusunda alt alta — ayrı kartlara bölünmez */
 function drawItiAyriCoklu(p, allowSearch){
-  /* Düz/ayrı yollar: TEK itiner, yan yana (1 | 2 | 3), aralarında minimal boşluk */
+  /* Düz/ayrı yollar: TEK itiner, alt alta (her yol tam genişlikte) */
   var ys=getYollar(p);
   if(!ys || ys.length<2) return null;
   if(yolSekilliDallar(p).length) return null;
@@ -3528,38 +3528,34 @@ function drawItiAyriCoklu(p, allowSearch){
   }
   if(!parts.length) return null;
 
-  var gap=6; /* yollar arası çok az boşluk */
-  var labelH=22;
-  var maxH=0, totalW=0;
-  parts.forEach(function(pt){
-    var w=pt.sv.w||400, h=pt.sv.h||300;
-    if(h>maxH) maxH=h;
-    totalW+=w;
-  });
-  totalW += gap*(parts.length-1);
-  var Hc=maxH+labelH+8;
+  /* yollar alt alta: her yol tam genişlikte, üstünde başlığı, araları ince çizgi */
+  var gap=10, labelH=22;
+  var maxW=0, totalH=0;
+  parts.forEach(function(pt){ var w=pt.sv.w||400, h=pt.sv.h||300; if(w>maxW) maxW=w; totalH+=labelH+h; });
+  totalH += gap*(parts.length-1) + 4;
 
-  var svg='<svg id="itiSvg" width="100%" viewBox="0 0 '+totalW+' '+Hc+'" preserveAspectRatio="xMinYMid meet" style="display:block;width:100%;height:auto">';
-  var xOff=0;
+  var svg='<svg id="itiSvg" width="100%" viewBox="0 0 '+maxW+' '+totalH+'" preserveAspectRatio="xMinYMin meet" style="display:block;width:100%;height:auto">';
+  var yOff=0;
   parts.forEach(function(pt, i){
-    var w=pt.sv.w||400, h=pt.sv.h||300;
+    var h=pt.sv.h||300;
     var y=pt.yol;
     var uz=yolFizikiUzunlukKm(p,y);
     var baslik=esc(y.adi||y.id)+" · "+fmtKm(y.bas)+"–"+fmtKm(y.bit)+" ("+fmtUzunlukKm(uz)+")";
-    /* ince ayırıcı */
     if(i>0){
-      svg+='<line x1="'+xOff+'" y1="0" x2="'+xOff+'" y2="'+Hc+'" stroke="#c5d0dc" stroke-width="1"/>';
+      svg+='<line x1="0" y1="'+(yOff-gap/2)+'" x2="'+maxW+'" y2="'+(yOff-gap/2)+'" stroke="#c5d0dc" stroke-width="1"/>';
     }
-    svg+='<text x="'+(xOff+8)+'" y="16" font-size="12" font-weight="800" fill="#1F4E79" stroke="#fff" stroke-width="3" paint-order="stroke">'+baslik+'</text>';
-    /* yol çizimi yan yana */
-    svg+='<g class="iti-yatay" data-yol-id="'+esc(y.id)+'" transform="translate('+xOff+','+labelH+')">'+pt.sv.inner+'</g>';
-    xOff+=w+gap;
+    svg+='<text x="8" y="'+(yOff+16)+'" font-size="12" font-weight="800" fill="#1F4E79" stroke="#fff" stroke-width="3" paint-order="stroke">'+baslik+'</text>';
+    /* her yol kendi alanında kırpılır (yan yana çizimdeki gibi; alanın dışına taşan oklar öbür yola girmesin) */
+    var cid="itiCp"+Math.random().toString(36).slice(2,8);
+    svg+='<defs><clipPath id="'+cid+'"><rect x="0" y="0" width="'+(pt.sv.w||400)+'" height="'+h+'"/></clipPath></defs>';
+    svg+='<g class="iti-yatay" data-yol-id="'+esc(y.id)+'" transform="translate(0,'+(yOff+labelH)+')" clip-path="url(#'+cid+')">'+pt.sv.inner+'</g>';
+    yOff+=labelH+h+gap;
   });
   svg+='</svg>';
 
   var leg=(parts[0]&&parts[0].sv.leg)?parts[0].sv.leg:"";
   var head='<div style="padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;background:#e8eef4;border-bottom:1px solid #dde1e6">'+
-    '<span style="font-weight:800;color:#1F4E79;font-size:.9rem">Birleşik itiner · '+ys.length+' yol (yan yana)</span>'+
+    '<span style="font-weight:800;color:#1F4E79;font-size:.9rem">Birleşik itiner · '+ys.length+' yol (alt alta)</span>'+
     '<span style="font-weight:700;color:#2c3e50;font-size:.82rem">Toplam: '+esc(fmtUzunlukKm(topUz))+'</span>'+
     '</div>';
   return '<div class="iti-wrap" id="itiWrapMain" title="Tıklayınca tam ekran (büyüt)">'+head+svg+leg+'</div>';

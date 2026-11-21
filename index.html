@@ -8464,10 +8464,18 @@ function bkModel9(j){
     if(esN.some(e => mesafe6(e.p, jt) < 150)) return false;
     // v138: birleşme yerinin iki yanındaki en yakın KM yazıları km'nin kesintisiz devam ettiğini göstermeli.
     // İki yanda da km birleşme yerinden sayılıyorsa (iki yolun 0+000'ı) ya da km atlıyorsa bunlar ayrı yollardır.
-    const yan = (p, ucSon) => { const c = bkKum9(p), T = c[c.length - 1]; let en = null;
-      kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d >= 80) return; const s = ucSon ? T - c[r.i] : c[r.i]; if(s < 3000 && (!en || s < en.s)) en = { s, v: n.v }; }); return en; };
-    const ka = yan(zp, zSon), kb = yan(qp, !qBas);
-    if(ka && kb){ const D = (ka.s + kb.s) / 1000; return Math.abs(Math.abs(kb.v - ka.v) - D) > 0.3 + 0.25 * D; }
+    // v139: aradaki boşluk da hesaba katılır ve km'nin yönü (artıyor / azalıyor) birleşmeden sonra da aynı kalmalı
+    const yan = (p, ucSon) => { const c = bkKum9(p), T = c[c.length - 1], L = [];
+      kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d >= 80) return; const s = ucSon ? T - c[r.i] : c[r.i]; if(s < 4000) L.push({ s, v: n.v }); }); return L.sort((a, b) => a.s - b.s); };
+    const A = yan(zp, zSon), B = yan(qp, !qBas);
+    if(A.length && B.length){
+      const bosluk = mesafe6(jt, qBas ? qp[0] : qp[qp.length - 1]), D = (A[0].s + bosluk + B[0].s) / 1000, tol = 0.3 + 0.25 * D;
+      let tr = 0;
+      if(A.length >= 2 && A[1].s - A[0].s > 50 && A[1].v !== A[0].v) tr = Math.sign(A[0].v - A[1].v);
+      else if(B.length >= 2 && B[1].s - B[0].s > 50 && B[1].v !== B[0].v) tr = Math.sign(B[1].v - B[0].v);
+      if(tr) return Math.abs(B[0].v - A[0].v - tr * D) > tol;
+      return Math.abs(Math.abs(B[0].v - A[0].v) - D) > tol;
+    }
     const ez = kmEgim(zp), eq = kmEgim(qp); if(!ez || !eq) return false;
     return (zSon ? ez > 0 : ez < 0) !== (qBas ? eq > 0 : eq < 0);
   };
@@ -8548,6 +8556,15 @@ function bkModel9(j){
         const e0 = mesafe6(s, o.p[0]), e1 = mesafe6(s, o.p[o.p.length - 1]);
         if(Math.min(e0, e1) < 40 && !ayriYol(p, true, e1 < e0 ? o.p.slice().reverse() : o.p, true)){ p = p.concat(e1 < e0 ? o.p.slice().reverse() : o.p); if(o.a) adlar.push(o.a); kal.splice(i, 1); ek = true; break; } } }
     if(uz(p) < 50) continue;
+    { // v139: parçanın ÖBÜR ucu bir yolun ucuna değiyor ve km kesintisiz sürüyorsa parça o yolun parçasıdır
+      // (ör. kavşaktaki 0+000'dan başlayıp 1+200'de yolun geri kalanına bağlanan kısım)
+      const uzak = p[p.length - 1], ters = p.slice().reverse(); let hit = null;
+      yollar.forEach(y => { if(hit) return; [[true, y.p[y.p.length - 1]], [false, y.p[0]]].forEach(([sonda, E]) => {
+        if(!hit && mesafe6(uzak, E) < 40 && !ayriYol(y.p, sonda, ters, true)) hit = { y, sonda }; }); });
+      if(hit){ const y = hit.y;
+        if(hit.sonda) y.p = y.p.concat(ters);
+        else { const N = p.length; y.kop = new Set([...y.kop].map(k => k + N)); y.p = p.concat(y.p); }
+        adlar.forEach(a => y.adS.add(a)); continue; } }
     { // yolun UCUNDAN aynı doğrultuda devam eden parça yolun devamıdır: yola eklenir
       const { y } = enYakinYol(p[0]), sonda = mesafe6(p[0], y.p[y.p.length - 1]) < mesafe6(p[0], y.p[0]), E = sonda ? y.p[y.p.length - 1] : y.p[0];
       const uzak = p[p.length - 1], yd = ucYon(y.p, sonda), pd = yon(E, uzak);

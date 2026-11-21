@@ -2231,7 +2231,7 @@ async function hatGoster(id, korun){
 <div class="hr2"><div class="hara" id="hara"><button data-hara aria-label="İş ara">${IK("ara")}</button><input id="hara2" type="search" placeholder="İş ara…" autocomplete="off"></div><button class="htum${hatTum ? " on" : ""}" data-htum>${IK("lejant")}Tüm İşler KMZ</button><span class="hsp"></span><div class="hseg"><button data-hmod="2b"${hatMod === "2b" ? ' class="on"' : ""}>2B</button><button data-hmod="3b"${hatMod === "3b" ? ' class="on"' : ""}>3B</button></div></div><div class="honer" id="honer2"></div></div>
 <div class="hatmap etiketsiz" id="hatmap"></div><div class="hat3b" id="hat3b" hidden></div>
 <div class="katman"><button data-katman="sokak">Sokak</button><button data-katman="uydu" class="on">Uydu</button></div>
-<div class="sagk">${katVar ? `<button class="kat" data-katlar aria-label="Katmanlar">${IK("katman")}Katmanlar<i id="katsay">0</i></button><span class="ayr"></span>` : ""}<button data-konumum aria-label="Konumum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 4 3.5 10.6l6.9 2.6 2.6 6.9z" fill="currentColor" fill-opacity=".18"/></svg></button><button data-yola aria-label="Yol hattına dön">${IK("yol")}</button><button data-boykesit aria-label="Boy kesit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="M3 16l4-6 4 3 4-7 6 10"/></svg></button><span class="ayr"></span><button data-olc aria-label="Mesafe ölç">${IK("cetvel")}</button><button data-yt="${esc(j.id)}" aria-label="Yol tarifi">${IK("yt")}</button><span class="ayr"></span><button class="egm" data-egim aria-label="Eğik / tepeden">${IK("egim")}</button><button data-gez aria-label="Yolu gez"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 9 3M19 21 15 3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></svg></button></div><button class="pus" data-kuzey aria-label="Kuzeyi yukarı al">${PUSULA}</button>
+<div class="sagk">${katVar ? `<button class="kat" data-katlar aria-label="Katmanlar">${IK("katman")}Katmanlar<i id="katsay">0</i></button><span class="ayr"></span>` : ""}<button data-konumum aria-label="Konumum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 4 3.5 10.6l6.9 2.6 2.6 6.9z" fill="currentColor" fill-opacity=".18"/></svg></button><button data-yola aria-label="Yol hattına dön">${IK("yol")}</button><button data-boykesit aria-label="Boy kesit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="M3 16l4-6 4 3 4-7 6 10"/></svg></button>${(() => { try{ return itiVar(j) ? `<button data-iti="${esc(j.id)}" aria-label="İtinerer">${IK("iti")}</button>` : ""; }catch(_){ return ""; } })()}<span class="ayr"></span><button data-olc aria-label="Mesafe ölç">${IK("cetvel")}</button><button data-yt="${esc(j.id)}" aria-label="Yol tarifi">${IK("yt")}</button><span class="ayr"></span><button class="egm" data-egim aria-label="Eğik / tepeden">${IK("egim")}</button><button data-gez aria-label="Yolu gez"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 9 3M19 21 15 3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></svg></button></div><button class="pus" data-kuzey aria-label="Kuzeyi yukarı al">${PUSULA}</button>
 <div class="solk"><div class="hatnot" id="hatnot" style="display:none">Çevrimdışı · arka plan haritası yok</div><div class="chips" id="chips"></div></div>
 <div class="dserit" id="dserit" style="display:none"></div>
 <div class="konumkart" id="konumkart" style="display:none"><span class="nok"></span><div><b id="konumb"></b><small id="konums"></small></div></div>`;
@@ -2659,7 +2659,7 @@ function hatKapat(){
   document.getElementById("hatv")?.remove();
 }
 // iPhone'da kenardan geri kaydırma / Android geri tuşu yol hattını kapatsın
-window.addEventListener("popstate", () => { if(document.getElementById("hatv")) hatKapat(); });
+window.addEventListener("popstate", () => { if(document.getElementById("itiv")) return; if(document.getElementById("hatv")) hatKapat(); });   // v131: KMZ'den açılan itinerer kapanınca KMZ kalır
 
 // ---------- İtinerer (Yol Takip'in kendi çizimi; yalnızca telefonda) ----------
 // Çizimler masaüstünde Yol Takip programının koduyla üretilip veri dosyasına
@@ -2857,13 +2857,13 @@ async function itinererGoster(j){
   if(!kodlar.length) return;
   itiKapat();
   const v = document.createElement("div"); v.className = "itiv"; v.id = "itiv";
-  v.innerHTML = `<div class="hatbar"><button class="x" data-itikapat>${IK("x")}Kapat</button><div class="ad" id="itiAd"></div><button class="lj" data-lejant>${IK("lejant")}Lejant</button></div>
+  v.innerHTML = `<div class="hatbar"><button class="x" data-itikapat>${IK("x")}Kapat</button><div class="ad" id="itiAd"></div>${j && j.hat ? `<button class="lj" data-itikmz aria-label="KMZ">${IK("kmz")}KMZ</button>` : ""}<button class="lj" data-lejant>${IK("lejant")}Lejant</button></div>
 ${kodlar.length > 1 ? `<div class="itisek">${kodlar.map((k, i) => `<button data-itisek="${i}"${i ? "" : ' class="on"'}>${esc(kisaAd(D.iti.projeler[k].ad))}</button>`).join("")}</div>` : ""}
 <div class="itialan" id="itialan"><div class="itihost" id="itihost"></div></div>
 <div class="itialt"><span>Kaydırın · iki parmakla büyütün</span><span class="iz"><button data-itizoom="0.8" aria-label="Uzaklaştır">−</button><button data-itizoom="1.25" aria-label="Yakınlaştır">+</button></span></div>`;
   document.body.appendChild(v);
   history.pushState({ iti: 1 }, "");
-  itiDurum = { kodlar, i: 0, z: 1 };
+  itiDurum = { kodlar, i: 0, z: 1, j };
   const host = document.getElementById("itihost");
   host.attachShadow({ mode: "open" });
   itiCiz();
@@ -9453,11 +9453,14 @@ function kbHesap9(j){
       const h = yo.h, S = yo.S;
       if(S.length < 2) return;
       // önce önceki yıllar, sonra bu yıl (üstte)
-      km.slice().sort((x, y) => (x.yil === D.yil) - (y.yil === D.yil)).forEach(x => {
-        if(!kbHatlar9(Y, x).includes(yo)) return;
+      km.slice().sort((x, y) => (x.yil === D.yil) - (y.yil === D.yil)).forEach(x0 => {
+        const hb = kbHatAralik9(Y, x0).find(z => z[0] === yo); if(!hb) return;
+        const x = { ...x0, a: hb[1], e: hb[2] };
         const ty = /^TY/i.test(x.k.s || "") || koyYolu9(j), t = !ty && x.k.y ? taraf9(x.k.ac) : null;
         const yan = t === "SOL" ? -1 : t === "SAG" ? 1 : 0, buyil = x.yil === D.yil;
-        kbAralik9(h, S, x.a, x.e, x.k.zc).forEach(([c0, c1]) => kbParca9(h, c0, c1).forEach(p => out.push({ p, r: buyil ? renk.buyil : renk.eski, yan, eski: !buyil, h, c0, c1 })));
+        let tip = null; try{ tip = koyYolu9(j) ? "TY" : itiTip9(j, (x.a + x.e) / 2); }catch(_){}
+        const by = tip ? tip === "BY" : !ty;
+        kbAralik9(h, S, x.a, x.e, x.k.zc).forEach(([c0, c1]) => kbParca9(h, c0, c1).forEach(p => out.push({ p, r: buyil ? renk.buyil : renk.eski, yan, eski: !buyil, h, c0, c1, by })));
       });
     });
   }
@@ -9553,6 +9556,37 @@ function kbHatlar9(Y, x){
   if(x.k && x.k.yl){ const s = Y.find(y => y.ad === x.k.yl); if(s) return [s]; }
   if(!ust.length) return [];
   return [ust.find(y => y.ana) || ust[0]];
+}
+// v131: bir aralığın hangi yolda hangi kısmı boyanacak: seçilen yol (yl) ya da ana yol önce; aralığın o yolda
+// olmayan kısmı, km'si başka bir yolun devamında olan (ör. ana yolun sonundan PS'ye giden ayrı parça) yolda boyanır.
+function kbHatAralik9(Y, x){
+  const a = Math.min(x.a, x.e), e = Math.max(x.a, x.e);
+  if(x.k && x.k.yl){ const s2 = Y.find(y => y.ad === x.k.yl); if(s2) return [[s2, a, e]]; }
+  const ust = Y.filter(y => Math.min(e, y.hi) - Math.max(a, y.lo) > 1 || (a === e && a >= y.lo && a <= y.hi));
+  if(!ust.length) return [];
+  const sira = ust.slice().sort((p, q) => (q.ana ? 1 : 0) - (p.ana ? 1 : 0));
+  const out = []; let kalan = [[a, e]];
+  sira.forEach((y, n) => {
+    // ilk yoldan sonrakiler yalnız onların devamıysa (km'si bir öncekinin ucuna 300 m'den yakın başlıyor / bitiyor)
+    if(n && !out.some(([z, lo2, hi2]) => Math.abs(y.lo - z.hi) < 300 || Math.abs(y.hi - z.lo) < 300)) return;
+    const yeni = [];
+    kalan.forEach(([u, v]) => { const lo = Math.max(u, y.lo), hi = Math.min(v, y.hi);
+      if(hi - lo > 1){ out.push([y, lo, hi]); if(lo - u > 1) yeni.push([u, lo]); if(v - hi > 1) yeni.push([hi, v]); } else yeni.push([u, v]); });
+    kalan = yeni;
+  });
+  return out;
+}
+// v131: o km'de yol tipi itinererden (yol tipi aralıkları → o km'yi kapsayan yol kaydı → projenin yol tipi)
+function itiTip9(j, m){
+  if(!YT9 || !j) return null;
+  let kodlar = []; try{ kodlar = ytKodlar9(j); }catch(_){}
+  for(const kod of kodlar){
+    const q = ytProje9(kod); if(!q) continue;
+    const ar = (q.yolTipAraliklari || []).find(r => m >= +r.bas - 1 && m <= +r.bit + 1); if(ar && ar.tip) return ar.tip === "TY" ? "TY" : "BY";
+    const k = (q.kayitlar || []).find(r => YOLTUR9.has(r.tur) && m >= +r.bas - 1 && m <= +r.bit + 1 && r.sinif); if(k) return k.sinif === "TY" ? "TY" : "BY";
+    if(q.yolTipi) return q.yolTipi === "TY" ? "TY" : "BY";
+  }
+  return null;
 }
 async function yolSor9(j, km, eski){
   const a0 = kmM9(km.a), e0 = kmM9(km.e); if(a0 === null || e0 === null) return null;
@@ -10504,14 +10538,14 @@ function kbCiz10(m, hedef, j, W, WB, o){
   const lat0 = (P[0].p[0] || [0])[0] * Math.PI / 180, kx = 111320 * Math.cos(lat0), ky = 110540, xy = q => [q[1] * kx, q[0] * ky];
   // 1) yol yol, iki yanın renk aralıkları
   const yollar = new Map();
-  P.forEach((s, i) => { if(!s.h) return; let y = yollar.get(s.h); if(!y) yollar.set(s.h, y = []); y.push({ a: s.c0, b: s.c1, yan: s.yan, r: s.r, i }); });
+  P.forEach((s, i) => { if(!s.h) return; let y = yollar.get(s.h); if(!y) yollar.set(s.h, y = []); y.push({ a: s.c0, b: s.c1, yan: s.yan, r: s.r, i, by: s.by !== false }); });
   const bolgeler = [];   // { h, a, b, sol, sag }
   yollar.forEach((L, h) => {
     const xs = [...new Set(L.flatMap(x => [x.a, x.b]))].sort((a, b) => a - b), el = [];
     for(let k = 0; k < xs.length - 1; k++){ const a = xs[k], b = xs[k + 1]; if(b - a < 0.01) continue;
-      let sol = null, sag = null, is = -1, ig = -1;
-      L.forEach(x => { if(x.a <= a + 0.01 && x.b >= b - 0.01){ if(x.yan <= 0 && x.i > is){ is = x.i; sol = x.r; } if(x.yan >= 0 && x.i > ig){ ig = x.i; sag = x.r; } } });
-      el.push({ a, b, sol, sag }); }
+      let sol = null, sag = null, is = -1, ig = -1, by = false;
+      L.forEach(x => { if(x.a <= a + 0.01 && x.b >= b - 0.01){ if(x.by) by = true; if(x.yan <= 0 && x.i > is){ is = x.i; sol = x.r; } if(x.yan >= 0 && x.i > ig){ ig = x.i; sag = x.r; } } });
+      el.push({ a, b, sol, sag, by }); }
     // yan yana aynı olanları birleştir
     const bir = L2 => { const o2 = []; L2.forEach(x => { const s2 = o2[o2.length - 1]; if(s2 && s2.sol === x.sol && s2.sag === x.sag && Math.abs(s2.b - x.a) < 0.5) s2.b = x.b; else o2.push({ ...x }); }); return o2; };
     let g = bir(el);
@@ -10530,7 +10564,7 @@ function kbCiz10(m, hedef, j, W, WB, o){
   if(!bolgeler.length) return false;
   // 2) boyalı bölgelerin çizgisi ve gizleme koridoru
   const parcalar = [];   // { p, sol, sag }
-  bolgeler.forEach(b => kbParca9(b.h, b.a, b.b).forEach(p => { if(p.length > 1) parcalar.push({ p, sol: b.sol, sag: b.sag }); }));
+  bolgeler.forEach(b => kbParca9(b.h, b.a, b.b).forEach(p => { if(p.length > 1) parcalar.push({ p, sol: b.sol, sag: b.sag, by: b.by }); }));
   const G = new Map(), H = 60, KOR = 40;
   parcalar.forEach((t, ti) => { for(let i = 1; i < t.p.length; i++){ const a = xy(t.p[i - 1]), b = xy(t.p[i]);
     const x1 = Math.floor((Math.min(a[0], b[0]) - KOR) / H), x2 = Math.floor((Math.max(a[0], b[0]) + KOR) / H), y1 = Math.floor((Math.min(a[1], b[1]) - KOR) / H), y2 = Math.floor((Math.max(a[1], b[1]) + KOR) / H);
@@ -10569,22 +10603,33 @@ function kbCiz10(m, hedef, j, W, WB, o){
   // 3) KMZ'nin renkli çizgileri (boyalı koridor dışı)
   renkli.forEach(c => ayir(c).forEach(p => ekle(L.polyline(p, { ...ortak, color: c.r, weight: W, lineCap: "butt", lineJoin: "round" }))));
   // 4) boyalı parçalar — boyasız yarı: yakındaki KMZ çizgisinin rengi
-  const yakinRenk = q => { let en = 1e9, r = "#1e40ff"; const Q = xy(q); renkli.forEach(c => { for(let i = 0; i < c.p.length; i += Math.max(1, Math.floor(c.p.length / 400))){ const A = xy(c.p[i]), d = Math.hypot(A[0] - Q[0], A[1] - Q[1]); if(d < en){ en = d; r = c.r; } } }); return r; };
-  const byMi = q => { const Q = xy(q); for(const c of beyaz) for(let i = 0; i < c.p.length; i++){ const A = xy(c.p[i]); if(Math.hypot(A[0] - Q[0], A[1] - Q[1]) < 60) return true; } return false; };
+  // boyasız yarı her zaman "yapılacak" mavisi (KMZ'deki maviye en yakın renk; yoksa standart mavi)
+  const MAVI = (() => { let en = 1e9, r = "#1e40ff"; renkli.forEach(c => { const m2 = /^#?([0-9a-f]{6})$/i.exec(String(c.r || "").trim()); if(!m2) return; const n = parseInt(m2[1], 16), R = n >> 16, Gc = (n >> 8) & 255, B = n & 255;
+    if(B < 120 || B < R + 60) return; const d = Math.hypot(R - 30, Gc - 64, B - 255); if(d < en){ en = d; r = c.r; } }); return r; })();
   const yarim = [];
   parcalar.forEach(t => {
-    const orta = t.p[Math.floor(t.p.length / 2)], taban = (!t.sol || !t.sag) ? yakinRenk(orta) : null;
-    const sol = t.sol || taban, sag = t.sag || taban;
+    const sol = t.sol || MAVI, sag = t.sag || MAVI;
     if(sol === sag) ekle(L.polyline(t.p, { ...ortak, color: sol, weight: W, lineCap: "butt", lineJoin: "round" }));
     else [[-1, sol], [1, sag]].forEach(([y, r]) => { const ly = ekle(L.polyline(kbKaydir9(m, t.p, y * W / 4), { ...ortak, color: r, weight: W / 2, lineCap: "butt", lineJoin: "round", uc3bHam: t.p, uc3bOfs: y * W / 4 })); yarim.push([ly, t.p, y]); });
-    t.by = beyaz.length && byMi(orta);
   });
   // 5) KMZ'nin beyazı (koridor dışı) + boyalı yerlerde tam ortada kendi beyazımız
   beyaz.forEach(c => ayir(c).forEach(p => ekle(L.polyline(p, { ...ortak, color: c.r, weight: WB, lineCap: "butt", lineJoin: "round" }))));
   parcalar.forEach(t => { if(t.by) ekle(L.polyline(t.p, { ...ortak, color: "#ffffff", weight: WB, lineCap: "butt", lineJoin: "round" })); });
-  if(yarim.length){ const f = () => yarim.forEach(([ly, p, y]) => { try{ ly.setLatLngs(kbKaydir9(m, p, y * W / 4)); }catch(_){} }); m.on("zoom", f); m.on("zoomend", f); m.on("viewreset", f); }
+  // yarımlar yalnız yakınlaştırma BİTİNCE yeniden yerleşir (sürerken çizim yenilenirse tuval kayar)
+  if(yarim.length){ const f = () => yarim.forEach(([ly, p, y]) => { try{ ly.setLatLngs(kbKaydir9(m, p, y * W / 4)); }catch(_){} }); m.on("zoomend", f); m.on("viewreset", f); }
   return true;
 }
+
+// v131: itinerer ↔ KMZ tek dokunuş. KMZ'den açıldıysa "KMZ" itinereri kapatır (KMZ aynı yerde durur);
+// başka yerden açıldıysa itinerer kapanır ve işin KMZ'si açılır.
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-itikmz]"); if(!b) return;
+  e.stopPropagation();
+  const id = itiDurum && itiDurum.j ? itiDurum.j.id : (detay && detay.id);
+  if(document.getElementById("hatv")){ history.back(); return; }
+  history.back();
+  setTimeout(() => { const j = byId(id); if(j && j.hat) hatGoster(j.id); }, 120);
+}, true);
 </script>
 </body>
 </html>

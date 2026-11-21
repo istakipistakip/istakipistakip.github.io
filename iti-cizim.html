@@ -3545,10 +3545,8 @@ function drawItiAyriCoklu(p, allowSearch){
       svg+='<line x1="0" y1="'+(yOff-gap/2)+'" x2="'+maxW+'" y2="'+(yOff-gap/2)+'" stroke="#c5d0dc" stroke-width="1"/>';
     }
     svg+='<text x="8" y="'+(yOff+16)+'" font-size="12" font-weight="800" fill="#1F4E79" stroke="#fff" stroke-width="3" paint-order="stroke">'+baslik+'</text>';
-    /* her yol kendi alanında kırpılır (yan yana çizimdeki gibi; alanın dışına taşan oklar öbür yola girmesin) */
-    var cid="itiCp"+Math.random().toString(36).slice(2,8);
-    svg+='<defs><clipPath id="'+cid+'"><rect x="0" y="0" width="'+(pt.sv.w||400)+'" height="'+h+'"/></clipPath></defs>';
-    svg+='<g class="iti-yatay" data-yol-id="'+esc(y.id)+'" transform="translate(0,'+(yOff+labelH)+')" clip-path="url(#'+cid+')">'+pt.sv.inner+'</g>';
+    /* yerleşim telefonda içeriğin gerçek boyuna göre yeniden yapılır (yazılar büyüyebilir) */
+    svg+='<g class="iti-yatay" data-yol-id="'+esc(y.id)+'" transform="translate(0,'+(yOff+labelH)+')">'+pt.sv.inner+'</g>';
     yOff+=labelH+h+gap;
   });
   svg+='</svg>';

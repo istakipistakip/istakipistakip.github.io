@@ -2238,7 +2238,7 @@ async function hatGoster(id, korun){
   document.body.appendChild(v);
   if(!korun) history.pushState({ hat: 1 }, "");
   if(typeof L === "undefined"){ document.getElementById("hatmap").innerHTML = '<div class="empty">Harita bileşeni yüklenemedi.</div>'; return; }
-  const m = L.map("hatmap", { zoomSnap: 0.25, zoomDelta: 1, doubleClickZoom: false, zoomControl: false, attributionControl: true, preferCanvas: true, maxZoom: 19, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 });
+  const m = L.map("hatmap", { doubleClickZoom: false, zoomControl: false, attributionControl: true, preferCanvas: true, maxZoom: 19, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 });
   hatHarita = m;
   // Katman sırası: drone şeridi < genel KMZ < işin kendi hattı < drone noktaları
   [["serit", 350], ["genel", 380], ["drone", 450]].forEach(([ad, z]) => { m.createPane(ad).style.zIndex = z; });
@@ -2258,10 +2258,13 @@ async function hatGoster(id, korun){
   });
   const sinir = [];
   const renkli = j.hat.cizgi.filter(c => !c.i), beyaz = j.hat.cizgi.filter(c => c.i);
-  let kes = null; try{ kes = kbKes9(j, renkli); }catch(_){}
-  renkli.forEach((c, i) => { if(kes) kbKesCiz9(m, m, kes.cizgi[i], c, 8, {}); else L.polyline(c.p, { color: c.r, weight: 8, opacity: 1 }).addTo(m); sinir.push(...c.p); });
-  try{ kmzBoya9(m, j, kes ? { atla: kes.kullanilan } : {}); }catch(_){}
-  beyaz.forEach(c => { L.polyline(c.p, { color: c.r, weight: 3, opacity: 1 }).addTo(m); sinir.push(...c.p); });
+  let ciz10 = false; try{ ciz10 = kbCiz10(m, m, j, 8, 3, {}); }catch(e){ ciz10 = false; }
+  if(!ciz10){
+    renkli.forEach(c => L.polyline(c.p, { color: c.r, weight: 8, opacity: 1 }).addTo(m));
+    try{ kmzBoya9(m, j); }catch(_){}
+    beyaz.forEach(c => L.polyline(c.p, { color: c.r, weight: 3, opacity: 1 }).addTo(m));
+  }
+  renkli.forEach(c => sinir.push(...c.p)); beyaz.forEach(c => sinir.push(...c.p));
   j.hat.nok.forEach(n => {
     const mk = L.circleMarker([n[0], n[1]], { radius: 6, color: "#ffffff", weight: 2, fillColor: n[3] || "#dc2626", fillOpacity: 1 }).addTo(m);
     if(n[2]) mk.bindTooltip(n[2], { permanent: true, direction: "top", className: "kmz-km-label", offset: [0, -8] });
@@ -2269,7 +2272,7 @@ async function hatGoster(id, korun){
     sinir.push([n[0], n[1]]);
   });
   const el = document.getElementById("hatmap");
-  const etiketGuncelle = () => el.classList.toggle("etiketsiz", m.getZoom() < 13.4);   // v129: 1,5 kat daha uzaktan açılır (14 − log2 1,5)
+  const etiketGuncelle = () => el.classList.toggle("etiketsiz", m.getZoom() < 13);   // v130: bir adım daha uzaktan açılır (çeyrek adım yakınlaştırma kaldırıldı)
   m.on("zoomend", etiketGuncelle);
   m.on("zoomend", () => { if(kat && kat.drone){ seritCiz(); droneNoktalar(); } });
   if(sinir.length) m.fitBounds(sinir, { padding: [30, 30], maxZoom: 16 }); else m.setView([40.7, 36.3], 8);
@@ -3991,11 +3994,13 @@ function tumIslerCiz(){
   ISLER.forEach(x => { if(!x.hat || x === hatIs) return;
     const czP = (p, r, w) => { if(p.length < 2) return; L.polyline(p, { color: r, weight: w, opacity: .6, isId: x.id }).on("click", e => { L.DomEvent.stopPropagation(e); tumSec(x.id); }).addTo(tumGrup); };
     const cz = c => czP(c.p, c.r, c.i ? 2 : 5);
-    const rk = x.hat.cizgi.filter(c => !c.i); let kes = null; try{ kes = kbKes9(x, rk); }catch(_){}
     const tik = e => { L.DomEvent.stopPropagation(e); tumSec(x.id); };
-    rk.forEach((c, i) => { if(kes) kbKesCiz9(m, tumGrup, kes.cizgi[i], c, 5, { op: .6, isId: x.id, tik }); else czP(c.p, c.r, 5); });
-    try{ kmzBoya9(tumGrup, x, { w: 5, op: .6, isId: x.id, tik, ...(kes ? { atla: kes.kullanilan } : {}) }); }catch(_){}
-    x.hat.cizgi.filter(c => c.i).forEach(cz); });
+    let ok10 = false; try{ ok10 = kbCiz10(m, tumGrup, x, 5, 2, { op: .6, isId: x.id, tik }); }catch(_){ ok10 = false; }
+    if(!ok10){
+      x.hat.cizgi.filter(c => !c.i).forEach(cz);
+      try{ kmzBoya9(tumGrup, x, { w: 5, op: .6, isId: x.id, tik }); }catch(_){}
+      x.hat.cizgi.filter(c => c.i).forEach(cz);
+    } });
   tumSecili = hatIs.id;
 }
 // Tüm İşler: bir hatta dokununca doğrudan o işe gidilir (pencere yok)
@@ -10485,6 +10490,100 @@ function kbKesCiz9(m, hedef, parcalar, c, W, o){
     });
   });
   if(yarim.length) m.on("zoomend", () => yarim.forEach(([ly, p, y]) => { try{ ly.setLatLngs(kbKaydir9(m, p, y * W / 4)); }catch(_){} }));
+}
+
+// ---------- v130: KMZ boyası — tek geometri, eşit yarımlar, alttan hiçbir şey görünmez ----------
+// Boyalı (KM girişi ya da itinererde bitmiş) aralıklarda: yolla aynı yönde ~40 m içinde kalan bütün KMZ çizgileri
+// (renkli kopyalar ve KMZ'nin kendi beyazı) gizlenir; yol tek çizgi olarak yeniden çizilir: sol / sağ yarı eşit
+// kalınlıkta (renkleri aynıysa tek tam çizgi), BY ise beyaz orta çizgi tam ortada. 20 m'den kısa boşluk ve renk
+// kırıntıları yanındaki renge katılır (kesik görünmez). Yakınlaştırma sürerken de yarımlar yerinde kalır.
+function kbCiz10(m, hedef, j, W, WB, o){
+  o = o || {};
+  const P = kbHesap9(j); if(!P.length) return false;
+  const cz = (j.hat && j.hat.cizgi) || [], renkli = cz.filter(c => !c.i), beyaz = cz.filter(c => c.i);
+  const lat0 = (P[0].p[0] || [0])[0] * Math.PI / 180, kx = 111320 * Math.cos(lat0), ky = 110540, xy = q => [q[1] * kx, q[0] * ky];
+  // 1) yol yol, iki yanın renk aralıkları
+  const yollar = new Map();
+  P.forEach((s, i) => { if(!s.h) return; let y = yollar.get(s.h); if(!y) yollar.set(s.h, y = []); y.push({ a: s.c0, b: s.c1, yan: s.yan, r: s.r, i }); });
+  const bolgeler = [];   // { h, a, b, sol, sag }
+  yollar.forEach((L, h) => {
+    const xs = [...new Set(L.flatMap(x => [x.a, x.b]))].sort((a, b) => a - b), el = [];
+    for(let k = 0; k < xs.length - 1; k++){ const a = xs[k], b = xs[k + 1]; if(b - a < 0.01) continue;
+      let sol = null, sag = null, is = -1, ig = -1;
+      L.forEach(x => { if(x.a <= a + 0.01 && x.b >= b - 0.01){ if(x.yan <= 0 && x.i > is){ is = x.i; sol = x.r; } if(x.yan >= 0 && x.i > ig){ ig = x.i; sag = x.r; } } });
+      el.push({ a, b, sol, sag }); }
+    // yan yana aynı olanları birleştir
+    const bir = L2 => { const o2 = []; L2.forEach(x => { const s2 = o2[o2.length - 1]; if(s2 && s2.sol === x.sol && s2.sag === x.sag && Math.abs(s2.b - x.a) < 0.5) s2.b = x.b; else o2.push({ ...x }); }); return o2; };
+    let g = bir(el);
+    // 20 m'den kısa parçalar: iki yanı aynı ise ona, değilse uzun komşuya katılır
+    for(let tur = 0; tur < 3; tur++){
+      for(let k = 0; k < g.length; k++){ const x = g[k]; if(x.b - x.a >= 20) continue; const o1 = g[k - 1], o3 = g[k + 1];
+        const hedefK = o1 && o3 ? ((o1.sol === o3.sol && o1.sag === o3.sag) || (o1.b - o1.a) >= (o3.b - o3.a) ? o1 : o3) : (o1 || o3);
+        if(hedefK && Math.abs((hedefK === o1 ? o1.b : o3.a) - (hedefK === o1 ? x.a : x.b)) < 0.5){ x.sol = hedefK.sol; x.sag = hedefK.sag; } }
+      g = bir(g);
+    }
+    // boşluklar (iki boyalı aralık arasında 20 m'den az) kapatılır
+    const dolu = g.filter(x => x.sol || x.sag);
+    for(let k = 1; k < dolu.length; k++){ const a = dolu[k - 1], b = dolu[k]; if(b.a - a.b > 0 && b.a - a.b < 20) a.b = b.a; }
+    dolu.forEach(x => bolgeler.push({ h, ...x }));
+  });
+  if(!bolgeler.length) return false;
+  // 2) boyalı bölgelerin çizgisi ve gizleme koridoru
+  const parcalar = [];   // { p, sol, sag }
+  bolgeler.forEach(b => kbParca9(b.h, b.a, b.b).forEach(p => { if(p.length > 1) parcalar.push({ p, sol: b.sol, sag: b.sag }); }));
+  const G = new Map(), H = 60, KOR = 40;
+  parcalar.forEach((t, ti) => { for(let i = 1; i < t.p.length; i++){ const a = xy(t.p[i - 1]), b = xy(t.p[i]);
+    const x1 = Math.floor((Math.min(a[0], b[0]) - KOR) / H), x2 = Math.floor((Math.max(a[0], b[0]) + KOR) / H), y1 = Math.floor((Math.min(a[1], b[1]) - KOR) / H), y2 = Math.floor((Math.max(a[1], b[1]) + KOR) / H);
+    for(let gx = x1; gx <= x2; gx++) for(let gy = y1; gy <= y2; gy++){ const k = gx + "," + gy; let L2 = G.get(k); if(!L2) G.set(k, L2 = []); L2.push([a, b, ti, i === 1, i === t.p.length - 1]); } } });
+  const ortu = (q, d) => {   // q noktası (yönü d) boyalı koridorda mı
+    const Pq = xy(q), L2 = G.get(Math.floor(Pq[0] / H) + "," + Math.floor(Pq[1] / H)); if(!L2) return false;
+    const dl = Math.hypot(d[0], d[1]) || 1;
+    for(const [a, b, t, ilk, son] of L2){ const dx = b[0] - a[0], dy = b[1] - a[1], l = dx * dx + dy * dy; let u = l ? ((Pq[0] - a[0]) * dx + (Pq[1] - a[1]) * dy) / l : 0;
+      if(u < -0.05 || u > 1.05) continue; u = Math.max(0, Math.min(1, u));   // yalnız parçanın yanında; ucundan öteye taşmaz
+      if(Math.hypot(Pq[0] - a[0] - u * dx, Pq[1] - a[1] - u * dy) > KOR) continue;
+      const cos = Math.abs(dx * d[0] + dy * d[1]) / ((Math.sqrt(l) || 1) * dl); if(cos > 0.8) return true; }
+    return false;
+  };
+  // bir çizgiyi görünen parçalarına ayır (gizli / açık; 20 m'den kısa açık kırıntılar da gizlenir)
+  const ayir = c => {
+    const S = [];
+    for(let i = 0; i < c.p.length; i++){
+      const q = c.p[i];
+      if(i){ const A = xy(c.p[i - 1]), B = xy(q), d = [B[0] - A[0], B[1] - A[1]], n = Math.min(600, Math.ceil(Math.hypot(d[0], d[1]) / 5));
+        for(let k = 1; k < n; k++){ const t = k / n, r = [c.p[i - 1][0] + (q[0] - c.p[i - 1][0]) * t, c.p[i - 1][1] + (q[1] - c.p[i - 1][1]) * t]; S.push([r, ortu(r, d)]); } }
+      const a = xy(c.p[Math.max(0, i - 1)]), b = xy(c.p[Math.min(c.p.length - 1, i + 1)]); S.push([q, ortu(q, [b[0] - a[0], b[1] - a[1]])]);
+    }
+    // açık kısa koşular (≤ 4 örnek ≈ 20 m) iki gizli arasında ise gizle
+    let k = 0; while(k < S.length){ if(S[k][1]){ k++; continue; } let e = k; while(e < S.length && !S[e][1]) e++; if(k > 0 && e < S.length && e - k <= 4) for(let z = k; z < e; z++) S[z][1] = true; k = e; }
+    const out = []; let cur = null;
+    const orta = (u, v) => [(u[0] + v[0]) / 2, (u[1] + v[1]) / 2];
+    S.forEach(([q, g], idx) => {
+      if(g){ if(cur){ cur.push(orta(S[idx - 1][0], q)); if(cur.length > 1) out.push(cur); } cur = null; }
+      else { if(!cur){ cur = []; if(idx) cur.push(orta(S[idx - 1][0], q)); } cur.push(q); }
+    });
+    if(cur && cur.length > 1) out.push(cur);
+    return out;
+  };
+  const ortak = { opacity: o.op == null ? 1 : o.op, ...(o.isId ? { isId: o.isId } : {}) };
+  const ekle = ly => { if(o.tik) ly.on("click", o.tik); ly.addTo(hedef); return ly; };
+  // 3) KMZ'nin renkli çizgileri (boyalı koridor dışı)
+  renkli.forEach(c => ayir(c).forEach(p => ekle(L.polyline(p, { ...ortak, color: c.r, weight: W, lineCap: "butt", lineJoin: "round" }))));
+  // 4) boyalı parçalar — boyasız yarı: yakındaki KMZ çizgisinin rengi
+  const yakinRenk = q => { let en = 1e9, r = "#1e40ff"; const Q = xy(q); renkli.forEach(c => { for(let i = 0; i < c.p.length; i += Math.max(1, Math.floor(c.p.length / 400))){ const A = xy(c.p[i]), d = Math.hypot(A[0] - Q[0], A[1] - Q[1]); if(d < en){ en = d; r = c.r; } } }); return r; };
+  const byMi = q => { const Q = xy(q); for(const c of beyaz) for(let i = 0; i < c.p.length; i++){ const A = xy(c.p[i]); if(Math.hypot(A[0] - Q[0], A[1] - Q[1]) < 60) return true; } return false; };
+  const yarim = [];
+  parcalar.forEach(t => {
+    const orta = t.p[Math.floor(t.p.length / 2)], taban = (!t.sol || !t.sag) ? yakinRenk(orta) : null;
+    const sol = t.sol || taban, sag = t.sag || taban;
+    if(sol === sag) ekle(L.polyline(t.p, { ...ortak, color: sol, weight: W, lineCap: "butt", lineJoin: "round" }));
+    else [[-1, sol], [1, sag]].forEach(([y, r]) => { const ly = ekle(L.polyline(kbKaydir9(m, t.p, y * W / 4), { ...ortak, color: r, weight: W / 2, lineCap: "butt", lineJoin: "round", uc3bHam: t.p, uc3bOfs: y * W / 4 })); yarim.push([ly, t.p, y]); });
+    t.by = beyaz.length && byMi(orta);
+  });
+  // 5) KMZ'nin beyazı (koridor dışı) + boyalı yerlerde tam ortada kendi beyazımız
+  beyaz.forEach(c => ayir(c).forEach(p => ekle(L.polyline(p, { ...ortak, color: c.r, weight: WB, lineCap: "butt", lineJoin: "round" }))));
+  parcalar.forEach(t => { if(t.by) ekle(L.polyline(t.p, { ...ortak, color: "#ffffff", weight: WB, lineCap: "butt", lineJoin: "round" })); });
+  if(yarim.length){ const f = () => yarim.forEach(([ly, p, y]) => { try{ ly.setLatLngs(kbKaydir9(m, p, y * W / 4)); }catch(_){} }); m.on("zoom", f); m.on("zoomend", f); m.on("viewreset", f); }
+  return true;
 }
 </script>
 </body>

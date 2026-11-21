@@ -2701,6 +2701,7 @@ function itiDuzelt9(kok, j){
     try{ if(itiBag9(svg)) degisti = true; }catch(_){}   // düzeltmeden sonra yerleri yeniden (km yazıları değişmiş olabilir)
     try{ if(itiProje9(svg)) degisti = true; }catch(_){}
     try{ if(itiOne9(svg)) degisti = true; }catch(_){}
+    try{ if(itiOkDisari9(svg)) degisti = true; }catch(_){}
     try{ if(itiKilavuz9(svg)) degisti = true; }catch(_){}
     try{ if(itiBasYer9(svg)) degisti = true; }catch(_){} });
   return degisti;
@@ -8426,6 +8427,17 @@ function bkModel9(j){
   const pbN = nok.filter(q => PBRX.test(q[2] || "")).map(q => [q[0], q[1]]);
   par.forEach(q => q.k = kmN.filter(n => bkYakin9(n.p, q.p).d < 80).length);
   const pbYakin = pt => pbN.some(b => mesafe6(b, pt) < 150);
+  // v135: iki parça uç uca gelse de ayrı yol mu? Birleşme yerinde 0+000 / proje başı varsa ya da km iki yana doğru da
+  // artıyor / azalıyorsa (yolun bir ucu değil iki yolun başı) ayrı yoldur. Km eşitliği yakınındaysa ayırmaz.
+  const kmEgim = p => { const L = []; kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d < 80) L.push([r.i, n.v]); }); if(L.length < 2) return 0;
+    const mi = L.reduce((t, x) => t + x[0], 0) / L.length, mv = L.reduce((t, x) => t + x[1], 0) / L.length; return L.reduce((t, x) => t + (x[0] - mi) * (x[1] - mv), 0); };
+  const ayriYol = (zp, zSon, qp, qBas) => {
+    const jt = zSon ? zp[zp.length - 1] : zp[0];
+    if(esN.some(e => mesafe6(e.p, jt) < 150)) return false;
+    if(kmN.some(n => Math.abs(n.v) < 0.005 && mesafe6(n.p, jt) < 60) || pbN.some(b => mesafe6(b, jt) < 60)) return true;
+    const ez = kmEgim(zp), eq = kmEgim(qp); if(!ez || !eq) return false;
+    return (zSon ? ez > 0 : ez < 0) !== (qBas ? eq > 0 : eq < 0);
+  };
   const yakinKm = pt => { let en = null, bd = 800; kmN.forEach(n => { const d = mesafe6(n.p, pt); if(d < bd){ bd = d; en = n.v; } }); return en; };
   const yon = (a, b) => Math.atan2(b[0] - a[0], (b[1] - a[1]) * Math.cos(a[0] * Math.PI / 180));
   const ucYon = (p, son) => { // ucun 100 m'lik doğrultusu (dışarı doğru)
@@ -8451,6 +8463,9 @@ function bkModel9(j){
         const s = z[z.length - 1], b = z[0], n = q.p.length - 1;
         [[s, q.p[0], "son", false], [s, q.p[n], "son", true], [b, q.p[n], "bas", false], [b, q.p[0], "bas", true]].forEach(([zu, qu, uc, ters]) => {
           const d = mesafe6(zu, qu);
+          if(ayriYol(z, uc === "son", q.p, qu === q.p[0])) return;   // v135
+          // parçanın ÖBÜR ucu birleşme yerine değiyorsa bu bir kol / ayrı yoldur; uzak ucundan boşlukla eklenmez
+          if(d >= 40 && mesafe6(qu === q.p[0] ? q.p[n] : q.p[0], zu) < 60) return;
           if(d >= 40){
             // arada boşluk var: proje başı/sonu ucuna eklenmez; iki yanda KM varsa boşlukla uyuşmalı, yoksa en çok 300 m
             if(pbYakin(zu) || pbYakin(qu)) return;
@@ -8503,7 +8518,7 @@ function bkModel9(j){
       const { y } = enYakinYol(p[0]), sonda = mesafe6(p[0], y.p[y.p.length - 1]) < mesafe6(p[0], y.p[0]), E = sonda ? y.p[y.p.length - 1] : y.p[0];
       const uzak = p[p.length - 1], yd = ucYon(y.p, sonda), pd = yon(E, uzak);
       let aci = Math.abs(((yd - pd + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI);
-      if(mesafe6(p[0], E) < 250 && mesafe6(uzak, E) > 40 && aci < 0.9 && bkYakin9(uzak, y.p).d > 30){
+      if(mesafe6(p[0], E) < 250 && mesafe6(uzak, E) > 40 && aci < 0.9 && bkYakin9(uzak, y.p).d > 30 && !ayriYol(y.p, sonda, p, true)){
         let q = p.slice(), i = 0; while(i < q.length - 2 && bkHatUzak9(q[i], y.p) < 25) i++; if(i) q = q.slice(Math.max(0, i - 1));
         if(q.length >= 2){
           if(sonda){ y.kop.add(y.p.length); y.p = y.p.concat(q); }
@@ -9641,7 +9656,8 @@ function itiTers9(svg){
     if(t.closest("defs") || t.closest("[data-bas9]") || !t.textContent.trim()) return;
     const m = t.getCTM(); if(!m) return;
     const aci = Math.atan2(m.b, m.a) * 180 / Math.PI;
-    if(Math.abs(aci) < 100) return;
+    // v135: baş aşağı (≈180°) ve yukarıdan aşağı okunan (≈+90°) yazılar çevrilir — hepsi soldan sağa / aşağıdan yukarı okunur
+    if(aci <= 60 && aci >= -100) return;
     const b = t.getBBox(); if(!b.width) return;
     const cx = b.x + b.width / 2, cy = b.y + b.height / 2, tr = t.getAttribute("transform") || "";
     t.setAttribute("transform", (tr ? tr + " " : "") + `rotate(180 ${cx.toFixed(2)} ${cy.toFixed(2)})`);
@@ -9807,6 +9823,47 @@ function itiProje9(svg){
 }
 
 // kol yolu çubuğunun altında kalan istikamet okları ve kalın bağlantı çizgisinin altında kalan km yazıları öne alınır
+// v135: istikamet okları yol şeridinin üstüne binmesin — şeride değen ok, en yakın boş yana (sol / sağ / üst / alt)
+// şeridin hemen dışına kaydırılır (beyaz kenarlı kopyasıyla birlikte); yazıların üstüne de konmaz.
+function itiOkDisari9(svg){
+  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse(), vb = svg.viewBox.baseVal;
+  const kutu = el => { const b = el.getBBox(), m = ki.multiply(el.getCTM()); let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m); x1 = Math.min(x1, q.x); y1 = Math.min(y1, q.y); x2 = Math.max(x2, q.x); y2 = Math.max(y2, q.y); });
+    return { x1, y1, x2, y2 }; };
+  const kes = (a, b, p = 0) => a.x1 < b.x2 + p && a.x2 > b.x1 - p && a.y1 < b.y2 + p && a.y2 > b.y1 - p;
+  const gor = el => { for(let e = el; e && e !== svg; e = e.parentNode) if(e.getAttribute && (e.getAttribute("display") === "none")) return false; return true; };
+  const cubuk = [...svg.querySelectorAll("rect")].filter(r => !r.closest("defs") && gor(r)).map(r => kutu(r)).filter(b => !((b.x2 - b.x1) > vb.width * .8 && (b.y2 - b.y1) > vb.height * .8) && (b.x2 - b.x1) > 2 && (b.y2 - b.y1) > 2);
+  const yazi = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && gor(t) && t.textContent.trim()).map(t => { try{ return kutu(t); }catch(_){ return null; } }).filter(Boolean);
+  const oklar = [...svg.querySelectorAll("path")].filter(p => !p.closest("defs") && gor(p) && p.getAttribute("fill") === "none" && +p.getAttribute("stroke-width") >= 4 && /^M[\d.\- ]+L/.test(p.getAttribute("d") || "") && p.getAttribute("stroke") !== "#fff");
+  let n = 0;
+  oklar.forEach(p => {
+    const b = kutu(p), ust = cubuk.filter(c => kes(b, c)); if(!ust.length) return;
+    const U = { x1: Math.min(...ust.map(c => c.x1)), y1: Math.min(...ust.map(c => c.y1)), x2: Math.max(...ust.map(c => c.x2)), y2: Math.max(...ust.map(c => c.y2)) };
+    const w = b.x2 - b.x1, h = b.y2 - b.y1, pay = 6;
+    const aday = [[U.x1 - pay - b.x2, 0], [U.x2 + pay - b.x1, 0], [0, U.y1 - pay - b.y2], [0, U.y2 + pay - b.y1]].sort((a, c) => Math.hypot(...a) - Math.hypot(...c));
+    const sec = aday.find(([dx, dy]) => { const nb = { x1: b.x1 + dx, y1: b.y1 + dy, x2: b.x2 + dx, y2: b.y2 + dy };
+      return nb.x1 >= vb.x && nb.x2 <= vb.x + vb.width && !cubuk.some(c => kes(nb, c, 2)) && !yazi.some(t => kes(nb, t, 2)); });
+    if(!sec) return;
+    const kay = el => { const m = ki.multiply(el.getCTM()); el.setAttribute("transform", `translate(${sec[0].toFixed(1)} ${sec[1].toFixed(1)}) matrix(${[m.a, m.b, m.c, m.d, m.e, m.f].map(v => +v.toFixed(4)).join(" ")})`);
+      if(el.parentNode !== svg) svg.insertBefore(el, svg.querySelector("g[data-bas9]") || null); };
+    const alt = p.previousElementSibling && p.previousElementSibling.tagName.toLowerCase() === "path" && p.previousElementSibling.getAttribute("d") === p.getAttribute("d") ? p.previousElementSibling : null;
+    if(alt) kay(alt); kay(p); n++;
+  });
+  // km yazısı bağlantı çizgisinin (kalın çizgi) üstündeyse yazı çizginin yanına kayar
+  const kalin = [...svg.querySelectorAll("line, path")].filter(l => !l.closest("defs") && gor(l) && +l.getAttribute("stroke-width") >= 3 && !l.getAttribute("stroke-dasharray") && l.getAttribute("stroke") !== "#fff" && (l.tagName.toLowerCase() === "line" || l.getAttribute("fill") === "none")).map(l => kutu(l)).filter(b => (b.x2 - b.x1) < 14 || (b.y2 - b.y1) < 14);
+  svg.querySelectorAll("text.km-lab").forEach(t => { if(!gor(t)) return; let b; try{ b = kutu(t); }catch(_){ return; }
+    const L2 = kalin.find(c => kes(b, c)); if(!L2) return;
+    const dikey = (L2.y2 - L2.y1) > (L2.x2 - L2.x1);
+    const aday = dikey ? [[L2.x1 - 3 - b.x2, 0], [L2.x2 + 3 - b.x1, 0]] : [[0, L2.y1 - 3 - b.y2], [0, L2.y2 + 3 - b.y1]];
+    const digerYazi = yazi.filter(y => !(Math.abs(y.x1 - b.x1) < .5 && Math.abs(y.y1 - b.y1) < .5));
+    const sec = aday.sort((u, v) => Math.hypot(...u) - Math.hypot(...v)).find(([dx, dy]) => { const nb = { x1: b.x1 + dx, y1: b.y1 + dy, x2: b.x2 + dx, y2: b.y2 + dy }; return !digerYazi.some(y => kes(nb, y, 1)) && !kalin.some(c => kes(nb, c)); });
+    if(!sec) return;
+    const m = ki.multiply(t.getCTM()); t.setAttribute("transform", `translate(${sec[0].toFixed(1)} ${sec[1].toFixed(1)}) matrix(${[m.a, m.b, m.c, m.d, m.e, m.f].map(v => +v.toFixed(4)).join(" ")})`);
+    if(t.parentNode !== svg) svg.insertBefore(t, svg.querySelector("g[data-bas9]") || null); n++; });
+  // L bağlantı yazılarının altından kesikli çizgi geçmesin: beyaz kenar
+  svg.querySelectorAll("text").forEach(t => { if(/bağlantı/i.test(t.textContent) && !t.getAttribute("stroke")){ t.setAttribute("stroke", "#fff"); t.setAttribute("stroke-width", "3"); t.setAttribute("paint-order", "stroke"); } });
+  return n > 0;
+}
 function itiOne9(svg){
   const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse(), vb = svg.viewBox.baseVal;
   const M = el => ki.multiply(el.getCTM());

@@ -10394,7 +10394,7 @@ img, svg{ -webkit-user-drag:none; }`;
   // (2) en üste çıkınca klavye tekrar açılsın (yalnız kaydırınca klavye kapanmışsa)
   let kapandi = false, bas = null, parmak = false;
   const odakla = () => { const a = document.getElementById("isAra"); if(!a) return false; try{ a.focus({ preventScroll: true }); }catch(_){ a.focus(); } return document.activeElement === a; };
-  const ustte = () => { const m = document.getElementById("main"); return !!m && m.scrollTop <= 2; };
+  const ustte = () => { const m = document.getElementById("main"); return !!m && m.scrollTop <= 6; };
   document.addEventListener("touchstart", e => { parmak = true; bas = (arama() && e.touches.length === 1 && e.target.closest && e.target.closest("#isListe")) ? e.touches[0].clientY : null; }, { passive: true });
   document.addEventListener("touchmove", e => {
     if(bas !== null && Math.abs(e.touches[0].clientY - bas) > 12){
@@ -10402,7 +10402,7 @@ img, svg{ -webkit-user-drag:none; }`;
       const a = document.getElementById("isAra");
       if(a && document.activeElement === a) kapandi = true;   // klavye bu kaydırmayla kapanıyor (v121)
     }
-  }, { passive: true });
+  }, { passive: true, capture: true });   // v124: v121'in klavye kapatan dinleyicisinden ÖNCE çalışmalı (yoksa bayrak hiç kurulmuyordu)
   document.addEventListener("touchend", e => {
     if(e.touches.length) return;
     parmak = false;

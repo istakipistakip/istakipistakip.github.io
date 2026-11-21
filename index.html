@@ -10175,6 +10175,9 @@ function krAc9(tur, kutu){
   ov.innerHTML = `<div class="kqu7"><div><b>${tur === "fh" ? "Fiziksel Hedefli" : "Toplam İş"}</b><small>${D.yil} · ${L.length} iş</small></div><button type="button" data-krk9 aria-label="Kapat">✕</button></div>
 <div class="kqt7" id="kqt7">${L.map(krKart9).join("")}</div><div class="kqa7"><span id="kqn7">1 / ${L.length}</span><div class="kqi7"><i id="kqp7"></i></div></div>`;
   document.body.appendChild(ov);
+  try{ getSelection().removeAllRanges(); }catch(_){}
+  ov.addEventListener("contextmenu", e => e.preventDefault());
+  ov.addEventListener("selectstart", e => e.preventDefault());
   const tr = ov.querySelector("#kqt7"), kartlar = [...tr.children];
   // açılış: basılan kutudan büyüyerek
   if(kutu){ const r = kutu.getBoundingClientRect(); tr.style.transformOrigin = `${r.left + r.width / 2}px ${r.top + r.height / 2 - tr.offsetTop}px`; }
@@ -10221,7 +10224,7 @@ function krAc9(tur, kutu){
     const k = e.target.closest && e.target.closest(".h5 .hs > div"); if(!k || !D || D.yetki === "kmz") return;
     iptal(); el = k; bas = { x: e.clientX, y: e.clientY }; k.classList.add("bas9");
     const tur = k.parentNode.firstElementChild === k ? "tum" : "fh";
-    t = setTimeout(() => { const kutu = el; iptal(); krAc9(tur, kutu); }, 480);
+    t = setTimeout(() => { const kutu = el; iptal(); try{ getSelection().removeAllRanges(); }catch(_){} krAc9(tur, kutu); }, 400);
   }, true);
   document.addEventListener("pointermove", e => { if(t && bas && Math.hypot(e.clientX - bas.x, e.clientY - bas.y) > 9) iptal(); }, true);
   ["pointerup", "pointercancel", "scroll"].forEach(ev => document.addEventListener(ev, () => { if(t) iptal(); }, true));
@@ -10267,6 +10270,49 @@ function krAc9(tur, kutu){
 html.dark .kqk7{ background:#0f172a; } html.dark .kqad7{ color:#f1f5f9; } html.dark .kqme7{ color:#94a3b8; } html.dark .kqb7 .kqs7{ color:#e2e8f0; } html.dark .kqb7 .kqc7{ background:#1e293b; } html.dark .kqf7.yok{ background:#1e293b; color:#94a3b8; } html.dark .kqf7{ background:#14532d; color:#bbf7d0; }
 @media (prefers-reduced-motion: reduce){ .isk117 .kqt7, .kqz7 img, .kqb7 .kqc7 i{ transition:none !important; } }`;
   document.head.appendChild(st); })();
+
+// ---------- v118: arama listesi akıcılığı ----------
+// Aşağı çekince açılan iş listesi: üst kısım ve ilk kartlar yumuşakça (sırayla) gelir, kapanırken anasayfa
+// yumuşakça döner. Kaydırırken kartlar dokunuşta hemen küçülmez (kısa gecikme: kaydırma "küçül-büyü" yapmaz),
+// ekran dışındaki kartlar çizilmez, arama listesinde telefonun yaylı kaydırması açık.
+(() => {
+  let onceki = false;
+  const _ciz118 = ciz;
+  ciz = function(){
+    const r = _ciz118.apply(this, arguments);
+    try{
+      const m = document.getElementById("main"); if(!m || detay) return r;   // detaydan dönüşte yeniden canlandırma yok
+      const simdi = !!aramaAcik && tab === "home";
+      m.classList.toggle("ara9", simdi);
+      if(simdi !== onceki){
+        m.classList.remove("ara9in", "ara9out"); void m.offsetWidth;
+        m.classList.add(simdi ? "ara9in" : "ara9out");
+        clearTimeout(m._ara9t); m._ara9t = setTimeout(() => m.classList.remove("ara9in", "ara9out"), 700);
+      }
+      onceki = simdi;
+    }catch(_){}
+    return r;
+  };
+  const st = document.createElement("style");
+  st.textContent = `
+.h5 .hs, .h5 .hs *{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+.isk117, .isk117 *{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
+.isk117 img{ -webkit-user-drag:none; pointer-events:none; }
+#main.ara9{ overscroll-behavior-y:auto; }
+#main.ara9 .jr{ content-visibility:auto; contain-intrinsic-size:auto 104px; }
+.jr{ transition:transform .16s ease, filter .16s ease; -webkit-tap-highlight-color:transparent; }
+.jr:active{ transition-delay:.11s; }
+@keyframes ara9ust{ from{ opacity:0; transform:translateY(-18px); } to{ opacity:1; transform:none; } }
+@keyframes ara9is{ from{ opacity:0; transform:translateY(14px) scale(.985); } to{ opacity:1; transform:none; } }
+@keyframes ara9ana{ from{ opacity:0; transform:translateY(-10px); } to{ opacity:1; transform:none; } }
+#main.ara9in .h5.ara5{ animation:ara9ust .34s cubic-bezier(.2,.8,.2,1) both; }
+#main.ara9in .search{ animation:ara9ust .34s cubic-bezier(.2,.8,.2,1) .04s both; }
+#main.ara9in #isListe > *{ animation:ara9is .42s cubic-bezier(.2,.8,.2,1) both; animation-delay:.3s; }
+${Array.from({ length: 10 }, (_, i) => `#main.ara9in #isListe > *:nth-child(${i + 1}){ animation-delay:${(0.06 + i * 0.03).toFixed(2)}s; }`).join("\n")}
+#main.ara9out > *{ animation:ara9ana .3s cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce){ #main.ara9in *, #main.ara9out *{ animation:none !important; } }`;
+  document.head.appendChild(st);
+})();
 </script>
 </body>
 </html>

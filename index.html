@@ -8469,11 +8469,17 @@ function bkModel9(j){
       kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d >= 80) return; const s = ucSon ? T - c[r.i] : c[r.i]; if(s >= 60 && s < 4000) L.push({ s, v: n.v }); }); return L.sort((a, b) => a.s - b.s); };   // birleşme yerindeki yazı iki yana da düşer: sayılmaz
     const A = yan(zp, zSon), B = yan(qp, !qBas);
     if(A.length && B.length){
-      const bosluk = mesafe6(jt, qBas ? qp[0] : qp[qp.length - 1]), D = (A[0].s + bosluk + B[0].s) / 1000, tol = 0.3 + 0.25 * D;
+      // v141: pay daraltıldı (≈100 m + %10)
+      const bosluk = mesafe6(jt, qBas ? qp[0] : qp[qp.length - 1]), D = (A[0].s + bosluk + B[0].s) / 1000, tol = 0.1 + 0.1 * D;
       let tr = 0;
       if(A.length >= 2 && A[1].s - A[0].s > 50 && A[1].v !== A[0].v) tr = Math.sign(A[0].v - A[1].v);
       else if(B.length >= 2 && B[1].s - B[0].s > 50 && B[1].v !== B[0].v) tr = Math.sign(B[1].v - B[0].v);
-      if(tr) return Math.abs(B[0].v - A[0].v - tr * D) > tol;
+      if(tr){
+        // v141: birleşme yerinde km 0'a iniyorsa orası bir yolun BAŞLANGICI: başlangıçtan geriye parça eklenmez, km eksiye düşmez
+        const jA = A[0].v + tr * A[0].s / 1000, jB = B[0].v - tr * B[0].s / 1000;
+        if((tr < 0 && jA < 0.12) || (tr > 0 && jB < 0.12) || jA < -0.05 || jB < -0.05) return true;
+        return Math.abs(B[0].v - A[0].v - tr * D) > tol;
+      }
       return Math.abs(Math.abs(B[0].v - A[0].v) - D) > tol;
     }
     if(kmN.some(n => Math.abs(n.v) < 0.005 && mesafe6(n.p, jt) < 60) || pbN.some(b => mesafe6(b, jt) < 60)) return true;

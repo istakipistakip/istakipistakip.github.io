@@ -10316,6 +10316,19 @@ ${Array.from({ length: 10 }, (_, i) => `#main.ara9in #isListe > *:nth-child(${i 
 // v119: arama listesindeki kartların kaydırırken eğilmesi (3B) kapatıldı — açılışta ilk işin kaymasına ve
 // kaydırırken titrek görünmeye yol açıyordu; kartlar telefonun kendi kaydırmasıyla düz akar.
 egimUygula = function(){ const m = document.getElementById("main"); if(!m) return; m.querySelectorAll(".jr.eg").forEach(k => { k.classList.remove("eg"); k.style.transform = ""; }); };
+
+// v120: uygulamanın hiçbir yerinde basılı tutunca metin seçimi / seçim kutusu çıkmaz (yazı alanları hariç)
+(() => {
+  const st = document.createElement("style");
+  st.textContent = `html, body, body *{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+input, textarea, select, [contenteditable], [contenteditable] *{ -webkit-user-select:text; user-select:text; -webkit-touch-callout:default; }
+img, svg{ -webkit-user-drag:none; }`;
+  document.head.appendChild(st);
+  const yazi = t => t && t.closest && t.closest("input, textarea, select, [contenteditable]");
+  document.addEventListener("selectstart", e => { if(!yazi(e.target)) e.preventDefault(); }, true);
+  document.addEventListener("contextmenu", e => { if(!yazi(e.target)) e.preventDefault(); }, true);
+  document.addEventListener("selectionchange", () => { try{ const a = document.activeElement; if(yazi(a)) return; const s = getSelection(); if(s && s.rangeCount && !s.isCollapsed) s.removeAllRanges(); }catch(_){} });
+})();
 </script>
 </body>
 </html>

@@ -3520,9 +3520,7 @@ async function pdfIs(doc, j, bol){
         let yy = PDF.ust;
         (doc._sef = doc._sef || {})[doc.getNumberOfPages()] = j.sef || "";
         if(!kutuYazildi){ yy = pdfKutu(doc, j, yy); kutuYazildi = true; }
-        doc.setFont("DV", "bold"); doc.setFontSize(10); doc.setTextColor(...PDF.koyu);
-        doc.text(doc.splitTextToSize(`İtinerer · ${D.iti.projeler[kod].ad}`, W - 2 * PDF.k)[0], PDF.k, yy + 1);
-        yy += 5;
+        yy += 1;   // iş adı üstteki kutuda yazılı; Yol Takip'teki proje adı (firma) tekrar yazılmaz
         const mw = W - 2 * PDF.k, mh = H - PDF.alt - yy - 2;
         const sc = Math.min(mw / r.w, mh / r.h), w = r.w * sc, h = r.h * sc;
         doc.addImage(r.veri, "JPEG", PDF.k + (mw - w) / 2, yy, w, h);
@@ -9560,7 +9558,10 @@ function itiBasYer9(svg){
   g.style.display = "none"; let ic; try{ ic = svg.getBBox(); }finally{ g.style.display = ""; }
   const sigW = vb.width - 16;
   // her zaman tek satır: önce aralar daralır, sonra yazı küçülür, yine sığmazsa etiketler kısalır
-  const satirlar = [t], gen = () => t.getBBox().width;
+  // iPhone'da gizli çizimde ölçüm 0 / eksik dönebiliyor: harf sayısından tahminle birlikte bakılır
+  const tahmin = () => { const fs = +t.getAttribute("font-size") || 12; let w = 0;
+    t.querySelectorAll("tspan").forEach(x => { w += x.textContent.length * fs * 0.6 + (+x.getAttribute("dx") || 0); }); return w; };
+  const satirlar = [t], gen = () => { let w = 0; try{ w = t.getBBox().width; }catch(_){} return Math.max(w, tahmin()); };
   if(gen() > sigW){
     t.querySelectorAll("tspan[dx]").forEach(x => x.setAttribute("dx", 10));
     let fs = +t.getAttribute("font-size") || 12;
@@ -9571,6 +9572,8 @@ function itiBasYer9(svg){
       while(gen() > sigW && fs > 6){ fs -= 0.5; t.setAttribute("font-size", fs); }
     }
   }
+  // her cihazda (resme çevrilince yazı tipi değişse bile) tek satırda, genişliğe sığar
+  t.setAttribute("textLength", Math.min(sigW, gen()).toFixed(1)); t.setAttribute("lengthAdjust", "spacingAndGlyphs");
   const fs = +t.getAttribute("font-size") || 12, ara = fs + 4;
   const x0 = vb.x + 8;
   // en üstteki çizimin üstüne, sonuncu satır içerikten 8 birim yukarıda

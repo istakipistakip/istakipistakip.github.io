@@ -5970,6 +5970,7 @@ document.addEventListener("touchstart", e => {
 // Anasayfa: sayfa esnemez; en üstteyken aşağı çekilince arama açılır
 let anaCek9 = null;
 function cekGoster9(d){
+  return;   // v119: "Aramak için çekin / Bırakın…" balonu yok
   let g = document.getElementById("cek9");
   if(!g){ g = document.createElement("div"); g.id = "cek9"; g.className = "cek9"; g.innerHTML = `${IK("ara")}<span></span>`; document.body.appendChild(g); }
   const hazir = d > 70;
@@ -6000,7 +6001,7 @@ document.addEventListener("touchmove", e => {
 document.addEventListener("touchend", () => {
   const c = anaCek9; anaCek9 = null; if(!c || !c.d) return;
   cekGizle9();
-  if(c.d > 70){ try{ navigator.vibrate && navigator.vibrate(8); }catch(_){} aramaAcik = true; isAra = ""; ciz(); ust(); document.getElementById("isAra")?.focus(); }
+  if(c.d > 70){ try{ navigator.vibrate && navigator.vibrate(8); }catch(_){} aramaAcik = true; isAra = ""; ciz(); ust(); const m9 = document.getElementById("main"); if(m9) m9.scrollTop = 0; try{ document.getElementById("isAra")?.focus({ preventScroll: true }); }catch(_){ document.getElementById("isAra")?.focus(); } }
 }, { passive: true });
 
 // ---------- Sadece KMZ yetkisi ----------
@@ -10299,20 +10300,22 @@ html.dark .kqk7{ background:#0f172a; } html.dark .kqad7{ color:#f1f5f9; } html.d
 .isk117, .isk117 *{ -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
 .isk117 img{ -webkit-user-drag:none; pointer-events:none; }
 #main.ara9{ overscroll-behavior-y:auto; }
-#main.ara9 .jr{ content-visibility:auto; contain-intrinsic-size:auto 104px; }
 .jr{ transition:transform .16s ease, filter .16s ease; -webkit-tap-highlight-color:transparent; }
 .jr:active{ transition-delay:.11s; }
 @keyframes ara9ust{ from{ opacity:0; transform:translateY(-18px); } to{ opacity:1; transform:none; } }
 @keyframes ara9is{ from{ opacity:0; transform:translateY(14px) scale(.985); } to{ opacity:1; transform:none; } }
-@keyframes ara9ana{ from{ opacity:0; transform:translateY(-10px); } to{ opacity:1; transform:none; } }
-#main.ara9in .h5.ara5{ animation:ara9ust .34s cubic-bezier(.2,.8,.2,1) both; }
-#main.ara9in .search{ animation:ara9ust .34s cubic-bezier(.2,.8,.2,1) .04s both; }
-#main.ara9in #isListe > *{ animation:ara9is .42s cubic-bezier(.2,.8,.2,1) both; animation-delay:.3s; }
-${Array.from({ length: 10 }, (_, i) => `#main.ara9in #isListe > *:nth-child(${i + 1}){ animation-delay:${(0.06 + i * 0.03).toFixed(2)}s; }`).join("\n")}
-#main.ara9out > *{ animation:ara9ana .3s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes ara9ana{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes ara9bel{ from{ opacity:0; } to{ opacity:1; } }
+#main.ara9in #isListe > *{ animation:ara9bel .32s ease-out both; animation-delay:.22s; }
+${Array.from({ length: 10 }, (_, i) => `#main.ara9in #isListe > *:nth-child(${i + 1}){ animation-delay:${(i * 0.02).toFixed(2)}s; }`).join("\n")}
+#main.ara9out > *{ animation:ara9ana .25s ease-out both; }
 @media (prefers-reduced-motion: reduce){ #main.ara9in *, #main.ara9out *{ animation:none !important; } }`;
   document.head.appendChild(st);
 })();
+
+// v119: arama listesindeki kartların kaydırırken eğilmesi (3B) kapatıldı — açılışta ilk işin kaymasına ve
+// kaydırırken titrek görünmeye yol açıyordu; kartlar telefonun kendi kaydırmasıyla düz akar.
+egimUygula = function(){ const m = document.getElementById("main"); if(!m) return; m.querySelectorAll(".jr.eg").forEach(k => { k.classList.remove("eg"); k.style.transform = ""; }); };
 </script>
 </body>
 </html>

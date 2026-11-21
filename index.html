@@ -2686,7 +2686,11 @@ function itiDuzelt9(kok, j){
   let degisti = false;
   kok.querySelectorAll("svg").forEach(svg => { if(svg.parentElement && svg.parentElement.closest("svg")) return;
     try{ if(j && itiBaslik9(svg, j)) degisti = true; }catch(_){}
-    try{ if(itiSvgDuzelt9(svg)) degisti = true; }catch(_){} });
+    try{ if(itiTers9(svg)) degisti = true; }catch(_){}
+    try{ if(itiBag9(svg)) degisti = true; }catch(_){}
+    try{ if(itiSvgDuzelt9(svg)) degisti = true; }catch(_){}
+    try{ if(itiTers9(svg)) degisti = true; }catch(_){}
+    try{ if(itiBasYer9(svg)) degisti = true; }catch(_){} });
   return degisti;
 }
 const itiIs9 = kod => ISLER.find(x => (x.iti || []).includes(kod)) || null;
@@ -2769,7 +2773,7 @@ function itiSvgDuzelt9(svg){
   // 2) üst üste binen yazılar
   const T = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && t.textContent.trim()).map(t => {
     const b = kutu(t); if(!b) return null; const s = t.textContent.trim();
-    const sabit = /^-?\d+\+\d{3}$/.test(s) || /^(SOL|SAĞ|BY|TY|HER)$/i.test(s) || b.y2 < vb.y + 34 || !!t.closest("[data-bas9]");
+    const sabit = /^-?\d+\+\d{3}$/.test(s) || /^(SOL|SAĞ|BY|TY|HER)$/i.test(s) || b.y2 < vb.y + 34 || !!t.closest("[data-bas9]") || t.hasAttribute("data-bag9");
     const agirlik = /bağlantı/i.test(s) ? 3 : /^proje (başı|sonu)$/i.test(s) ? 2 : 1;
     return { t, s, b, o: { ...b }, dx: 0, dy: 0, sabit, agirlik, dik: (b.y2 - b.y1) > (b.x2 - b.x1) * 1.4 };
   }).filter(Boolean);
@@ -9413,6 +9417,115 @@ function bkIz9(pt, p, kum, kop){
   if(en.d > 30 && en.s === 1 && en.t0 <= 0) return { d: en.d, c: -en.d, i: 0 };
   if(en.d > 30 && en.s === n - 1 && en.t0 >= 1) return { d: en.d, c: T + en.d, i: n - 1 };
   return { d: en.d, c: en.c, i: en.i };
+}
+
+// ---------- v105: ters yazılar ve özet satırının yeri ----------
+// yukarı giden kol yollarında (ör. "Yol 2") yazılar 180° dönmüş çiziliyor: kendi ortalarında düzeltilir
+function itiTers9(svg){
+  let n = 0;
+  svg.querySelectorAll("text").forEach(t => {
+    if(t.closest("defs") || t.closest("[data-bas9]") || !t.textContent.trim()) return;
+    const m = t.getCTM(); if(!m) return;
+    const aci = Math.atan2(m.b, m.a) * 180 / Math.PI;
+    if(Math.abs(aci) < 100) return;
+    const b = t.getBBox(); if(!b.width) return;
+    const cx = b.x + b.width / 2, cy = b.y + b.height / 2, tr = t.getAttribute("transform") || "";
+    t.setAttribute("transform", (tr ? tr + " " : "") + `rotate(180 ${cx.toFixed(2)} ${cy.toFixed(2)})`);
+    n++;
+  });
+  return n > 0;
+}
+// özet satırı her şeyin üstünde durur (yukarı giden kol yolları dahil) ve genişliğe sığar
+function itiBasYer9(svg){
+  const g = svg.querySelector("g[data-bas9]"); if(!g || g._yer9) return false; g._yer9 = 1;
+  const t = g.querySelector("text"); if(!t) return false;
+  const vb = svg.viewBox.baseVal; if(!vb || !vb.width) return false;
+  // başlık dışındaki çizimin üst sınırı
+  g.style.display = "none"; let ic; try{ ic = svg.getBBox(); }finally{ g.style.display = ""; }
+  const sigW = vb.width - 16;
+  // sığmıyorsa iki satıra böl, yine sığmıyorsa küçült
+  let tb = t.getBBox();
+  const satirlar = [t];
+  if(tb.width > sigW){
+    const sp = [...t.querySelectorAll("tspan")], yari = Math.ceil(sp.length / 2);
+    if(sp.length > 2){
+      const t2 = t.cloneNode(false); t2.removeAttribute("y");
+      sp.slice(yari).forEach((x, k) => { if(!k) x.removeAttribute("dx"); t2.appendChild(x); });
+      g.appendChild(t2); satirlar.push(t2);
+    }
+    let fs = 12, en = () => Math.max(...satirlar.map(x => x.getBBox().width));
+    while(en() > sigW && fs > 8){ fs -= 0.5; satirlar.forEach(x => x.setAttribute("font-size", fs)); }
+  }
+  const fs = +t.getAttribute("font-size") || 12, ara = fs + 4;
+  const x0 = vb.x + 8;
+  // en üstteki çizimin üstüne, sonuncu satır içerikten 8 birim yukarıda
+  const ustIc = Math.min(ic.y, vb.y + vb.height);
+  const sonY = ustIc - 8, ilkY = sonY - (satirlar.length - 1) * ara;
+  satirlar.forEach((x, k) => { x.setAttribute("x", x0); x.setAttribute("y", ilkY + k * ara); });
+  const ust = ilkY - fs - 4;
+  if(ust < vb.y){ const ek = vb.y - ust; svg.setAttribute("viewBox", `${vb.x} ${vb.y - ek} ${vb.width} ${vb.height + ek}`); }
+  return true;
+}
+
+// kol yollarının "L bağlantı · 0+332 · Yol 2" yazıları: bağlantı noktasının çevresinde yolların,
+// yazıların ve çizgilerin üstüne binmeyen ilk boş yere konur, kesikli çizgi yeniden çekilir, en üstte çizilir
+function itiBag9(svg){
+  const lab = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && !t.hasAttribute("data-bag9") && /bağlantı/i.test(t.textContent));
+  if(!lab.length) return false;
+  const vb = svg.viewBox.baseVal, kok = svg.getCTM(); if(!kok) return false;
+  const ki = kok.inverse();
+  const kutu = el => { const b = el.getBBox(), m = ki.multiply(el.getCTM()); let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m); x1 = Math.min(x1, q.x); y1 = Math.min(y1, q.y); x2 = Math.max(x2, q.x); y2 = Math.max(y2, q.y); });
+    return { x1, y1, x2, y2 }; };
+  const E = [];
+  svg.querySelectorAll("rect,text,circle,line,path,polygon").forEach(el => {
+    if(el.closest("defs") || lab.includes(el)) return;
+    const tag = el.tagName.toLowerCase();
+    if(tag === "line" || tag === "path"){ const sw = parseFloat(el.getAttribute("stroke-width") || "1"); if(!(sw >= 4) && !(tag === "path" && el.getAttribute("fill") && el.getAttribute("fill") !== "none")) return; }
+    let b; try{ b = kutu(el); }catch(_){ return; }
+    if(!(b.x2 > b.x1 || b.y2 > b.y1)) return;
+    if(tag === "rect" && (b.x2 - b.x1) > vb.width * .8 && (b.y2 - b.y1) > vb.height * .8) return;   // arka plan
+    if(tag === "text" && !el.textContent.trim()) return;
+    E.push(b);
+  });
+  const P = 3, cak = b => E.some(e => b.x1 < e.x2 + P && b.x2 > e.x1 - P && b.y1 < e.y2 + P && b.y2 > e.y1 - P);
+  let n = 0;
+  lab.forEach(t => {
+    // bağlantı dairesi ve kesikli çizgisi (yazıdan önceki kardeşler)
+    let o = t.previousElementSibling, ciz = null, dai = null;
+    for(let k = 0; k < 4 && o; k++, o = o.previousElementSibling){
+      const tg = o.tagName.toLowerCase();
+      if(!ciz && tg === "line" && o.getAttribute("stroke-dasharray") && parseFloat(o.getAttribute("stroke-width") || "1") > 1.2) ciz = o;
+      if(tg === "circle"){ dai = o; break; }
+    }
+    if(!dai) return;
+    const cx = +dai.getAttribute("cx"), cy = +dai.getAttribute("cy");
+    t.removeAttribute("transform");
+    const b0 = t.getBBox(), w = b0.width, h = b0.height, asc = (+t.getAttribute("y")) - b0.y;
+    // aday yerler: dikeyde r, yatayda dx uzaklık; yakından uzağa
+    const A = [];
+    [14, 24, 36, 50, 66, 86, 110, 140, 180].forEach(r => [10, 30, 55, 85, 120].forEach(dx => [1, 0].forEach(sag => [-1, 1].forEach(yon => A.push({ r, dx, sag, yon, d: Math.hypot(r, dx + w / 2) })))));
+    A.sort((p, q) => p.d - q.d);
+    let sec = null;
+    for(const a of A){
+      const x1 = a.sag ? cx + a.dx : cx - a.dx - w, yUst = a.yon < 0 ? cy - a.r - h : cy + a.r;
+      const b = { x1, y1: yUst, x2: x1 + w, y2: yUst + h };
+      if(b.x1 < vb.x + 2 || b.x2 > vb.x + vb.width - 2) continue;
+      if(!cak(b)){ sec = b; break; }
+    }
+    if(!sec) return;
+    t.setAttribute("text-anchor", "start"); t.setAttribute("x", sec.x1.toFixed(1)); t.setAttribute("y", (sec.y1 + asc).toFixed(1));
+    t.setAttribute("data-bag9", "1");
+    E.push(sec);
+    const hx = sec.x1 > cx ? sec.x1 - 2 : sec.x2 + 2, hy = Math.max(sec.y1, Math.min(sec.y2, cy));
+    if(ciz){ ciz.setAttribute("x1", cx); ciz.setAttribute("y1", cy); ciz.setAttribute("x2", hx.toFixed(1)); ciz.setAttribute("y2", (sec.y1 + sec.y2) / 2); svg.appendChild(ciz); }
+    svg.appendChild(dai);
+    const bas = svg.querySelector("g[data-bas9]");
+    if(bas) svg.insertBefore(t, bas); else svg.appendChild(t);
+    if(ciz) svg.insertBefore(ciz, t); svg.insertBefore(dai, t);
+    n++;
+  });
+  return n > 0;
 }
 </script>
 </body>

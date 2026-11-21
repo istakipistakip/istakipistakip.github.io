@@ -10628,7 +10628,12 @@ function kbCiz10(m, hedef, j, W, WB, o){
         const ust = t => t.m0 != null && t.m1 != null && Math.min(e, Math.max(t.m0, t.m1)) - Math.max(a, Math.min(t.m0, t.m1)) > 5; return ust(u0.t) && ust(u1.t); });
       if(ayniKaynak && u0.t.sol === u1.t.sol && u0.t.sag === u1.t.sag && uz < 1500){ dolgu.push({ p, sol: u0.t.sol, sag: u0.t.sag, by: u0.t.by || u1.t.by }); return; }
     }
-    ekle(L.polyline(p, { ...ortak, color: c.r, weight: W, lineCap: "butt", lineJoin: "round" }));
+    const ly = ekle(L.polyline(p, { ...ortak, color: c.r, weight: W, lineCap: "butt", lineJoin: "round" }));
+    // teşhis (yalnız düzenleme modunda): boyanmayan parçaya dokununca neden boyanmadığı yazılır
+    try{ if(typeof DUZ9 !== "undefined" && DUZ9 && !o.tik) ly.on("click", ev => { L.DomEvent.stopPropagation(ev);
+      const f = v => v == null ? "?" : mKm9(Math.round(v));
+      const yz = t => t ? `${f(Math.min(t.m0 ?? NaN, t.m1 ?? NaN))}–${f(Math.max(t.m0 ?? NaN, t.m1 ?? NaN))}` : "yok";
+      onay9("KMZ teşhis", `Boyanmamış parça · ${Math.round(uz)} m<br>Baş ucu: ${u0 ? "boyalı parça " + yz(u0.t) + " · uç km " + f(u0.mv) : "boyalı parçaya değmiyor"}<br>Son ucu: ${u1 ? "boyalı parça " + yz(u1.t) + " · uç km " + f(u1.mv) : (u0 ? "boyalı parçaya değmiyor" : "–")}<br>Yollar: ${(YY || []).map(y => `${esc(y.ad)} ${f(y.lo)}–${f(y.hi)}`).join(" · ")}`, [{ t: "Tamam", v: true }]); }); }catch(_){}
   }));
   dolgu.forEach(d => parcalar.push(d));
   // 4) boyalı parçalar — boyasız yarı: yakındaki KMZ çizgisinin rengi

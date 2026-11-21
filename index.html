@@ -10329,6 +10329,16 @@ img, svg{ -webkit-user-drag:none; }`;
   document.addEventListener("contextmenu", e => { if(!yazi(e.target)) e.preventDefault(); }, true);
   document.addEventListener("selectionchange", () => { try{ const a = document.activeElement; if(yazi(a)) return; const s = getSelection(); if(s && s.rangeCount && !s.isCollapsed) s.removeAllRanges(); }catch(_){} });
 })();
+
+// v121: arama klavyesi — iş listesinde basılı tutunca (hızlı menü), listeyi kaydırmaya başlayınca ve bir işe dokununca kapanır
+(() => {
+  const kapat = () => { const a = document.getElementById("isAra"); if(a && document.activeElement === a) a.blur(); };
+  const _hm = hizliMenu; hizliMenu = function(){ kapat(); return _hm.apply(this, arguments); };
+  const _ia = isAc; isAc = function(){ kapat(); return _ia.apply(this, arguments); };
+  let bas = null;
+  document.addEventListener("touchstart", e => { bas = (aramaAcik && e.touches.length === 1 && e.target.closest && e.target.closest("#isListe")) ? e.touches[0].clientY : null; }, { passive: true });
+  document.addEventListener("touchmove", e => { if(bas !== null && Math.abs(e.touches[0].clientY - bas) > 12){ bas = null; kapat(); } }, { passive: true });
+})();
 </script>
 </body>
 </html>

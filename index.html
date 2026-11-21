@@ -8792,7 +8792,7 @@ const stdTur9 = (sinif, tur) => { const t = { "BSK": "BSK", "SK": "SK", "SK>BSK"
 const YOLTUR9 = new Set(["BSK", "SK", "SK>BSK", "BSK-On"]);
 function taraf9(ac){ const t = fold(ac || ""); const sl = /\bsol/.test(t), sg = /\bsag/.test(t); return sl && !sg ? "SOL" : sg && !sl ? "SAG" : null; }
 // işin bütün yıllardaki KM girişleri (tarih yılıyla)
-function tumKm9(j){
+function tumKmIti9(j){
   const out = [], gor = new Set();
   const ekle = (k, y) => { const a = kmM9(k.a), e = kmM9(k.e); if(a === null || e === null) return; const anahtar = [k.s, k.a, k.e, k.t, k.y].join("|"); if(gor.has(anahtar)) return; gor.add(anahtar);
     const yil = /^\d{4}/.test(k.t || "") ? +String(k.t).slice(0, 4) : y; out.push({ k, a: Math.min(a, e), e: Math.max(a, e), yil }); };
@@ -8803,7 +8803,7 @@ function tumKm9(j){
 function kmKayitlar9(j, p){
   const by = (p.kayitlar || []).find(r => r.sinif === "BY" && r.byTip) , ty = (p.kayitlar || []).find(r => r.sinif === "TY" && r.tyTip);
   const out = [];
-  tumKm9(j).forEach(x => {
+  tumKmIti9(j).forEach(x => {
     if(x.yil > D.yil) return;
     if(x.e < p.bas - 1 || x.a > p.bit + 1) return;              // bu projenin aralığında değil
     const sinif = /^TY/i.test(x.k.s) ? "TY" : "BY", tur = turStd9(x.k.s); if(!tur) return;
@@ -8957,7 +8957,7 @@ function farklar9(j){
   ytKodlar9(j).forEach(kod => {
     const p = ytProje9(kod); if(!p) return;
     const el = (p.kayitlar || []).filter(r => YOLTUR9.has(r.tur) && (r.durum === "buyil" || r.durum === "eski") && !r._km9);
-    const km = tumKm9(j).filter(x => x.yil <= D.yil && !(x.e < p.bas - 1 || x.a > p.bit + 1));
+    const km = tumKmIti9(j).filter(x => x.yil <= D.yil && !(x.e < p.bas - 1 || x.a > p.bit + 1));
     const ort = (a1, b1, a2, b2) => Math.max(0, Math.min(b1, b2) - Math.max(a1, a2));
     // itinererde biten, KM girişi yok
     el.forEach(r => {
@@ -9022,7 +9022,7 @@ const TURLER9 = ["BSK", "SK", "SK>BSK", "BSK-On", "Heyelan Is", "Tünel", "Köpr
 const DURUM9 = [["eski", "Önceki yıllar"], ["buyil", "Bu yıl biten"], ["calisan", "Çalışılan"], ["hedef", "Hedef"], ["isyok", "İş yok"]];
 const KONUM9 = [["HER", "Her iki"], ["SOL", "Sol"], ["SAG", "Sağ"], ["TY", "TY"]];
 function bosProje9(j){
-  const km = tumKm9(j), a = km.length ? Math.min(...km.map(x => x.a)) : 0, e = km.length ? Math.max(...km.map(x => x.e)) : 1000;
+  const km = tumKmIti9(j), a = km.length ? Math.min(...km.map(x => x.a)) : 0, e = km.length ? Math.max(...km.map(x => x.e)) : 1000;
   return { adi: j.ad, bas: a, bit: Math.max(e, a + 100), basTaraf: "", bitTaraf: "", turler: TURLER9.slice(), kayitlar: [], yerlesimler: [], ilSinirlari: [], musavat: [], istikametBas: "", istikametBit: "", iller: (j.il || []).slice() };
 }
 // KMZ'den yeni itinerer önerisi: PB / PS, km eşitlikleri, adı yapı olan noktalar
@@ -9261,7 +9261,7 @@ function kbAralik9(h, S, a, e, zc){
 // işin boyanacak parçaları (önbellekli): [{p:[[lat,lng]..], r, yan: 0|-1|1, eski}]
 function kbHesap9(j){
   if(!j || !j.hat) return [];
-  const km = tumKm9(j).filter(x => x.yil <= D.yil);
+  const km = tumKmIti9(j).filter(x => x.yil <= D.yil);
   const imza = D.yil + "|" + km.map(x => [x.a, x.e, x.yil, x.k.s, x.k.y ? 1 : 0, x.k.ac || "", x.k.zc || "", x.k.yl || ""].join(",")).join(";");
   if(j._kb9 && j._kb9.h === j.hat && j._kb9.imza === imza) return j._kb9.out;
   const out = [];

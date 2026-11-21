@@ -2793,7 +2793,7 @@ function itiSvgDuzelt9(svg){
   // 2) üst üste binen yazılar
   const T = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && !t.closest("[display=none]") && !t.hasAttribute("data-yolbas9") && !t.closest("[data-bas9]") && t.textContent.trim()).map(t => {
     const b = kutu(t); if(!b) return null; const s = t.textContent.trim();
-    const sabit = /^-?\d+\+\d{3}$/.test(s) || /^(SOL|SAĞ|BY|TY|HER)$/i.test(s) || b.y2 < vb.y + 34 || !!t.closest("[data-bas9]") || t.hasAttribute("data-bag9");
+    const sabit = /^-?\d+\+\d{3}$/.test(s) || /^(SOL|SAĞ|BY|TY|HER)$/i.test(s) || b.y2 < vb.y + 34 || !!t.closest("[data-bas9]") || t.hasAttribute("data-bag9") || t.hasAttribute("data-serit9");
     const agirlik = /bağlantı/i.test(s) ? 3 : /^proje (başı|sonu)$/i.test(s) ? 2 : 1;
     return { t, s, b, o: { ...b }, dx: 0, dy: 0, sabit, agirlik, dik: (b.y2 - b.y1) > (b.x2 - b.x1) * 1.4 };
   }).filter(Boolean);
@@ -10105,6 +10105,17 @@ function itiSerit9(svg, ic, fsOf, medH){
     L.R.push({ r, x1: x, x2: x + w, f: (r.getAttribute("fill") || "").toLowerCase(), yapi: rx === "3", lab: rx === "3" ? null : (etiket.get(r) || bas(r)) });
   });
   if(!seritler.size) return 0;
+  // v136: (a) hiç bölünmüş (BY) kısmı olmayan yolda SOL / TY / SAĞ şerit adları yazılmaz
+  const olcek = el => { try{ const m = svg.getCTM().inverse().multiply(el.getCTM()); return Math.sqrt(Math.abs(m.a * m.d - m.b * m.c)) || 1; }catch(_){ return 1; } };
+  const byVar = new Map();
+  seritler.forEach((m, P) => { const ys = new Set(); m.forEach(L => { if(L.R.some(o => !o.yapi)) ys.add(Math.round(L.y)); }); byVar.set(P, ys.size >= 2); });
+  svg.querySelectorAll("text").forEach(t => { if(!/^(SOL|SAĞ|TY)$/.test(t.textContent.trim())) return;
+    for(let e = t.parentNode; e && e !== svg.parentNode; e = e.parentNode){ if(byVar.has(e)){ if(!byVar.get(e)) t.setAttribute("display", "none"); return; }
+      const ic = [...byVar.keys()].find(P => e.contains && e.contains(P) && P !== e); if(ic){ if(!byVar.get(ic)) t.setAttribute("display", "none"); return; } } });
+  // (b) şerit içi yazılar her yolda ekranda aynı boyutta: ana yol (ölçeği 1 olan) şeritlerine göre, küçültülmüş yollarda telafi edilir
+  // ana yol = ekranda en uzun şeritleri olan grup; yazı boyu onun şeridine göre
+  let hedefFs = 0, enUz = -1; seritler.forEach((m, P) => { const sk = olcek(P); let uz = 0, h = 0; m.forEach(L => { L.R.forEach(o => uz += (o.x2 - o.x1) * sk); h = Math.max(h, L.h); });
+    if(uz > enUz){ enUz = uz; hedefFs = Math.max(6, h * 0.196) * sk; } });
   // engeller: şerit üstündeki ikonlar ve yapı çizgileri
   const engel = [...svg.querySelectorAll("g[transform^='translate']")].filter(g => /pointer-events:\s*none/.test(g.getAttribute("style") || ""))
     .concat([...svg.querySelectorAll("line")].filter(l => +l.getAttribute("stroke-width") >= 4));
@@ -10167,7 +10178,7 @@ function itiSerit9(svg, ic, fsOf, medH){
     const E = engel.filter(e => !tasindi.has(e)).map(e => yerel(P, e)).filter(b => b && b.y2 > ly1 + 1 && b.y1 < ly2 - 1);
     kes.forEach(k => {
       if(k.o.yapi || !k.o.lab) return;
-      const fs = Math.max(6, L.h * 0.196);   // Samsun-Bafra (Akyapı) oranı: yazı / şerit yüksekliği
+      const fs = hedefFs / olcek(P);   // Samsun-Bafra (Akyapı) oranı, her yolda ekranda aynı boyut
       const t = document.createElementNS(NS, "text");
       t.setAttribute("x", ((k.x1 + k.x2) / 2).toFixed(1)); t.setAttribute("y", cy.toFixed(1));
       t.setAttribute("text-anchor", "middle"); t.setAttribute("dominant-baseline", "central");

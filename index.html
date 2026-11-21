@@ -10150,7 +10150,7 @@ function krKart9(o, i){
   const j = o.j, cs = j.cats || [];
   const bar = cs.map(c => { const yok = !(c.h > 0), p = yok ? 100 : Math.min(100, yuzde(c.b, c.h));
     return `<div class="kqb7"><div class="kqs7"><b>${esc(c.ad)}</b><i data-p="${yok ? -1 : yuzde(c.b, c.h)}">${yok ? "–" : "%0"}</i></div><div class="kqc7${yok ? " yok" : ""}"><i data-w="${p}"></i></div><small>Biten ${f2(c.b)} · Hedef ${c.h > 0 ? f2(c.h) : "–"} km</small></div>`; }).join("") || '<div class="kqbos7">Bu yıl için km bilgisi yok.</div>';
-  const fh = fhYok9(j) ? '<span class="kqf7 yok">Fiziksel hedef yok</span>' : '<span class="kqf7">Fiziksel hedef var</span>';
+  const fh = fhYok9(j) ? '<span class="kqf7 yok">Fiziksel hedef yok</span>' : '';
   return `<div class="kqk7" data-kr9="${i}"><div class="kqh7"><div class="kqz7"><span>${esc(o.il || "")}</span></div><em class="kqil7">${esc(o.il || "–")}</em></div>
 <div class="kqg7"><b class="kqad7">${esc(j.ad)}</b><div class="kqme7">${esc(j.firma || "–")}${j.sef ? ` · ${esc(j.sef)}` : ""}</div>${fh}${bar}<div class="kqdt7">İşin detayı için dokunun ›</div></div></div>`;
 }
@@ -10338,6 +10338,61 @@ img, svg{ -webkit-user-drag:none; }`;
   let bas = null;
   document.addEventListener("touchstart", e => { bas = (aramaAcik && e.touches.length === 1 && e.target.closest && e.target.closest("#isListe")) ? e.touches[0].clientY : null; }, { passive: true });
   document.addEventListener("touchmove", e => { if(bas !== null && Math.abs(e.touches[0].clientY - bas) > 12){ bas = null; kapat(); } }, { passive: true });
+})();
+
+// v122: arama listesi — (1) sol kenardan sağa kaydırınca anasayfaya yumuşakça dönülür, klavye kapanır;
+// (2) liste kaydırılırken klavye kapandıysa, en üste çıkıp parmak kalkınca arama kutusu tekrar odaklanıp klavyeyi açar
+(() => {
+  const arama = () => !!aramaAcik && tab === "home" && !detay;
+  const digerAcik = () => document.getElementById("bsov") || document.getElementById("hatv") || document.getElementById("itiv") || document.getElementById("hikv") || document.getElementById("onz") || document.getElementById("isk117");
+  const kapat = () => { try{ const a = document.getElementById("isAra"); if(a && document.activeElement === a) a.blur(); }catch(_){} };
+  // (1) sol kenar geri kaydırma
+  let kb = null;
+  document.addEventListener("touchstart", e => {
+    kb = null;
+    if(!arama() || e.touches.length !== 1 || digerAcik()) return;
+    const t = e.touches[0];
+    if(t.clientX < 18) kb = { x: t.clientX, y: t.clientY, aktif: false };
+  }, { passive: true });
+  document.addEventListener("touchmove", e => {
+    if(!kb) return;
+    const t = e.touches[0], dx = t.clientX - kb.x, dy = Math.abs(t.clientY - kb.y);
+    if(!kb.aktif && dx > 8 && dx > dy) kb.aktif = true;
+  }, { passive: true });
+  document.addEventListener("touchend", e => {
+    if(!kb) return;
+    const k = kb; kb = null;
+    if(!k.aktif || !arama()) return;
+    const dx = e.changedTouches[0].clientX - k.x, dy = Math.abs(e.changedTouches[0].clientY - k.y);
+    if(dx > Math.min(110, window.innerWidth * .28) && dx > dy * 1.4){
+      kapat(); kapandi = false;
+      try{ navigator.vibrate && navigator.vibrate(6); }catch(_){}
+      aramaAcik = false; isAra = ""; ciz(); ust();
+    }
+  });
+  // (2) en üste çıkınca klavye tekrar açılsın (yalnız kaydırınca klavye kapanmışsa)
+  let kapandi = false, bas = null, parmak = false;
+  const odakla = () => { const a = document.getElementById("isAra"); if(!a) return false; try{ a.focus({ preventScroll: true }); }catch(_){ a.focus(); } return document.activeElement === a; };
+  const ustte = () => { const m = document.getElementById("main"); return !!m && m.scrollTop <= 2; };
+  document.addEventListener("touchstart", e => { parmak = true; bas = (arama() && e.touches.length === 1 && e.target.closest && e.target.closest("#isListe")) ? e.touches[0].clientY : null; }, { passive: true });
+  document.addEventListener("touchmove", e => {
+    if(bas !== null && Math.abs(e.touches[0].clientY - bas) > 12){
+      bas = null;
+      const a = document.getElementById("isAra");
+      if(a && document.activeElement === a) kapandi = true;   // klavye bu kaydırmayla kapanıyor (v121)
+    }
+  }, { passive: true });
+  document.addEventListener("touchend", e => {
+    if(e.touches.length) return;
+    parmak = false;
+    if(kapandi && arama() && ustte()){ if(odakla()) kapandi = false; }
+  });
+  document.addEventListener("touchcancel", () => { parmak = false; });
+  // parmak yokken (ivmeli kaydırma) tepeye varılırsa denenir; iPhone izin vermezse sessizce açılmaz
+  document.getElementById("main").addEventListener("scroll", () => { if(kapandi && !parmak && arama() && ustte() && odakla()) kapandi = false; }, { passive: true });
+  // kullanıcı kutuya kendisi dokunup açtıysa ya da arama kapandıysa bayrak sıfırlanır
+  document.addEventListener("focusin", e => { if(e.target && e.target.id === "isAra") kapandi = false; });
+  document.addEventListener("click", e => { if(e.target.closest && (e.target.closest("[data-arama]") || e.target.closest("[data-tab]"))) kapandi = false; }, true);
 })();
 </script>
 </body>

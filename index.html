@@ -3011,6 +3011,25 @@ function pdfHazirla(){
 }
 
 // Yol Takip çizimini resme çevir: stiller öğelere işlenir, SVG → canvas → JPEG
+// PDF itinerer sayfası: km özeti tek satır, sayfa genişliğine sığacak en büyük boyutta (gerekirse etiketler kısalır)
+function pdfItiBas9(doc, bas, x, y, gen){
+  const ara = 3;
+  const olc = (L, fs) => { doc.setFontSize(fs); return L.reduce((t, [yz]) => t + doc.getTextWidth(yz), 0) + ara * (L.length - 1); };
+  let L = bas.map(b => [String(b[0]).trim(), b[1]]), fs = 10;
+  doc.setFont("DV", "bold");
+  while(olc(L, fs) > gen && fs > 6) fs -= 0.25;
+  if(olc(L, fs) > gen){
+    const K = [[/İhale Uzunluğu/, "İhale Uz."], [/Toplam Kalan/, "Top. Kalan"], [/'da Yapılan/, " Yapılan"], [/ Öncesi/, " Önc."]];
+    L = L.map(([yz, r]) => { K.forEach(([a, b]) => { yz = yz.replace(a, b); }); return [yz, r]; });
+    while(olc(L, fs) > gen && fs > 4.5) fs -= 0.25;
+  }
+  doc.setFontSize(fs);
+  const rgb = h => { const m = String(h).match(/^#?([0-9a-f]{6})$/i); if(!m) return [26, 26, 26]; const n = parseInt(m[1], 16); return [n >> 16, (n >> 8) & 255, n & 255]; };
+  const yb = y + fs * 0.3528 + 0.5; let xx = x;
+  L.forEach(([yz, r]) => { doc.setTextColor(...rgb(r)); doc.text(yz, xx, yb); xx += doc.getTextWidth(yz) + ara; });
+  doc.setTextColor(...PDF.koyu);
+  return yb + 2.5;
+}
 async function itiResimleri(kod){
   const pr = D.iti.projeler[kod]; if(!pr) return [];
   const host = document.createElement("div");
@@ -3028,6 +3047,15 @@ async function itiResimleri(kod){
     const kaynak = [s, ...s.querySelectorAll("*")], hedef = [kopya, ...kopya.querySelectorAll("*")];
     kaynak.forEach((el, i) => { const cs = getComputedStyle(el); hedef[i].setAttribute("style", ozellik.map(p => `${p}:${cs.getPropertyValue(p)}`).join(";")); });
     kopya.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    // v115: üstteki km özeti PDF'e yazı olarak yazılır (her cihazda tek satır, sayfa genişliğine sığar); resimden çıkarılır
+    let bas = null;
+    const bg = s.querySelector("g[data-bas9]"), bk = kopya.querySelector("g[data-bas9]");
+    if(bg && bk){
+      bas = [...bg.querySelectorAll("tspan")].map(x => [x.getAttribute("data-tam9") || x.textContent, x.getAttribute("fill") || "#1a1a1a"]).filter(x => x[0].trim());
+      bk.remove();
+      let ic = null; bg.style.display = "none"; try{ ic = s.getBBox(); }catch(_){} finally{ bg.style.display = ""; }
+      if(ic && ic.width > 0){ const y0 = Math.max(vb.y, ic.y - 6); if(y0 > vb.y + 1){ const yeni = { x: vb.x, y: y0, width: vb.width, height: vb.y + vb.height - y0 }; kopya.setAttribute("viewBox", `${yeni.x} ${yeni.y} ${yeni.width} ${yeni.height}`); vb = yeni; } }
+    }
     kopya.setAttribute("width", vb.width); kopya.setAttribute("height", vb.height);
     const metin = new XMLSerializer().serializeToString(kopya);
     const img = new Image();
@@ -3035,7 +3063,7 @@ async function itiResimleri(kod){
     const k = Math.min(3, 3600 / vb.width, 2400 / vb.height);
     const c = document.createElement("canvas"); c.width = Math.round(vb.width * k); c.height = Math.round(vb.height * k);
     const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
-    out.push({ veri: c.toDataURL("image/jpeg", 0.9), w: c.width, h: c.height });
+    out.push({ veri: c.toDataURL("image/jpeg", 0.9), w: c.width, h: c.height, bas });
   }
   host.remove();
   return out;
@@ -3521,6 +3549,7 @@ async function pdfIs(doc, j, bol){
         (doc._sef = doc._sef || {})[doc.getNumberOfPages()] = j.sef || "";
         if(!kutuYazildi){ yy = pdfKutu(doc, j, yy); kutuYazildi = true; }
         yy += 1;   // iş adı üstteki kutuda yazılı; Yol Takip'teki proje adı (firma) tekrar yazılmaz
+        if(r.bas && r.bas.length) yy = pdfItiBas9(doc, r.bas, PDF.k, yy, W - 2 * PDF.k);
         const mw = W - 2 * PDF.k, mh = H - PDF.alt - yy - 2;
         const sc = Math.min(mw / r.w, mh / r.h), w = r.w * sc, h = r.h * sc;
         doc.addImage(r.veri, "JPEG", PDF.k + (mw - w) / 2, yy, w, h);
@@ -9555,7 +9584,8 @@ function itiBasYer9(svg){
   const t = g.querySelector("text"); if(!t) return false;
   const vb = svg.viewBox.baseVal; if(!vb || !vb.width) return false;
   // başlık dışındaki çizimin üst sınırı
-  g.style.display = "none"; let ic; try{ ic = svg.getBBox(); }finally{ g.style.display = ""; }
+  g.style.display = "none"; let ic = null; try{ ic = svg.getBBox(); }catch(_){}finally{ g.style.display = ""; }
+  if(!ic || !(ic.width > 0)) ic = { x: vb.x, y: vb.y + 30, width: vb.width, height: vb.height - 30 };
   const sigW = vb.width - 16;
   // her zaman tek satır: önce aralar daralır, sonra yazı küçülür, yine sığmazsa etiketler kısalır
   // iPhone'da gizli çizimde ölçüm 0 / eksik dönebiliyor: harf sayısından tahminle birlikte bakılır
@@ -9568,7 +9598,7 @@ function itiBasYer9(svg){
     while(gen() > sigW && fs > 9){ fs -= 0.5; t.setAttribute("font-size", fs); }
     if(gen() > sigW){
       const K = [[/İhale Uzunluğu/, "İhale Uz."], [/Toplam Kalan/, "Top. Kalan"], [/'da Yapılan/, " Yapılan"], [/ Öncesi/, " Önc."]];
-      t.querySelectorAll("tspan").forEach(x => { let v = x.textContent; K.forEach(([r, y]) => { v = v.replace(r, y); }); x.textContent = v; });
+      t.querySelectorAll("tspan").forEach(x => { let v = x.textContent; if(!x.hasAttribute("data-tam9")) x.setAttribute("data-tam9", v); K.forEach(([r, y]) => { v = v.replace(r, y); }); x.textContent = v; });
       while(gen() > sigW && fs > 6){ fs -= 0.5; t.setAttribute("font-size", fs); }
     }
   }

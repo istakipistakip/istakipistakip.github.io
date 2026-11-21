@@ -10154,11 +10154,32 @@ function krKart9(o, i){
   return `<div class="kqk7" data-kr9="${i}"><div class="kqh7"><div class="kqz7"><span>${esc(o.il || "")}</span></div><em class="kqil7">${esc(o.il || "–")}</em></div>
 <div class="kqg7"><b class="kqad7">${esc(j.ad)}</b><div class="kqme7">${esc(j.firma || "–")}${j.sef ? ` · ${esc(j.sef)}` : ""}</div>${fh}${bar}<div class="kqdt7">İşin detayı için dokunun ›</div></div></div>`;
 }
+// v123: PDF harita resmi olmayan işlerde (varsa) KMZ hattı kartın üstüne çizilir (iş detayındaki başlık çizimiyle aynı görünüm)
+function krKmzResim9(j){
+  try{
+    const cz = j.hat && j.hat.cizgi ? j.hat.cizgi.filter(c => c.p && c.p.length > 1) : [];
+    if(!cz.length) return null;
+    const W = 720, H = 405, c = document.createElement("canvas"); c.width = W; c.height = H;
+    const g = c.getContext("2d");
+    const gr = g.createLinearGradient(0, 0, W, H); gr.addColorStop(0, "#0f172a"); gr.addColorStop(1, "#1e3a5f"); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+    g.strokeStyle = "rgba(255,255,255,.07)"; g.lineWidth = 1;
+    for(let k = 0; k < 14; k++){ g.beginPath(); for(let x = 0; x <= W; x += 16){ const y = 10 + k * 29 + Math.sin(x / 70 + k) * 12; x ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); }
+    const mx = o => (o + 180) / 360, my = a => { const r = a * Math.PI / 180; return (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2; };
+    let x1 = 1, x2 = 0, y1 = 1, y2 = 0;
+    cz.forEach(cc => cc.p.forEach(([a, o]) => { const u = mx(o), v = my(a); x1 = Math.min(x1, u); x2 = Math.max(x2, u); y1 = Math.min(y1, v); y2 = Math.max(y2, v); }));
+    const sc = Math.min(W * .82 / Math.max(1e-9, x2 - x1), H * .72 / Math.max(1e-9, y2 - y1)), ox = W / 2 - (x1 + x2) / 2 * sc, oy = H / 2 - (y1 + y2) / 2 * sc;
+    g.lineCap = g.lineJoin = "round";
+    cz.forEach(cc => { g.beginPath(); cc.p.forEach(([a, o], i) => { const px = mx(o) * sc + ox, py = my(a) * sc + oy; i ? g.lineTo(px, py) : g.moveTo(px, py); });
+      g.strokeStyle = cc.r || "#ea580c"; g.lineWidth = cc.i ? 2 : 6; g.shadowColor = cc.r || "#ea580c"; g.shadowBlur = cc.i ? 0 : 14; g.stroke(); });
+    g.shadowBlur = 0;
+    return c.toDataURL("image/jpeg", 0.85);
+  }catch(_){ return null; }
+}
 async function krResim9(j){
   if(KR9.resim.has(j.id)) return KR9.resim.get(j.id);
   const soz = (async () => {
-    const r = await haritaResmiAl(j); if(!r) return null;
-    const im = await new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = r; }); if(!im) return null;
+    const r = await haritaResmiAl(j); if(!r) return krKmzResim9(j);   // v123: harita resmi yoksa KMZ çizgisi
+    const im = await new Promise(ok => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = r; }); if(!im) return krKmzResim9(j);
     const W = im.width, H = im.height, m = kirmiziMerkez(im) || [W / 2, H / 2];
     const kw = Math.min(W, H * 16 / 9), kh = kw * 9 / 16;
     const kx = Math.min(Math.max(m[0] - kw / 2, 0), W - kw), ky = Math.min(Math.max(m[1] - kh / 2, 0), H - kh);

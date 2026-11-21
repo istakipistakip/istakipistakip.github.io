@@ -9464,7 +9464,7 @@ function kbHesap9(j){
       });
     });
   }
-  j._kb9 = { h: j.hat, imza, out };
+  j._kb9 = { h: j.hat, imza, out, km };
   return out;
 }
 // yarım çizgi: piksel cinsinden yana kaydırılmış (yakınlaşınca yeniden hesaplanır)
@@ -10564,7 +10564,10 @@ function kbCiz10(m, hedef, j, W, WB, o){
   if(!bolgeler.length) return false;
   // 2) boyalı bölgelerin çizgisi ve gizleme koridoru
   const parcalar = [];   // { p, sol, sag }
-  bolgeler.forEach(b => kbParca9(b.h, b.a, b.b).forEach(p => { if(p.length > 1) parcalar.push({ p, sol: b.sol, sag: b.sag, by: b.by }); }));
+  // parçaların km'si (yolun örneklerinden) — yollar arasındaki boşlukları doldurmak için
+  let YY = []; try{ YY = kbYollar9(j); }catch(_){}
+  const cKm = (h, c) => { const yo = YY.find(y => y.h === h); if(!yo) return null; const S = yo.S; let k = 0; while(k < S.length - 2 && S[k + 1].c < c) k++; const a = S[k], b = S[k + 1] || a; return b.c > a.c ? a.m + (b.m - a.m) * (c - a.c) / (b.c - a.c) : a.m; };
+  bolgeler.forEach(b => kbParca9(b.h, b.a, b.b).forEach(p => { if(p.length > 1) parcalar.push({ p, sol: b.sol, sag: b.sag, by: b.by, m0: cKm(b.h, b.a), m1: cKm(b.h, b.b) }); }));
   const G = new Map(), H = 60, KOR = 40;
   parcalar.forEach((t, ti) => { for(let i = 1; i < t.p.length; i++){ const a = xy(t.p[i - 1]), b = xy(t.p[i]);
     const x1 = Math.floor((Math.min(a[0], b[0]) - KOR) / H), x2 = Math.floor((Math.max(a[0], b[0]) + KOR) / H), y1 = Math.floor((Math.min(a[1], b[1]) - KOR) / H), y2 = Math.floor((Math.max(a[1], b[1]) + KOR) / H);
@@ -10600,8 +10603,24 @@ function kbCiz10(m, hedef, j, W, WB, o){
   };
   const ortak = { opacity: o.op == null ? 1 : o.op, ...(o.isId ? { isId: o.isId } : {}) };
   const ekle = ly => { if(o.tik) ly.on("click", o.tik); ly.addTo(hedef); return ly; };
-  // 3) KMZ'nin renkli çizgileri (boyalı koridor dışı)
-  renkli.forEach(c => ayir(c).forEach(p => ekle(L.polyline(p, { ...ortak, color: c.r, weight: W, lineCap: "butt", lineJoin: "round" }))));
+  // 3) KMZ'nin renkli çizgileri (boyalı koridor dışı). v132: iki boyalı parçanın ucunu birleştiren kısa açık parça
+  // (km'si hiçbir yolun km'sine düşmeyen ara parça, ör. ana yolun sonu ile devam eden yolun ilk km etiketi arası)
+  // aynı KM / itinerer aralığının içindeyse o da boyalı sayılır, kendi geometrisiyle boyanır.
+  const KMx = (j._kb9 && j._kb9.km) || [], dolgu = [], RK = kbRenk9(j);
+  const ucBul = q => { let en = null, ed = 45; parcalar.forEach(t => { [[t.p[0], t.m0, t], [t.p[t.p.length - 1], t.m1, t]].forEach(([u, mv, tt]) => { const d = Math.hypot(xy(u)[0] - xy(q)[0], xy(u)[1] - xy(q)[1]); if(d < ed && mv != null){ ed = d; en = { mv, t: tt }; } }); }); return en; };
+  const yanRenk = (lo, hi, yanIst) => { let r = null; KMx.forEach(x => { const a = Math.min(x.a, x.e), e = Math.max(x.a, x.e); if(a > lo + 60 || e < hi - 60) return;
+    const ty = /^TY/i.test(x.k.s || "") || koyYolu9(j), t2 = !ty && x.k.y ? taraf9(x.k.ac) : null, yan = t2 === "SOL" ? -1 : t2 === "SAG" ? 1 : 0;
+    if(yan === 0 || yan === yanIst) r = RK[x.yil === D.yil ? "buyil" : "eski"]; }); return r; };
+  renkli.forEach(c => ayir(c).forEach(p => {
+    let uz = 0; for(let i = 1; i < p.length; i++){ const A = xy(p[i - 1]), B = xy(p[i]); uz += Math.hypot(B[0] - A[0], B[1] - A[1]); }
+    const u0 = uz < 2500 ? ucBul(p[0]) : null, u1 = u0 ? ucBul(p[p.length - 1]) : null;
+    if(u0 && u1 && u0.t !== u1.t){
+      const lo = Math.min(u0.mv, u1.mv), hi = Math.max(u0.mv, u1.mv), sol = yanRenk(lo, hi, -1), sag = yanRenk(lo, hi, 1);
+      if(sol || sag){ dolgu.push({ p, sol, sag, by: u0.t.by || u1.t.by }); return; }
+    }
+    ekle(L.polyline(p, { ...ortak, color: c.r, weight: W, lineCap: "butt", lineJoin: "round" }));
+  }));
+  dolgu.forEach(d => parcalar.push(d));
   // 4) boyalı parçalar — boyasız yarı: yakındaki KMZ çizgisinin rengi
   // boyasız yarı her zaman "yapılacak" mavisi (KMZ'deki maviye en yakın renk; yoksa standart mavi)
   const MAVI = (() => { let en = 1e9, r = "#1e40ff"; renkli.forEach(c => { const m2 = /^#?([0-9a-f]{6})$/i.exec(String(c.r || "").trim()); if(!m2) return; const n = parseInt(m2[1], 16), R = n >> 16, Gc = (n >> 8) & 255, B = n & 255;
@@ -10609,12 +10628,12 @@ function kbCiz10(m, hedef, j, W, WB, o){
   const yarim = [];
   parcalar.forEach(t => {
     const sol = t.sol || MAVI, sag = t.sag || MAVI;
-    if(sol === sag) ekle(L.polyline(t.p, { ...ortak, color: sol, weight: W, lineCap: "butt", lineJoin: "round" }));
+    if(sol === sag) ekle(L.polyline(t.p, { ...ortak, color: sol, weight: W, lineCap: "round", lineJoin: "round" }));
     else [[-1, sol], [1, sag]].forEach(([y, r]) => { const ly = ekle(L.polyline(kbKaydir9(m, t.p, y * W / 4), { ...ortak, color: r, weight: W / 2, lineCap: "butt", lineJoin: "round", uc3bHam: t.p, uc3bOfs: y * W / 4 })); yarim.push([ly, t.p, y]); });
   });
   // 5) KMZ'nin beyazı (koridor dışı) + boyalı yerlerde tam ortada kendi beyazımız
   beyaz.forEach(c => ayir(c).forEach(p => ekle(L.polyline(p, { ...ortak, color: c.r, weight: WB, lineCap: "butt", lineJoin: "round" }))));
-  parcalar.forEach(t => { if(t.by) ekle(L.polyline(t.p, { ...ortak, color: "#ffffff", weight: WB, lineCap: "butt", lineJoin: "round" })); });
+  parcalar.forEach(t => { if(t.by) ekle(L.polyline(t.p, { ...ortak, color: "#ffffff", weight: WB, lineCap: "round", lineJoin: "round" })); });
   // yarımlar yalnız yakınlaştırma BİTİNCE yeniden yerleşir (sürerken çizim yenilenirse tuval kayar)
   if(yarim.length){ const f = () => yarim.forEach(([ly, p, y]) => { try{ ly.setLatLngs(kbKaydir9(m, p, y * W / 4)); }catch(_){} }); m.on("zoomend", f); m.on("viewreset", f); }
   return true;

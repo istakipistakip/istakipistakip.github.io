@@ -1923,8 +1923,8 @@ function detaySayfa(j, from){
   const kmBilgi = (oz.u !== null || j.cats.length || j.kmler.length) ? durumAc()
     + (oz.u !== null ? tek("İhale Uzunluğu", f2(oz.u) + " km") : "")
     + (oz.o !== null ? (kol !== j.cats && kol.length ? catBlok(`${D.yil} Öncesi Yapılan`, c => f2(c.o || 0) + " km") : tek(`${D.yil} Öncesi Yapılan`, f2(oz.o) + " km")) : "")
-    + catBlok(`${D.yil} Hedef`, c => c.h > 0 ? f2(c.h) + " km" : "–") + catBlok(`${yilEki(D.yil)} Yapılan${arBtn}`, c => f2(c.b) + " km") + arListe
-    + catBlok(`${D.yil} Kalan`, c => c.h > 0 ? f2(Math.max(0, c.h - c.b)) + " km" : "–", " kln")
+    + (fhYok9(j) ? tek(`${D.yil} Hedef`, "Yok") : catBlok(`${D.yil} Hedef`, c => c.h > 0 ? f2(c.h) + " km" : "–")) + catBlok(`${yilEki(D.yil)} Yapılan${arBtn}`, c => f2(c.b) + " km") + arListe
+    + (fhYok9(j) ? "" : catBlok(`${D.yil} Kalan`, c => c.h > 0 ? f2(Math.max(0, c.h - c.b)) + " km" : "–", " kln"))
     + (oz.u !== null ? tek("Toplam Kalan", f2(oz.kalan) + " km", " kln") : "") + `</div>` : "";
   const yb = (k, ad, kisa) => `<button class="${kisa ? "mb" : "hc"}${(j[k] || "").trim() ? "" : " bos"}" data-yazi="${k}">${kisa ? ad : D.yil + " " + ad}</button>`;
   const haritada = from !== "map" && j.kutular.length;
@@ -2724,9 +2724,9 @@ function itiBaslik9(svg, j){
   const L1 = [
     ...(oz.u !== null ? [[`İhale Uzunluğu: ${km(oz.u)}`, "#2c3e50"]] : []),
     ...(oz.o !== null ? [[`${Y} Öncesi: ${km(oz.o)}`, "#1a1a1a"]] : []),
-    [`${Y} Hedef: ${hVar ? km(top(c => c.h)) : "–"}`, "#27ae60"],
+    [`${Y} Hedef: ${fhYok9(j) ? "Yok" : hVar ? km(top(c => c.h)) : "–"}`, "#27ae60"],
     [`${yilEki(Y)} Yapılan: ${km(top(c => c.b))}`, "#c41e3a"],
-    [`${Y} Kalan: ${hVar ? km(top(c => c.h > 0 ? Math.max(0, c.h - c.b) : 0)) : "–"}`, "#e67e22"],
+    ...(fhYok9(j) ? [] : [[`${Y} Kalan: ${hVar ? km(top(c => c.h > 0 ? Math.max(0, c.h - c.b) : 0)) : "–"}`, "#e67e22"]]),
     ...(oz.u !== null ? [[`Toplam Kalan: ${km(oz.kalan)}`, "#b45309"]] : [])
   ];
   const satirlar = [L1];
@@ -3318,9 +3318,9 @@ function pdfBilgi(doc, j, y){
   const K = onceTabloda ? kol : j.cats;
   if(K.length){
     y = pdfTablo(doc, y + 2 * a, K.map(c => c.ad), (onceTabloda ? [[`${D.yil} Öncesi Yapılan`, K.map(c => km(c.o || 0))]] : []).concat([
-      [`${D.yil} Hedef`, K.map(c => c.h > 0 ? km(c.h) : "–")],
+      [`${D.yil} Hedef`, K.map(c => fhYok9(j) ? "Yok" : c.h > 0 ? km(c.h) : "–")],
       [`${yilEki(D.yil)} Yapılan`, K.map(c => km(c.b))],
-      [`${D.yil} Kalan`, K.map(c => c.h > 0 ? km(Math.max(0, c.h - c.b)) : "–"), true]
+      [`${D.yil} Kalan`, K.map(c => !fhYok9(j) && c.h > 0 ? km(Math.max(0, c.h - c.b)) : "–"), true]
     ]));
   }
   if(oz.u !== null) y = pdfSatir(doc, y, "Toplam Kalan", km(oz.kalan), true);
@@ -4321,6 +4321,7 @@ function duzelt(v){
 }
 function kur(v){
   D = duzelt(v); ISLER = D.isler || []; ilSiraKur(); kurumSakla();
+  D._fhYil = D.yil; ISLER.forEach(j => { j._fh0 = j.fh ? 1 : 0; });
   agirSoz = null;
   // parçalı kayıttan okunduysa ağır kısım sonra gelir; dosyadan yüklendiyse hepsi elde
   D._agirTam = !D._parcali;
@@ -4785,8 +4786,8 @@ function detaySayfa(j, from){
   const kmBilgi = (oz.u !== null || j.cats.length || j.kmler.length) ? durumAc()
     + (oz.u !== null ? tek("İhale Uzunluğu", f2(oz.u) + " km") : "")
     + (oz.o !== null ? (kol !== j.cats && kol.length ? catBlok(`${D.yil} Öncesi Yapılan`, c => f2(c.o || 0) + " km") : tek(`${D.yil} Öncesi Yapılan`, f2(oz.o) + " km")) : "")
-    + catBlok(`${D.yil} Hedef`, c => c.h > 0 ? f2(c.h) + " km" : "–") + catBlok(`${yilEki(D.yil)} Yapılan${arBtn}`, c => f2(c.b) + " km") + arListe
-    + catBlok(`${D.yil} Kalan`, c => c.h > 0 ? f2(Math.max(0, c.h - c.b)) + " km" : "–", " kln")
+    + (fhYok9(j) ? tek(`${D.yil} Hedef`, "Yok") : catBlok(`${D.yil} Hedef`, c => c.h > 0 ? f2(c.h) + " km" : "–")) + catBlok(`${yilEki(D.yil)} Yapılan${arBtn}`, c => f2(c.b) + " km") + arListe
+    + (fhYok9(j) ? "" : catBlok(`${D.yil} Kalan`, c => c.h > 0 ? f2(Math.max(0, c.h - c.b)) + " km" : "–", " kln"))
     + (oz.u !== null ? tek("Toplam Kalan", f2(oz.kalan) + " km", " kln") : "") + `</div>` : "";
   const yb = (k, ad, kisa) => `<button class="${kisa ? "mb" : "hc"}${(j[k] || "").trim() ? "" : " bos"}" data-yazi="${k}">${ad}</button>`;
   const haritada = from !== "map" && j.kutular.length;
@@ -10079,6 +10080,56 @@ ytBagla9 = function(){
     ISLER.forEach(j => { if(!koyYolu9(j)) return; const k = koyKod9(j); YT9.yeni[k] = String(j.id); j.iti = [k]; }); }
   return _ytBagla110.apply(this, arguments);
 };
+
+// ---------- v116: Fiziksel hedef Var / Yok (iş bazında, yıla göre) ----------
+// Masaüstünden gelen "fiziksel hedef" verinin yılı için geçerli; telefonda yıl yıl işaretlenir (fhY).
+// Yeni yıla geçince işaretlenmemiş her iş "Yok" ile başlar. Yok: Hedef "Yok" yazar, <yıl> Kalan gösterilmez;
+// km'ler eskisi gibi Biten'e sayılır (Genel Durum hesapları değişmez), "Fiziksel Hedefli" sayısına girmez.
+function fhEtkin9(j, y){
+  if(j.fhY && j.fhY[y] !== undefined) return j.fhY[y] ? 1 : 0;
+  if(D && D._fhYil && y > D._fhYil) return 0;
+  return j._fh0 !== undefined ? j._fh0 : (j.fh ? 1 : 0);
+}
+function fhYok9(j){ return !!(j && D && !j.silindi && !fhEtkin9(j, D.yil)); }
+const _yilUygula116 = yilUygula;
+yilUygula = function(y){ const r = _yilUygula116.apply(this, arguments); try{ ISLER.forEach(j => { j.fh = fhEtkin9(j, y); }); }catch(_){} return r; };
+const _kur116 = kur;
+kur = function(){ const r = _kur116.apply(this, arguments); try{ ISLER.forEach(j => { j.fh = fhEtkin9(j, D.yil); }); }catch(_){} return r; };
+function fhYaz9(R, id, yil, v){
+  const j = isBul9(R, id); if(!j) return false;
+  j.fhY = j.fhY || {}; j.fhY[yil] = v ? 1 : 0;
+  if(+R.yil === +yil) j.fh = v ? 1 : 0;   // verinin yılı: masaüstündeki alan da değişir
+  return true;
+}
+function fhAl9(R, id, yil){ const j = isBul9(R, id); if(!j) return null; if(j.fhY && j.fhY[yil] !== undefined) return j.fhY[yil]; if(+yil > +R.yil) return 0; return j.fh ? 1 : 0; }
+const _uygula116 = uygula9;
+uygula9 = function(R, e, ters){ if(e.tip === "fh") return fhYaz9(R, e.is, e.yil, ters ? e.onceki : e.sonraki); return _uygula116.apply(this, arguments); };
+const _tekrar116 = tekrar9;
+tekrar9 = function(R, e){ if(e.tip === "fh") return fhAl9(R, e.is, e.yil) === e.sonraki ? false : fhYaz9(R, e.is, e.yil, e.sonraki); return _tekrar116.apply(this, arguments); };
+const _tanim116 = tanim9;
+tanim9 = function(e){ if(e && e.tip === "fh") return ["Fiziksel hedef", `${e.ad || ""} · ${e.yil}: ${e.sonraki ? "Var" : "Yok"}`]; return _tanim116.apply(this, arguments); };
+// iş detayı: Kontrol Şefi'nin altında "Fiziksel Hedef" satırı; düzenleme modunda Var / Yok seçilir
+const _detaySayfa116 = detaySayfa;
+detaySayfa = function(j){
+  let h = _detaySayfa116.apply(this, arguments);
+  try{
+    const var_ = !fhYok9(j);
+    const sag = DUZ9 ? `<span class="fh9"><button type="button" data-fh9="1"${var_ ? ' class="on"' : ""}>Var</button><button type="button" data-fh9="0"${var_ ? "" : ' class="on"'}>Yok</button></span>` : `<b>${var_ ? "Var" : "Yok"}</b>`;
+    h = h.replace(/(<div class="kv"><span>Kontrol Şefi<\/span><b>[\s\S]*?<\/b><\/div>)/, `$1<div class="kv"><span>${D.yil} Fiziksel Hedef</span>${sag}</div>`);
+  }catch(_){}
+  return h;
+};
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-fh9]"); if(!b || !detay || !DUZ9) return;
+  const j = ISLER.find(x => String(x.id) === String(detay.id)); if(!j) return;
+  const v = +b.dataset.fh9, onceki = fhEtkin9(j, D.yil); if(v === onceki) return;
+  try{ await degistir9({ tip: "fh", is: j.id, ad: j.ad, yil: D.yil, onceki, sonraki: v }); bildir(`${D.yil} fiziksel hedef: ${v ? "Var" : "Yok"}`); }
+  catch(err){ bildir(err.message || "Kaydedilemedi"); }
+});
+(() => { const st = document.createElement("style");
+  st.textContent = `.fh9{display:inline-flex;border:1px solid #cbd5e1;border-radius:9px;overflow:hidden}.fh9 button{border:0;background:#fff;color:#475569;font:inherit;font-size:13px;font-weight:700;padding:5px 14px}.fh9 button.on{background:#ea580c;color:#fff}
+html.dark .fh9{border-color:#334155}html.dark .fh9 button{background:#0f172a;color:#cbd5e1}html.dark .fh9 button.on{background:#ea580c;color:#fff}`;
+  document.head.appendChild(st); })();
 </script>
 </body>
 </html>

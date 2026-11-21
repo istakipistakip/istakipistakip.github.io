@@ -2690,6 +2690,7 @@ function itiDuzelt9(kok, j){
     try{ if(itiBag9(svg)) degisti = true; }catch(_){}
     try{ if(itiSvgDuzelt9(svg)) degisti = true; }catch(_){}
     try{ if(itiTers9(svg)) degisti = true; }catch(_){}
+    try{ if(itiMusavat9(svg)) degisti = true; }catch(_){}
     try{ if(itiBag9(svg)) degisti = true; }catch(_){}   // düzeltmeden sonra yerleri yeniden (km yazıları değişmiş olabilir)
     try{ if(itiProje9(svg)) degisti = true; }catch(_){}
     try{ if(itiOne9(svg)) degisti = true; }catch(_){}
@@ -9753,6 +9754,56 @@ function kmzYolOneri9(j, P){
     if(m.length) ok.push({ i, m: m.join(" · "), satir: m, deg });
   });
   return ok;
+}
+
+// km eşitliği yazıları (ör. "35+377 G / 30+300 İ (+5.08 km uzama)"): Yol Takip çizimin en altına koyuyor;
+// kendi hizasındaki en alttaki yazının hemen altına alınır, kesikli çizgi kısalır, alttaki boş alan kırpılır
+function itiMusavat9(svg){
+  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse(), vb = svg.viewBox.baseVal;
+  const M = el => ki.multiply(el.getCTM());
+  const kutu = el => { const b = el.getBBox(), m = M(el); let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m); x1 = Math.min(x1, q.x); y1 = Math.min(y1, q.y); x2 = Math.max(x2, q.x); y2 = Math.max(y2, q.y); });
+    return { x1, y1, x2, y2 }; };
+  const RX = /\d+\+\d{3}\s*[İIG]\s*\/\s*\d+\+\d{3}\s*[İIG]/;
+  const T = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && t.textContent.trim());
+  const mus = T.filter(t => RX.test(t.textContent)); if(!mus.length) return false;
+  const diger = T.filter(t => !mus.includes(t)).map(kutu);
+  const buyuk = b => (b.y2 - b.y1) > vb.height * .6;
+  const cubuk = [...svg.querySelectorAll("rect,circle,polygon")].filter(e => !e.closest("defs")).map(kutu).filter(b => !buyuk(b) && b.y1 < vb.y + vb.height);
+  const kesik = [...svg.querySelectorAll("line")].filter(l => !l.closest("defs") && l.getAttribute("stroke-dasharray"));
+  const yer = [];
+  let n = 0;
+  mus.map(t => ({ t, b: kutu(t) })).sort((a, b) => a.b.x1 - b.b.x1).forEach(({ t, b }) => {
+    const w = b.x2 - b.x1, h = b.y2 - b.y1; if(h < w) return;                         // dik yazı değilse dokunma
+    const x1 = b.x1 - 4, x2 = b.x2 + 4;
+    let alt = -1e9;
+    diger.concat(cubuk).forEach(c => { if(c.x1 < x2 && c.x2 > x1 && c.y2 < b.y1 + 1) alt = Math.max(alt, c.y2); });
+    if(alt < -1e8) return;
+    let ust = alt + 10;
+    // başka bir eşitlik yazısıyla çakışmasın
+    for(let d = 0; d < 20; d++){ const c = yer.find(o => o.x1 < b.x2 + 3 && o.x2 > b.x1 - 3 && o.y1 < ust + h + 3 && o.y2 > ust - 3); if(!c) break; ust = c.y2 + 6; }
+    const dy = ust - b.y1; if(dy > -12) { yer.push(b); return; }                      // zaten yakın
+    // dikey öteleme: yazının üst grubundaki koordinatlarda
+    const pm = M(t.parentNode), v = new DOMPoint(0, dy).matrixTransform(new DOMMatrix([pm.a, pm.b, pm.c, pm.d, 0, 0]).inverse());
+    const tr = t.getAttribute("transform") || "";
+    t.setAttribute("transform", `translate(${v.x.toFixed(2)} ${v.y.toFixed(2)})` + (tr ? " " + tr : ""));
+    const yb = { x1: b.x1, x2: b.x2, y1: b.y1 + dy, y2: b.y2 + dy }; yer.push(yb);
+    // kılavuz çizgisi: yazının hizasında, alt ucu eski yazıya yakın olan kesikli dikey çizgi
+    const cx = (b.x1 + b.x2) / 2;
+    kesik.forEach(l => { const m = M(l), p1 = new DOMPoint(+l.getAttribute("x1"), +l.getAttribute("y1")).matrixTransform(m), p2 = new DOMPoint(+l.getAttribute("x2"), +l.getAttribute("y2")).matrixTransform(m);
+      if(Math.abs(p1.x - p2.x) > 1 || Math.abs(p1.x - cx) > w / 2 + 3) return;
+      const altP = p1.y > p2.y ? 1 : 2, ay = Math.max(p1.y, p2.y); if(ay < yb.y1 - 4 || ay > b.y1 + 4) return;
+      const q = new DOMPoint(p1.x, yb.y1 - 3).matrixTransform(m.inverse()); l.setAttribute("x" + altP, q.x.toFixed(1)); l.setAttribute("y" + altP, q.y.toFixed(1)); });
+    n++;
+  });
+  if(!n) return false;
+  // alttaki boş alan: görünür içeriğin en altı + pay
+  let enAlt = -1e9;
+  T.forEach(t => { const b = kutu(t); if(b.y1 < vb.y + vb.height) enAlt = Math.max(enAlt, b.y2); });
+  [...svg.querySelectorAll("rect,line,path,circle,polygon")].forEach(e => { if(e.closest("defs")) return; const b = kutu(e); if(buyuk(b) || b.y1 >= vb.y + vb.height) return; enAlt = Math.max(enAlt, b.y2); });
+  const yeniH = Math.min(vb.height, enAlt + 16 - vb.y);
+  if(vb.height - yeniH > 40) svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.width} ${yeniH}`);
+  return true;
 }
 </script>
 </body>

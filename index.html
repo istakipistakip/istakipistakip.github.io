@@ -2238,7 +2238,7 @@ async function hatGoster(id, korun){
   document.body.appendChild(v);
   if(!korun) history.pushState({ hat: 1 }, "");
   if(typeof L === "undefined"){ document.getElementById("hatmap").innerHTML = '<div class="empty">Harita bileşeni yüklenemedi.</div>'; return; }
-  const m = L.map("hatmap", { doubleClickZoom: false, zoomControl: false, attributionControl: true, preferCanvas: true, maxZoom: 19, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 });
+  const m = L.map("hatmap", { zoomSnap: 0.25, zoomDelta: 1, doubleClickZoom: false, zoomControl: false, attributionControl: true, preferCanvas: true, maxZoom: 19, rotate: true, touchRotate: true, rotateControl: false, bearing: 0 });
   hatHarita = m;
   // Katman sırası: drone şeridi < genel KMZ < işin kendi hattı < drone noktaları
   [["serit", 350], ["genel", 380], ["drone", 450]].forEach(([ad, z]) => { m.createPane(ad).style.zIndex = z; });
@@ -2269,7 +2269,7 @@ async function hatGoster(id, korun){
     sinir.push([n[0], n[1]]);
   });
   const el = document.getElementById("hatmap");
-  const etiketGuncelle = () => el.classList.toggle("etiketsiz", m.getZoom() < 14);
+  const etiketGuncelle = () => el.classList.toggle("etiketsiz", m.getZoom() < 13.4);   // v129: 1,5 kat daha uzaktan açılır (14 − log2 1,5)
   m.on("zoomend", etiketGuncelle);
   m.on("zoomend", () => { if(kat && kat.drone){ seritCiz(); droneNoktalar(); } });
   if(sinir.length) m.fitBounds(sinir, { padding: [30, 30], maxZoom: 16 }); else m.setView([40.7, 36.3], 8);
@@ -9380,7 +9380,8 @@ function kbRenk9(j){
   ((j.hat && j.hat.cizgi) || []).filter(c => !c.i).forEach(c => { const r = hx(c.r); if(!r) return;
     const dk = Math.hypot(r[0] - 255, r[1], r[2]); if(dk < 110 && dk < kd){ kd = dk; kir = c.r; }
     const ds = Math.hypot(r[0], r[1], r[2]); if(ds < 90 && ds < sd){ sd = ds; sy = c.r; } });
-  return { buyil: kir || "#ff0000", eski: sy || "#000000" };
+  // v129: KMZ'de bu yıl da önceki yıllar da biten = kırmızı (itinererde önceki yıllar siyah kalır)
+  return { buyil: kir || "#ff0000", eski: kir || "#ff0000" };
 }
 // hat üzerinde c0..c1 (metre) arası çizgi parçaları (boşluklarda bölünür)
 function kbParca9(h, c0, c1){

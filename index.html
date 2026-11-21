@@ -3587,14 +3587,15 @@ const UC3B = (() => {
       if(ly instanceof L.Polyline && !(ly instanceof L.Polygon)){
         const ham = ly.getLatLngs(), parcalar = ham.length && Array.isArray(ham[0]) ? ham : [ham];
         if(parcalar.length > 1){ parcalar.forEach(pp => { if(pp.length > 1){ const k = L.polyline(pp, ly.options); isle(k); } }); return; }
-        const ll = parcalar[0];
+        let ll = parcalar[0];
         if(ll.length < 2) return;
         const o = ly.options || {};
         if(o.uc3b === false) return;
+        if(o.uc3bHam && o.uc3bHam.length > 1) ll = o.uc3bHam.map(q => ({ lat: q[0], lng: q[1] }));   // v125: kaydırılmamış hat (3B kaydırmayı kendisi yapar)
         const ucusId = o.ucusId == null ? -1 : o.ucusId;
         // yalnız drone rotaları (uc3bYuk) havada çizilir; KMZ'deki yükseklikler yok sayılır
         const yuk = o.uc3bYuk && ll.every(p => Number.isFinite(p.alt));
-        const props = { renk: renk(o.color), gen: Math.max(1, Number(o.weight) || 3), op: o.opacity == null ? 1 : Number(o.opacity), isId: o.isId || "", ucusId, yan: o.uc3bYuk ? 1 : 0 };
+        const props = { renk: renk(o.color), gen: Math.max(1, Number(o.weight) || 3), op: o.opacity == null ? 1 : Number(o.opacity), isId: o.isId || "", ucusId, yan: o.uc3bYuk ? 1 : 0, ofs: Number(o.uc3bOfs) || 0 };
         if(yuk){
           // havada şerit: her parça için ince bir dörtgen, yüksekliğinde
           for(let i = 1; i < ll.length; i++){
@@ -3667,7 +3668,7 @@ const UC3B = (() => {
       map.addSource("cizgi", { type: "geojson", data: son.cizgi });
       map.addSource("nokta", { type: "geojson", data: son.nokta });
       map.addLayer({ id: "cizgi-golge", type: "line", source: "cizgi", filter: ["==", ["get", "yan"], 0], paint: { "line-color": "#000", "line-opacity": .25, "line-width": ["+", ["get", "gen"], 3], "line-blur": 2 } });
-      map.addLayer({ id: "cizgi", type: "line", source: "cizgi", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": ["get", "renk"], "line-width": ["get", "gen"], "line-opacity": ["get", "op"] } });
+      map.addLayer({ id: "cizgi", type: "line", source: "cizgi", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": ["get", "renk"], "line-width": ["get", "gen"], "line-opacity": ["get", "op"], "line-offset": ["get", "ofs"] } });
       map.addLayer({ id: "nokta", type: "circle", source: "nokta", paint: { "circle-color": ["get", "renk"], "circle-radius": ["*", ["get", "r"], .8], "circle-stroke-color": "#fff", "circle-stroke-width": 1.5, "circle-pitch-alignment": "map" } });
       map.addLayer({ id: "perde", type: "fill-extrusion", source: "perde", paint: { "fill-extrusion-color": ["get", "renk"], "fill-extrusion-base": 0, "fill-extrusion-height": ["get", "ust"], "fill-extrusion-opacity": .16 } });
       map.addLayer({ id: "serit", type: "fill-extrusion", source: "serit", paint: { "fill-extrusion-color": ["get", "renk"], "fill-extrusion-base": ["get", "alt"], "fill-extrusion-height": ["get", "ust"], "fill-extrusion-opacity": .95 } });
@@ -9448,6 +9449,7 @@ function kmzBoya9(hedef, j, o){
   P.forEach(s => {
     const op = { color: s.r, weight: s.yan ? W / 2 : W, opacity: o.op == null ? 1 : o.op, interactive: !!o.tik, lineCap: s.yan ? "butt" : "round", lineJoin: "round" };
     if(o.isId) op.isId = o.isId;
+    if(s.yan){ op.uc3bHam = s.p; op.uc3bOfs = s.yan * W / 4; }   // v125: 3B yolun kendi koordinatıyla + piksel kaydırma (line-offset)
     const ly = L.polyline(s.yan ? kbKaydir9(m, s.p, s.yan * W / 4) : s.p, op);
     if(o.tik) ly.on("click", o.tik);
     ly.addTo(hedef);
@@ -10361,8 +10363,8 @@ img, svg{ -webkit-user-drag:none; }`;
   document.addEventListener("touchmove", e => { if(bas !== null && Math.abs(e.touches[0].clientY - bas) > 12){ bas = null; kapat(); } }, { passive: true });
 })();
 
-// v122: arama listesi — (1) sol kenardan sağa kaydırınca anasayfaya yumuşakça dönülür, klavye kapanır;
-// (2) liste kaydırılırken klavye kapandıysa, en üste çıkıp parmak kalkınca arama kutusu tekrar odaklanıp klavyeyi açar
+// v122: arama listesi — sol kenardan sağa kaydırınca anasayfaya yumuşakça dönülür, klavye kapanır
+// (en üste çıkınca klavyeyi yeniden açma isteği iptal edildi, v125'te kaldırıldı)
 (() => {
   const arama = () => !!aramaAcik && tab === "home" && !detay;
   const digerAcik = () => document.getElementById("bsov") || document.getElementById("hatv") || document.getElementById("itiv") || document.getElementById("hikv") || document.getElementById("onz") || document.getElementById("isk117");
@@ -10386,34 +10388,11 @@ img, svg{ -webkit-user-drag:none; }`;
     if(!k.aktif || !arama()) return;
     const dx = e.changedTouches[0].clientX - k.x, dy = Math.abs(e.changedTouches[0].clientY - k.y);
     if(dx > Math.min(110, window.innerWidth * .28) && dx > dy * 1.4){
-      kapat(); kapandi = false;
+      kapat();
       try{ navigator.vibrate && navigator.vibrate(6); }catch(_){}
       aramaAcik = false; isAra = ""; ciz(); ust();
     }
   });
-  // (2) en üste çıkınca klavye tekrar açılsın (yalnız kaydırınca klavye kapanmışsa)
-  let kapandi = false, bas = null, parmak = false;
-  const odakla = () => { const a = document.getElementById("isAra"); if(!a) return false; try{ a.focus({ preventScroll: true }); }catch(_){ a.focus(); } return document.activeElement === a; };
-  const ustte = () => { const m = document.getElementById("main"); return !!m && m.scrollTop <= 6; };
-  document.addEventListener("touchstart", e => { parmak = true; bas = (arama() && e.touches.length === 1 && e.target.closest && e.target.closest("#isListe")) ? e.touches[0].clientY : null; }, { passive: true });
-  document.addEventListener("touchmove", e => {
-    if(bas !== null && Math.abs(e.touches[0].clientY - bas) > 12){
-      bas = null;
-      const a = document.getElementById("isAra");
-      if(a && document.activeElement === a) kapandi = true;   // klavye bu kaydırmayla kapanıyor (v121)
-    }
-  }, { passive: true, capture: true });   // v124: v121'in klavye kapatan dinleyicisinden ÖNCE çalışmalı (yoksa bayrak hiç kurulmuyordu)
-  document.addEventListener("touchend", e => {
-    if(e.touches.length) return;
-    parmak = false;
-    if(kapandi && arama() && ustte()){ if(odakla()) kapandi = false; }
-  });
-  document.addEventListener("touchcancel", () => { parmak = false; });
-  // parmak yokken (ivmeli kaydırma) tepeye varılırsa denenir; iPhone izin vermezse sessizce açılmaz
-  document.getElementById("main").addEventListener("scroll", () => { if(kapandi && !parmak && arama() && ustte() && odakla()) kapandi = false; }, { passive: true });
-  // kullanıcı kutuya kendisi dokunup açtıysa ya da arama kapandıysa bayrak sıfırlanır
-  document.addEventListener("focusin", e => { if(e.target && e.target.id === "isAra") kapandi = false; });
-  document.addEventListener("click", e => { if(e.target.closest && (e.target.closest("[data-arama]") || e.target.closest("[data-tab]"))) kapandi = false; }, true);
 })();
 </script>
 </body>

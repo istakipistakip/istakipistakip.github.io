@@ -8868,11 +8868,10 @@ function itiUzat9(j, q, kod, zorla){
     (j.cats || []).forEach(c => { const st = c.s || c.ad; if(st && !S.includes(st)) S.push(st); });
     if(!S.length) S.push("TY-BSK");
     const dz = { eski: [], buyil: [], hedef: [] };
-    S.forEach(st => {
-      const r = (j.uz || []).find(x => x.s === st) || {}, c = (j.cats || []).find(x => (x.s || x.ad) === st) || {};
-      const o = Math.round((Number(r.o) || 0) * 1000), b = Math.round((Number(c.b) || 0) * 1000), h = Math.round((Number(c.h) || 0) * 1000);
-      if(o > 0) dz.eski.push([st, o]); if(b > 0) dz.buyil.push([st, b]); if(h > b) dz.hedef.push([st, h - b]);
-    });
+    // önceki yıllar: İhale satırlarındaki "<yıl> Öncesi" (standart yazılmamış olsa da — üstteki özetle aynı toplam)
+    (j.uz || []).forEach(r => { const o = Math.round((Number(r.o) || 0) * 1000); if(o > 0) dz.eski.push([r.s || S[0], o]); });
+    (j.cats || []).forEach(c => { const st = c.s || c.ad || S[0], b = Math.round((Number(c.b) || 0) * 1000), h = Math.round((Number(c.h) || 0) * 1000);
+      if(b > 0) dz.buyil.push([st, b]); if(h > b) dz.hedef.push([st, h - b]); });
     const kay = []; let c = 0;
     ["eski", "buyil", "hedef"].forEach(d => dz[d].forEach(([st, L]) => { kay.push({ sinif: "TY", byTip: "", tyTip: "2x1", tur: turStd9(st) || "BSK", altTur: "", konum: "TY", durum: d, bas: c, bit: c + L, ad: "", _km9: 1, _once9: 1 }); c += L; }));
     q.bas = 0; q.bit = Math.max(U, c, 100);

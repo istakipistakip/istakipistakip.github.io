@@ -5573,7 +5573,7 @@ async function boyKesit(j){
     ciz(ix); const b = document.querySelector("#bk6 .b1 span");
     const F = ana.kmF, dd = S[ix].d, hm = Math.round(S[ix].h);
     if(F){
-      const pk = kmT9(F(dd)), k2 = f2(Math.max(0, F.surekli(dd) - F.surekli(0))), n = F.esitNo(dd);   // ikinci km: çizginin başında 0, eksi olmaz, eşitlikte geri düşmez   // ikinci km: yolun başından   // ikinci km: 8,22 gibi
+      const pk = kmT9((v => v < 0 && v > -0.1 ? 0 : v)(F(dd))), k2 = f2(Math.max(0, F.surekli(dd) - F.surekli(0))), n = F.esitNo(dd);   // ikinci km: çizginin başında 0, eksi olmaz, eşitlikte geri düşmez   // ikinci km: yolun başından   // ikinci km: 8,22 gibi
       const not = n ? (F.esitSay > 1 ? n + ". km eşitliği sonrası" : "km eşitliği sonrası") : "";
       if(b) b.innerHTML = `<b>P. Km: ${esc(pk)}</b> · ${hm} m<small>Km: ${esc(k2)}</small>${not ? `<small class="es9">(${not})</small>` : ""}`;
       bkIsaretKoy9(S[ix].p, `P. Km: ${pk}${not ? ` (${not})` : ""} · Km: ${k2}`);
@@ -8462,6 +8462,12 @@ function bkModel9(j){
     // v137: proje başı / sonu / 0+000 önce gelir ("PS= G:36+000/İ:39+000" gibi eşitlik yazılı proje sonu da ayırır)
     if(kmN.some(n => Math.abs(n.v) < 0.005 && mesafe6(n.p, jt) < 60) || pbN.some(b => mesafe6(b, jt) < 60)) return true;
     if(esN.some(e => mesafe6(e.p, jt) < 150)) return false;
+    // v138: birleşme yerinin iki yanındaki en yakın KM yazıları km'nin kesintisiz devam ettiğini göstermeli.
+    // İki yanda da km birleşme yerinden sayılıyorsa (iki yolun 0+000'ı) ya da km atlıyorsa bunlar ayrı yollardır.
+    const yan = (p, ucSon) => { const c = bkKum9(p), T = c[c.length - 1]; let en = null;
+      kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d >= 80) return; const s = ucSon ? T - c[r.i] : c[r.i]; if(s < 3000 && (!en || s < en.s)) en = { s, v: n.v }; }); return en; };
+    const ka = yan(zp, zSon), kb = yan(qp, !qBas);
+    if(ka && kb){ const D = (ka.s + kb.s) / 1000; return Math.abs(Math.abs(kb.v - ka.v) - D) > 0.3 + 0.25 * D; }
     const ez = kmEgim(zp), eq = kmEgim(qp); if(!ez || !eq) return false;
     return (zSon ? ez > 0 : ez < 0) !== (qBas ? eq > 0 : eq < 0);
   };
@@ -8513,8 +8519,9 @@ function bkModel9(j){
       const ust9 = q => bkHatUzak9(q, z) < 25;   // birleşimde üst üste binen kısım iki kez sayılmasın
       if(en.uc === "son"){ let i = 0; while(i < p.length - 2 && ust9(p[i])) i++; if(i) p = p.slice(Math.max(0, i - 1)); }
       else { let i = p.length - 1; while(i > 1 && ust9(p[i])) i--; if(i < p.length - 1) p = p.slice(0, Math.min(p.length, i + 2)); }
-      if(en.uc === "son"){ kop.push(z.length); z = z.concat(p); }
-      else { kop = kop.map(i => i + p.length); kop.push(p.length); z = p.concat(z); }
+      // v138: yalnız gerçek boşluk (≥ 40 m) kopukluk sayılır; uç uca değen parçalar tek çizgidir
+      if(en.uc === "son"){ if(en.d >= 40) kop.push(z.length); z = z.concat(p); }
+      else { kop = kop.map(i => i + p.length); if(en.d >= 40) kop.push(p.length); z = p.concat(z); }
     }
     return { p: z, kop: new Set(kop), adS, yol: 1 };
   };
@@ -8539,7 +8546,7 @@ function bkModel9(j){
     for(let ek = true; ek;){ ek = false;
       for(let i = 0; i < kal.length; i++){ const o = kal[i], s = p[p.length - 1];
         const e0 = mesafe6(s, o.p[0]), e1 = mesafe6(s, o.p[o.p.length - 1]);
-        if(Math.min(e0, e1) < 40){ kp.push(p.length); p = p.concat(e1 < e0 ? o.p.slice().reverse() : o.p); if(o.a) adlar.push(o.a); kal.splice(i, 1); ek = true; break; } } }
+        if(Math.min(e0, e1) < 40 && !ayriYol(p, true, e1 < e0 ? o.p.slice().reverse() : o.p, true)){ p = p.concat(e1 < e0 ? o.p.slice().reverse() : o.p); if(o.a) adlar.push(o.a); kal.splice(i, 1); ek = true; break; } } }
     if(uz(p) < 50) continue;
     { // yolun UCUNDAN aynı doğrultuda devam eden parça yolun devamıdır: yola eklenir
       const { y } = enYakinYol(p[0]), sonda = mesafe6(p[0], y.p[y.p.length - 1]) < mesafe6(p[0], y.p[0]), E = sonda ? y.p[y.p.length - 1] : y.p[0];
@@ -8548,8 +8555,9 @@ function bkModel9(j){
       if(mesafe6(p[0], E) < 250 && mesafe6(uzak, E) > 40 && aci < 0.9 && bkYakin9(uzak, y.p).d > 30 && !ayriYol(y.p, sonda, p, true)){
         let q = p.slice(), i = 0; while(i < q.length - 2 && bkHatUzak9(q[i], y.p) < 25) i++; if(i) q = q.slice(Math.max(0, i - 1));
         if(q.length >= 2){
-          if(sonda){ y.kop.add(y.p.length); y.p = y.p.concat(q); }
-          else { const N = q.length; y.kop = new Set([...y.kop].map(k => k + N)); y.kop.add(N); y.p = q.slice().reverse().concat(y.p); }
+          const bos9 = mesafe6(q[0], E) >= 40;
+          if(sonda){ if(bos9) y.kop.add(y.p.length); y.p = y.p.concat(q); }
+          else { const N = q.length; y.kop = new Set([...y.kop].map(k => k + N)); if(bos9) y.kop.add(N); y.p = q.slice().reverse().concat(y.p); }
           if(q.a) y.adS.add(q.a);
           continue;
         }
@@ -8606,7 +8614,7 @@ function bkModel9(j){
     h.kmF = h.L.length + h.E.length >= 2 ? bkKmFn9(h.L, h.E) : null;
     const pb = h.L.filter(x => x.pb)[0]; if(h.kmF && pb) h.kmF.bas = h.kmF.surekli(pb.c);   // ikinci km PB'den sayılır
   });
-  const kmAdi = (h, c) => { if(h.kmF){ const v = h.kmF(c); if(Number.isFinite(v)) return kmT9(v); } return f2(c / 1000) + " km"; };
+  const kmAdi = (h, c) => { if(h.kmF){ let v = h.kmF(c); if(v < 0 && v > -0.1) v = 0; if(Number.isFinite(v)) return kmT9(v); } return f2(c / 1000) + " km"; };
   // ---- adlar ve kolların ayrıldığı yer
   const yolAd = y => [...y.adS].find(a => !genel.test(a) && !KMRX9.test(a)) || "";
   yollar.forEach((y, i) => { y.ad = yolAd(y) || (yollar.length > 1 ? "Ana yol " + (i + 1) : "Ana yol"); });
@@ -8624,9 +8632,11 @@ let bkVurgu9 = null;
 function bkVurguTemizle9(){ try{ bkVurgu9 && bkVurgu9.remove(); }catch(_){} bkVurgu9 = null; try{ if(uc && uc.map && uc.map.getLayer("bk9kol")){ uc.map.removeLayer("bk9kol"); uc.map.removeSource("bk9kol"); } }catch(_){} }
 function bkVurgula9(h){
   bkVurguTemizle9(); if(!h || !h.kol) return;
-  if(uc && uc.map && hatMod !== "2b"){ try{ uc.map.addSource("bk9kol", { type: "geojson", data: { type: "Feature", geometry: { type: "LineString", coordinates: h.p.map(q => [q[1], q[0]]) } } });
+  // v138: hattaki boşluklar (kop) düz çizgiyle birleştirilmez — her parça ayrı çizilir
+  const parca = []; { let cur = []; h.p.forEach((q, i) => { if(i && h.kop && h.kop.has(i)){ if(cur.length > 1) parca.push(cur); cur = []; } cur.push(q); }); if(cur.length > 1) parca.push(cur); }
+  if(uc && uc.map && hatMod !== "2b"){ try{ uc.map.addSource("bk9kol", { type: "geojson", data: { type: "Feature", geometry: { type: "MultiLineString", coordinates: parca.map(pp => pp.map(q => [q[1], q[0]])) } } });
       uc.map.addLayer({ id: "bk9kol", type: "line", source: "bk9kol", paint: { "line-color": "#f97316", "line-width": 9, "line-opacity": .55 }, layout: { "line-cap": "round", "line-join": "round" } }); }catch(_){} return; }
-  if(hatHarita) try{ bkVurgu9 = L.polyline(h.p, { color: "#f97316", weight: 10, opacity: .5, lineCap: "round", interactive: false }).addTo(hatHarita); }catch(_){}
+  if(hatHarita) try{ bkVurgu9 = L.polyline(parca, { color: "#f97316", weight: 10, opacity: .5, lineCap: "round", interactive: false }).addTo(hatHarita); }catch(_){}
 }
 async function bkKolSec9(k){
   if(!hatIs) return; bkSec9 = { id: hatIs.id, k };

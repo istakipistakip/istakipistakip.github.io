@@ -8459,14 +8459,14 @@ function bkModel9(j){
     const mi = L.reduce((t, x) => t + x[0], 0) / L.length, mv = L.reduce((t, x) => t + x[1], 0) / L.length; return L.reduce((t, x) => t + (x[0] - mi) * (x[1] - mv), 0); };
   const ayriYol = (zp, zSon, qp, qBas) => {
     const jt = zSon ? zp[zp.length - 1] : zp[0];
-    // v137: proje başı / sonu / 0+000 önce gelir ("PS= G:36+000/İ:39+000" gibi eşitlik yazılı proje sonu da ayırır)
-    if(kmN.some(n => Math.abs(n.v) < 0.005 && mesafe6(n.p, jt) < 60) || pbN.some(b => mesafe6(b, jt) < 60)) return true;
-    if(esN.some(e => mesafe6(e.p, jt) < 150)) return false;
+    // v140: önce km sürekliliğine bakılır; proje başı / sonu yazısı tek başına yolu bölmez (yol PB'den önce de sürebilir).
+    // Gerçek km eşitliği yakınında km atladığı için ayırmaz; PB/PS yazılı eşitlik ("PS= G:36+000/İ:39+000") sayılmaz.
+    if(esN.some(e => !PBRX.test(e.q[2] || "") && mesafe6(e.p, jt) < 150)) return false;
     // v138: birleşme yerinin iki yanındaki en yakın KM yazıları km'nin kesintisiz devam ettiğini göstermeli.
     // İki yanda da km birleşme yerinden sayılıyorsa (iki yolun 0+000'ı) ya da km atlıyorsa bunlar ayrı yollardır.
     // v139: aradaki boşluk da hesaba katılır ve km'nin yönü (artıyor / azalıyor) birleşmeden sonra da aynı kalmalı
     const yan = (p, ucSon) => { const c = bkKum9(p), T = c[c.length - 1], L = [];
-      kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d >= 80) return; const s = ucSon ? T - c[r.i] : c[r.i]; if(s < 4000) L.push({ s, v: n.v }); }); return L.sort((a, b) => a.s - b.s); };
+      kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d >= 80) return; const s = ucSon ? T - c[r.i] : c[r.i]; if(s >= 60 && s < 4000) L.push({ s, v: n.v }); }); return L.sort((a, b) => a.s - b.s); };   // birleşme yerindeki yazı iki yana da düşer: sayılmaz
     const A = yan(zp, zSon), B = yan(qp, !qBas);
     if(A.length && B.length){
       const bosluk = mesafe6(jt, qBas ? qp[0] : qp[qp.length - 1]), D = (A[0].s + bosluk + B[0].s) / 1000, tol = 0.3 + 0.25 * D;
@@ -8476,6 +8476,7 @@ function bkModel9(j){
       if(tr) return Math.abs(B[0].v - A[0].v - tr * D) > tol;
       return Math.abs(Math.abs(B[0].v - A[0].v) - D) > tol;
     }
+    if(kmN.some(n => Math.abs(n.v) < 0.005 && mesafe6(n.p, jt) < 60) || pbN.some(b => mesafe6(b, jt) < 60)) return true;
     const ez = kmEgim(zp), eq = kmEgim(qp); if(!ez || !eq) return false;
     return (zSon ? ez > 0 : ez < 0) !== (qBas ? eq > 0 : eq < 0);
   };

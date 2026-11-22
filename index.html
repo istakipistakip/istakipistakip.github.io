@@ -2743,8 +2743,40 @@ function itiDuzelt9(kok, j){
     try{ if(itiSeritYazi9(svg)) degisti = true; }catch(_){}
     try{ if(itiSeritYer9(svg)) degisti = true; }catch(_){}
     try{ if(itiKolUc9(svg)) degisti = true; }catch(_){}
-    try{ if(itiOkAd9(svg)) degisti = true; }catch(_){} });
+    try{ if(itiOkAd9(svg)) degisti = true; }catch(_){}
+    try{ if(itiPbUc9(svg)) degisti = true; }catch(_){} });
   return degisti;
+}
+// v176: kol yolu ana yolun ucunu kaplıyorsa ana yolun "Proje başı / sonu" yazısı ucun hemen yanına (kolların dışına), yolun ortası hizasında yatay yazılır
+function itiPbUc9(svg){
+  if(svg._pu9) return false; svg._pu9 = 1;
+  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse(), vb = svg.viewBox.baseVal;
+  const kutu = el => { const b = el.getBBox(), m = ki.multiply(el.getCTM()); let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m); x1 = Math.min(x1, q.x); y1 = Math.min(y1, q.y); x2 = Math.max(x2, q.x); y2 = Math.max(y2, q.y); });
+    return { x1, y1, x2, y2 }; };
+  const zemin = r => /^(#fff|#ffffff|white|none|transparent|#eef0f3|#f3eef8)$/i.test((r.getAttribute("fill") || "").trim()) || /^url\(/.test(r.getAttribute("fill") || "");
+  const dalBar = [...svg.querySelectorAll("g.iti-dikey rect")].filter(r => !zemin(r)).map(r => kutu(r)).filter(b => (b.y2 - b.y1) > (b.x2 - b.x1));
+  if(!dalBar.length) return false;
+  let n = 0;
+  svg.querySelectorAll("circle.uc9").forEach(c => {
+    if(c.closest("g.iti-dikey")) return;
+    const id = c.getAttribute("data-pbid"), t = id && svg.querySelector(`text[data-pbid="${id}"]`); if(!t || t.closest("g.iti-dikey")) return;
+    const P = new DOMPoint(+c.getAttribute("cx"), +c.getAttribute("cy")).matrixTransform(ki.multiply(c.getCTM())), bit = c.getAttribute("data-uc9") === "bit";
+    const D = dalBar.filter(b => b.x1 < P.x + 45 && b.x2 > P.x - 45 && b.y1 < P.y + 140 && b.y2 > P.y - 140);
+    if(!D.length) return;
+    const mt = ki.multiply(t.getCTM()), fs = (parseFloat(t.getAttribute("font-size")) || 12) * Math.sqrt(Math.abs(mt.a * mt.d - mt.b * mt.c));
+    const kenar = bit ? Math.max(P.x, ...D.map(b => b.x2)) + 8 : Math.min(P.x, ...D.map(b => b.x1)) - 8;
+    const eng = [...svg.querySelectorAll("text, rect, circle")].filter(e => e !== t && !e.closest("defs") && !(e.tagName === "rect" && zemin(e)) && !e.classList.contains("uc9"))
+      .map(e => { try{ return kutu(e); }catch(_){ return null; } }).filter(q => q && (q.x2 > q.x1 || q.y2 > q.y1) && !((q.x2 - q.x1) > vb.width * .8 && (q.y2 - q.y1) > vb.height * .8));
+    const eski = { p: t.parentNode, s: t.nextSibling, tr: t.getAttribute("transform"), x: t.getAttribute("x"), y: t.getAttribute("y"), a: t.getAttribute("text-anchor"), f: t.getAttribute("font-size") };
+    svg.appendChild(t); t.removeAttribute("transform"); t.setAttribute("font-size", fs.toFixed(1)); t.setAttribute("text-anchor", bit ? "start" : "end"); t.setAttribute("x", kenar.toFixed(1));
+    const adim = fs + 6;
+    const ok = [0, -adim, adim, -2 * adim, 2 * adim].some(dy => { t.setAttribute("y", (P.y + fs * .35 + dy).toFixed(1)); const q = kutu(t);
+      return q.x1 >= vb.x && q.x2 <= vb.x + vb.width && !eng.some(e => q.x1 < e.x2 + 2 && q.x2 > e.x1 - 2 && q.y1 < e.y2 + 2 && q.y2 > e.y1 - 2); });
+    if(!ok){ eski.p.insertBefore(t, eski.s); if(eski.tr) t.setAttribute("transform", eski.tr); t.setAttribute("x", eski.x); t.setAttribute("y", eski.y); if(eski.a) t.setAttribute("text-anchor", eski.a); t.setAttribute("font-size", eski.f); return; }
+    n++;
+  });
+  return n > 0;
 }
 // v173: kol yolunun (ekranda dikey) okunun istikamet adı yatay yazılır ve okun hemen yanına konur (sağı doluysa soluna)
 function itiOkAd9(svg){

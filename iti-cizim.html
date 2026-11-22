@@ -3064,7 +3064,8 @@ function drawIcon(cins, cx, cy, col, w){
       svg+='<text x="'+(xx+16)+'" y="'+(ay-12)+'" text-anchor="start" font-size="11" font-weight="700" fill="#1a1a1a" data-okid="'+_oid+'">'+taraf+'</text>'; }
     /* Proje başı: eski yer — şerit hemen üstü (döndürünce yolun sağı). topPad yazıyı viewBox'ta tutar */
     var tyPb = window._itiCompact ? Math.max(18, ySol - 16) : Math.max(14, ySol - 22);
-    if(!_ucB) svg+='<text transform="rotate(-90 '+xx+' '+tyPb+')" x="'+xx+'" y="'+tyPb+'" text-anchor="start" font-size="'+(window._itiCompact?14:12)+'" font-weight="800" fill="#111" stroke="#fff" stroke-width="3.5" paint-order="stroke">Proje başı</text>';
+    window._pbB="pb"+(window._itiPbN=(window._itiPbN||0)+1); /* v176: yazı ile yolun ucu (uc9 işareti) eşleşir */
+    if(!_ucB) svg+='<text data-pbid="'+window._pbB+'" transform="rotate(-90 '+xx+' '+tyPb+')" x="'+xx+'" y="'+tyPb+'" text-anchor="start" font-size="'+(window._itiCompact?14:12)+'" font-weight="800" fill="#111" stroke="#fff" stroke-width="3.5" paint-order="stroke">Proje başı</text>';
   })();
   /* Sağ ok → + bitiş tarafı üstte */
   (function(){
@@ -3076,7 +3077,8 @@ function drawIcon(cins, cx, cy, col, w){
       svg+='<text x="'+(xx-16)+'" y="'+(ay-12)+'" text-anchor="end" font-size="11" font-weight="700" fill="#1a1a1a" data-okid="'+_oid+'">'+taraf+'</text>'; }
     /* Proje sonu: eski yer — şerit hemen üstü (döndürünce yolun sağı) */
     var tyPs = window._itiCompact ? Math.max(18, ySol - 16) : Math.max(14, ySol - 22);
-    if(!_ucS) svg+='<text transform="rotate(-90 '+xx+' '+tyPs+')" x="'+xx+'" y="'+tyPs+'" text-anchor="start" font-size="'+(window._itiCompact?14:12)+'" font-weight="800" fill="#111" stroke="#fff" stroke-width="3.5" paint-order="stroke">Proje sonu</text>';
+    window._pbS="pb"+(window._itiPbN=(window._itiPbN||0)+1);
+    if(!_ucS) svg+='<text data-pbid="'+window._pbS+'" transform="rotate(-90 '+xx+' '+tyPs+')" x="'+xx+'" y="'+tyPs+'" text-anchor="start" font-size="'+(window._itiCompact?14:12)+'" font-weight="800" fill="#111" stroke="#fff" stroke-width="3.5" paint-order="stroke">Proje sonu</text>';
   })();
   /* Müsavat (İ/G) yazıları: yazı YUKARI doğru uzar; km kademelerinin altında başlatılır,
      birbirine yakın olanlar farklı bantlara alınır → hiçbir km yazısının üstüne binmez. */
@@ -3184,6 +3186,9 @@ iconLayer.forEach(function(ic){ if(ic) svg+=ic; });
     /* Final H: km satırları + alt boşluk — etiketler viewBox dışında kalmasın */
     svg=svg.replace(/viewBox="0 0 ([\d.]+) ([\d.]+)"/, 'viewBox="0 0 $1 '+Hfinal+'"');
   }catch(e){}
+  /* v176: yolun iki ucu (görünmez işaret) — telefonda kol yolu ucu kaplarsa "Proje başı / sonu" ucun yanına yatay yazılır */
+  svg+='<circle class="uc9" data-uc9="bas" data-pbid="'+window._pbB+'" cx="'+x(bas).toFixed(1)+'" cy="'+((ySol+ySag+h)/2).toFixed(1)+'" r="0" fill="none"/>';
+  svg+='<circle class="uc9" data-uc9="bit" data-pbid="'+window._pbS+'" cx="'+x(bit).toFixed(1)+'" cy="'+((ySol+ySag+h)/2).toFixed(1)+'" r="0" fill="none"/>';
 svg+='</svg>';
   /* Birleşik (L/T) çizim için son koordinat haritası */
   try{

@@ -2741,8 +2741,32 @@ function itiDuzelt9(kok, j){
     try{ if(itiBasYer9(svg)) degisti = true; }catch(_){}
     try{ if(itiSeritYazi9(svg)) degisti = true; }catch(_){}
     try{ if(itiSeritYer9(svg)) degisti = true; }catch(_){}
-    try{ if(itiKolUc9(svg)) degisti = true; }catch(_){} });
+    try{ if(itiKolUc9(svg)) degisti = true; }catch(_){}
+    try{ if(itiOkAd9(svg)) degisti = true; }catch(_){} });
   return degisti;
+}
+// v173: kol yolunun (ekranda dikey) okunun istikamet adı yatay yazılır ve okun hemen yanına konur (sağı doluysa soluna)
+function itiOkAd9(svg){
+  if(svg._oa9) return false; svg._oa9 = 1;
+  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse(), vb = svg.viewBox.baseVal;
+  const kutu = el => { const b = el.getBBox(), m = ki.multiply(el.getCTM()); let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m); x1 = Math.min(x1, q.x); y1 = Math.min(y1, q.y); x2 = Math.max(x2, q.x); y2 = Math.max(y2, q.y); });
+    return { x1, y1, x2, y2 }; };
+  let n = 0;
+  svg.querySelectorAll("path[data-okid]").forEach(p => {
+    const b = kutu(p); if((b.y2 - b.y1) <= (b.x2 - b.x1)) return;   // yatay ok: adı zaten üstünde
+    const T = [...svg.querySelectorAll(`text[data-okid="${p.getAttribute("data-okid")}"]`)]; if(!T.length) return;
+    const t = T[0], fs = 11 * Math.sqrt(Math.abs((m => m.a * m.d - m.b * m.c)(ki.multiply(t.getCTM())))) || 11;
+    const eng = [...svg.querySelectorAll("text, rect, path, circle")].filter(e => e !== t && e !== p && !e.closest("defs") && !(e.tagName === "rect" && /^(#fff|#ffffff|white|none|transparent)$/i.test((e.getAttribute("fill") || "").trim())))
+      .map(e => { try{ return kutu(e); }catch(_){ return null; } }).filter(q => q && !((q.x2 - q.x1) > vb.width * .8 && (q.y2 - q.y1) > vb.height * .8));
+    svg.appendChild(t); t.removeAttribute("transform"); t.setAttribute("font-size", fs.toFixed(1));
+    const ym = (b.y1 + b.y2) / 2 + fs * .35;
+    const dene = (sag) => { t.setAttribute("text-anchor", sag ? "start" : "end"); t.setAttribute("x", (sag ? b.x2 + 5 : b.x1 - 5).toFixed(1)); t.setAttribute("y", ym.toFixed(1));
+      const q = kutu(t); return q.x1 >= vb.x && q.x2 <= vb.x + vb.width && !eng.some(e => q.x1 < e.x2 + 2 && q.x2 > e.x1 - 2 && q.y1 < e.y2 + 2 && q.y2 > e.y1 - 2); };
+    if(!dene(true) && !dene(false)) dene(true);
+    n++;
+  });
+  return n > 0;
 }
 // v153: (1) bağlantı satırında dal km'si ve ok SOL/TY/SAĞ sütununa yaklaşır; (2) dikey kol yolunun "Proje başı / sonu" yazıları şeritten
 // aynı boşlukla hizalı başlar, yön okları (↑ ↓) da tek hizada durur
@@ -2773,10 +2797,12 @@ function itiKolUc9(svg){
     if(!sag && !P.every(o => (o.b.x1 + o.b.x2) / 2 < bM)) return;
     P.forEach(o => { const dx = sag ? (bR + 8 - o.b.x1) : (bL - 8 - o.b.x2); if(Math.abs(dx) > 0.5){ kay(o.t, dx); o.b = { x1: o.b.x1 + dx, x2: o.b.x2 + dx, y1: o.b.y1, y2: o.b.y2 }; n++; } });
     const bT = Math.min(...bar.map(b => b.y1)), bB = Math.max(...bar.map(b => b.y2));
-    const ok = [...svg.querySelectorAll("path")].filter(okMu).map(p => ({ p, b: kutu(p) })).filter(o => (o.b.y2 - o.b.y1) > (o.b.x2 - o.b.x1) && o.b.y2 > bT - 40 && o.b.y1 < bB + 40 && (sag ? (o.b.x1 > bR && o.b.x1 < bR + 260) : (o.b.x2 < bL && o.b.x2 > bL - 260)));
+    // v173: bu yolun okları (data-okyol) nereye kaçmış olursa olsun bulunur; adı da okla birlikte kayar
+    const yid = g.getAttribute("data-yol-id"), kendi = yid ? [...svg.querySelectorAll(`path[data-okyol="${CSS.escape(yid)}"]`)] : [];
+    const ok = (kendi.length ? kendi.filter(okMu) : [...svg.querySelectorAll("path")].filter(okMu)).map(p => ({ p, b: kutu(p) })).filter(o => (o.b.y2 - o.b.y1) > (o.b.x2 - o.b.x1) && (kendi.length || (o.b.y2 > bT - 40 && o.b.y1 < bB + 40 && (sag ? (o.b.x1 > bR && o.b.x1 < bR + 260) : (o.b.x2 < bL && o.b.x2 > bL - 260)))));
     if(!ok.length) return;
     const hiza = sag ? Math.max(...P.map(o => o.b.x2)) + 12 : Math.min(...P.map(o => o.b.x1)) - 12;
-    ok.forEach(o => { const w = o.b.x2 - o.b.x1, dx = sag ? (hiza - o.b.x1) : (hiza - o.b.x2); if(Math.abs(dx) > 0.5){ kay(o.p, dx); n++; } });
+    ok.forEach(o => { const w = o.b.x2 - o.b.x1, dx = sag ? (hiza - o.b.x1) : (hiza - o.b.x2); if(Math.abs(dx) > 0.5){ kay(o.p, dx); const id = o.p.getAttribute("data-okid"); if(id) svg.querySelectorAll(`text[data-okid="${id}"]`).forEach(t => kay(t, dx)); n++; } });
   });
   // (3) v156: birleşik dallar — ana yolun km yazısı dalın şeridine binerse en yakın yana kayar (çizgisi kendi km'sinden eğik gider);
   // dalın "Proje başı/sonu" yazısı ana yolun şeridine binerse dal boyunca dışarı kayar
@@ -2840,7 +2866,8 @@ function itiSeritYer9(svg){
   const tum = [...svg.querySelectorAll("text, rect")].filter(e => !e.closest("defs") && gor(e) && e.textContent !== undefined && !(e.tagName === "rect" && zemin(e)));
   oklar.forEach(p => {
     const b = kutu(p);
-    const ist = tum.filter(e => e.tagName === "text" && (() => { const t = kutu(e); return t.y2 <= b.y1 + 2 && t.y2 >= b.y1 - 30 && t.x2 > b.x1 - 4 && t.x1 < b.x2 + 60; })());   // istikamet yazısı
+    const _oid = p.getAttribute("data-okid");
+    const ist = _oid ? [...svg.querySelectorAll(`text[data-okid="${_oid}"]`)] : tum.filter(e => e.tagName === "text" && (() => { const t = kutu(e); return t.y2 <= b.y1 + 2 && t.y2 >= b.y1 - 30 && t.x2 > b.x1 - 4 && t.x1 < b.x2 + 60; })());   // istikamet yazısı
     const eng = tum.filter(e => !ist.includes(e)).map(e => { try{ return kutu(e); }catch(_){ return null; } }).filter(q => q && !((q.x2 - q.x1) > vb.width * .8 && (q.y2 - q.y1) > vb.height * .8));
     const bos = (dx, dy) => { const nb = { x1: b.x1 + dx, y1: b.y1 + dy, x2: b.x2 + dx, y2: b.y2 + dy }; if(nb.x1 < vb.x || nb.x2 > vb.x + vb.width || nb.y1 < vb.y) return false;
       return !eng.some(q => kes(nb, q, 4)) && ist.every(e => { const t = kutu(e), tb = { x1: t.x1 + dx, y1: t.y1 + dy, x2: t.x2 + dx, y2: t.y2 + dy }; return !eng.some(q => kes(tb, q, 2)); }); };
@@ -9661,12 +9688,15 @@ ${rB.kok && rB.yollar.length > 1 ? `<label>Hangi yol</label>${ch("ky", rB.yollar
     const y = { ...P.yollar[i] }, ana = i === 0 || yB.kok === P.yollar[i], O = P.yollar.length > 1 ? yolOn().filter(x => x.i === i) : [];
     const ch = (ad, liste, sec) => `<div class="ch">${liste.map(([v, t]) => `<button type="button" data-${ad}="${esc(v)}"${v === sec ? ' class="on"' : ""}>${esc(t)}</button>`).join("")}</div>`;
     // bağlanabileceği yollar: yalnız aynı bölümdekiler (kendisi ve ona bağlı olanlar hariç)
+    // v173: her yolun istikameti (yazılmazsa çizimde ok görünmez); ana itinererin yolu projenin istikametini kullanır
+    const istB0 = i === 0 ? P.istikametBas : (ana && y.istikametBas === undefined ? P.istikametBas : y.istikametBas), istE0 = i === 0 ? P.istikametBit : (ana && y.istikametBas === undefined ? P.istikametBit : y.istikametBit);
     const altlar = new Set([y.id]); { let ek = true; while(ek){ ek = false; P.yollar.forEach(q => { if(!altlar.has(q.id) && altlar.has(q.bagliYolId) && q !== yB.kok){ altlar.add(q.id); ek = true; } }); } }
     const digerler = yB.yollar.filter(q => !altlar.has(q.id)).map(q => ({ q, k: P.yollar.indexOf(q) }));
     const s = altSayfa(IK("iti"), esc(y.adi || y.id || "Yol"), esc(j.ad), `<form class="kf9" id="ity9" autocomplete="off">
 ${O.length ? `<div class="itd9not"><b>KMZ'ye göre:</b><br>${O.map(o => esc(o.m)).join("<br>")}<button type="button" class="btn ikinci" data-ityoneri style="margin-top:8px;width:100%">KMZ'ye göre doldur</button></div>` : ""}
 <label>Yol adı</label><input id="ityA" value="${esc(y.adi || "")}">
 <div class="ik2"><div><label>Başlangıç km</label>${kmIn("ityB", y.bas)}</div><div><label>Bitiş km</label>${kmIn("ityE", y.bit)}</div></div>
+<div class="ik2"><div><label>Başlangıç istikameti</label><input id="ityIB" value="${esc(istB0 || "")}" placeholder="boşsa ok yok"></div><div><label>Bitiş istikameti</label><input id="ityIE" value="${esc(istE0 || "")}" placeholder="boşsa ok yok"></div></div>
 <label>Yol tipi</label>${ch("yy", [["", "Kayıtlara göre"], ["BY", "BY (bölünmüş)"], ["TY", "TY (tek yol)"]], y.yolTipi || "")}
 <label>Boyalı alan kalınlığı</label>${ch("yk", [["0.7", "İnce"], ["1", "Normal"], ["1.35", "Kalın"]], "")}<div class="ityad"><button type="button" data-ityad="kal:-1" aria-label="İncelt">−</button><span id="ityad_kal"></span><button type="button" data-ityad="kal:1" aria-label="Kalınlaştır">+</button></div>
 <label>Çizimdeki uzunluk <small class="kk9">(km değişmez, yalnız görünüş)</small></label>${ch("yu", [["0.7", "Kısa"], ["1", "Normal"], ["1.4", "Uzun"], ["1.8", "Çok uzun"]], "")}<div class="ityad"><button type="button" data-ityad="uz:-1" aria-label="Kısalt">−</button><span id="ityad_uz"></span><button type="button" data-ityad="uz:1" aria-label="Uzat">+</button></div>
@@ -9738,6 +9768,8 @@ ${ana ? "" : `<label>Bağlantı şekli <small class="kk9">(ayrı yerdeki yol iç
         }
       }
       if(ana && i > 0){ n.sekil = "ayri"; n.kavsakKm = null; n.dalKm = null; n.bagliYolId = null; delete n.devam; }
+      { const ib = f.querySelector("#ityIB").value.trim(), ie = f.querySelector("#ityIE").value.trim();
+        if(i === 0){ P.istikametBas = ib; P.istikametBit = ie; } else { n.istikametBas = ib; n.istikametBit = ie; } }
       kayitUydur9(y.id, +y.bas, +y.bit, +n.bas, +n.bit);
       // yeni eklenen yolun kendiliğinden konan kaydı, bağlandığı yolun o noktadaki rengini alır (renk elle değişmediyse)
       P.kayitlar.forEach(r => { if(r._bagRenk9 && r.yolId === n.id && n.bagliYolId && n.kavsakKm != null) r.durum = renkAt9(n.bagliYolId, +n.kavsakKm); });

@@ -1250,7 +1250,12 @@ function yolPseudoProje(p, yol){
     return m.yolId===y.id;
   });
   var _yo=(Array.isArray(p.yollar) ? p.yollar.find(function(q){ return (q.id||"")===y.id; }) : null) || {};
+  /* v173: kol yolunun istikameti kendi adı (yoksa ok yok); ayrı yerdeki yol kendi adını yazdıysa o, yazmadıysa (eski veri) projeninki */
+  var _yi=(Array.isArray(p.yollar) ? p.yollar.indexOf(_yo) : -1), _dal=_yi>0 && (_yo.sekil==="L"||_yo.sekil==="T"||_yo.sekil==="+");
+  var _ib=_dal ? (_yo.istikametBas||"") : (_yi>0 && _yo.istikametBas!==undefined ? (_yo.istikametBas||"") : p.istikametBas);
+  var _ie=_dal ? (_yo.istikametBit||"") : (_yi>0 && _yo.istikametBas!==undefined ? (_yo.istikametBit||"") : p.istikametBit);
   return Object.assign({}, p, {
+    istikametBas: _ib, istikametBit: _ie,
     bas: y.bas, bit: y.bit,
     yolTipi: (_yo.yolTipi==="BY"||_yo.yolTipi==="TY") ? _yo.yolTipi : p.yolTipi,
     _kalinlik: _yo.kalinlik || p._kalinlik || null,
@@ -3050,8 +3055,10 @@ function drawIcon(cins, cx, cy, col, w){
     var ay = ySol - 175;
     var taraf=esc(p.istikametBas||"");
     if(_ucB) return; /* v152: ok ve "Proje başı" bağlantı satırına (dal km'sinin soluna) taşındı */
-    svg+='<path d="M'+(xx+36)+' '+ay+' L'+xx+' '+ay+' L'+(xx+11)+' '+(ay-10)+' M'+xx+' '+ay+' L'+(xx+11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
-    if(taraf) svg+='<text x="'+(xx+16)+'" y="'+(ay-12)+'" text-anchor="start" font-size="11" font-weight="700" fill="#1a1a1a">'+taraf+'</text>';
+    /* v173: istikamet adı yazılmamışsa ok hiç çizilmez; ok ile adı data-okid ile bağlı (telefonda birlikte taşınır) */
+    var _oid="ok"+(window._itiOkN=(window._itiOkN||0)+1), _oy=esc(p._yolId||"");
+    if(taraf){ svg+='<path d="M'+(xx+36)+' '+ay+' L'+xx+' '+ay+' L'+(xx+11)+' '+(ay-10)+' M'+xx+' '+ay+' L'+(xx+11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" data-okid="'+_oid+'" data-okyol="'+_oy+'"/>';
+      svg+='<text x="'+(xx+16)+'" y="'+(ay-12)+'" text-anchor="start" font-size="11" font-weight="700" fill="#1a1a1a" data-okid="'+_oid+'">'+taraf+'</text>'; }
     /* Proje başı: eski yer — şerit hemen üstü (döndürünce yolun sağı). topPad yazıyı viewBox'ta tutar */
     var tyPb = window._itiCompact ? Math.max(18, ySol - 16) : Math.max(14, ySol - 22);
     if(!_ucB) svg+='<text transform="rotate(-90 '+xx+' '+tyPb+')" x="'+xx+'" y="'+tyPb+'" text-anchor="start" font-size="'+(window._itiCompact?14:12)+'" font-weight="800" fill="#111" stroke="#fff" stroke-width="3.5" paint-order="stroke">Proje başı</text>';
@@ -3061,8 +3068,9 @@ function drawIcon(cins, cx, cy, col, w){
     var xx=x(bit), _ucS=!!(window._itiUc && window._itiUc.bit);
     var ay = ySol - 175;
     var taraf=esc(p.istikametBit||"");
-    svg+='<path d="M'+(xx-36)+' '+ay+' L'+xx+' '+ay+' L'+(xx-11)+' '+(ay-10)+' M'+xx+' '+ay+' L'+(xx-11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
-    if(taraf) svg+='<text x="'+(xx-16)+'" y="'+(ay-12)+'" text-anchor="end" font-size="11" font-weight="700" fill="#1a1a1a">'+taraf+'</text>';
+    var _oid="ok"+(window._itiOkN=(window._itiOkN||0)+1), _oy=esc(p._yolId||"");
+    if(taraf){ svg+='<path d="M'+(xx-36)+' '+ay+' L'+xx+' '+ay+' L'+(xx-11)+' '+(ay-10)+' M'+xx+' '+ay+' L'+(xx-11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" data-okid="'+_oid+'" data-okyol="'+_oy+'"/>';
+      svg+='<text x="'+(xx-16)+'" y="'+(ay-12)+'" text-anchor="end" font-size="11" font-weight="700" fill="#1a1a1a" data-okid="'+_oid+'">'+taraf+'</text>'; }
     /* Proje sonu: eski yer — şerit hemen üstü (döndürünce yolun sağı) */
     var tyPs = window._itiCompact ? Math.max(18, ySol - 16) : Math.max(14, ySol - 22);
     if(!_ucS) svg+='<text transform="rotate(-90 '+xx+' '+tyPs+')" x="'+xx+'" y="'+tyPs+'" text-anchor="start" font-size="'+(window._itiCompact?14:12)+'" font-weight="800" fill="#111" stroke="#fff" stroke-width="3.5" paint-order="stroke">Proje sonu</text>';
@@ -3671,10 +3679,10 @@ function drawItiSekilli(p, allowSearch){
     if(o.uc){
       svg+='<g class="iti-dikey" data-yol-id="'+esc(o.yol.id)+'" transform="translate('+tx+','+ty+') rotate(90) scale('+o.k+')">'+o.sv.inner+'</g>';
       svg+='<circle cx="'+(o.cx+shiftX)+'" cy="'+yMid+'" r="8" fill="#fff" stroke="#e67e22" stroke-width="3.5"/>';
-      if(o.ucOk){ var ax1=o.ucOk.x1+shiftX, ax2=o.ucOk.x2+shiftX, ay=o.ucOk.y+topShift;
+      var _ist=esc(((yolPseudoProje(p,ana)||{}).istikametBas)||p.istikametBas||"");
+      if(o.ucOk && _ist){ var ax1=o.ucOk.x1+shiftX, ax2=o.ucOk.x2+shiftX, ay=o.ucOk.y+topShift; /* v173: istikamet adı yoksa ok çizilmez */
         svg+='<path d="M'+ax2+' '+ay+' L'+ax1+' '+ay+' L'+(ax1+11)+' '+(ay-10)+' M'+ax1+' '+ay+' L'+(ax1+11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" data-ucok="1"/>';
-        var _ist=esc(((yolPseudoProje(p,ana)||{}).istikametBas)||p.istikametBas||"");
-        if(_ist) svg+='<text x="'+ax2+'" y="'+(ay-16)+'" text-anchor="end" font-size="11" font-weight="700" fill="#1a1a1a" data-ucok="1">'+_ist+'</text>'; }
+        svg+='<text x="'+ax2+'" y="'+(ay-16)+'" text-anchor="end" font-size="11" font-weight="700" fill="#1a1a1a" data-ucok="1">'+_ist+'</text>'; }
       svg+=leaderVeEtiket(o);
       return;
     }

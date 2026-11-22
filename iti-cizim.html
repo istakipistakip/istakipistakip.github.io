@@ -3302,6 +3302,7 @@ function drawItiSekilli(p, allowSearch){
     });
   }
 
+  var anaSeritX=null; /* v150: dal ana yolun başından geçiyorsa SOL/TY/SAĞ dalın soluna alınır */
   parts.forEach(function(pt){
     if(!pt.sv||!pt.map) return;
     var sk=pt.yol.sekil, m2=pt.map, sv=pt.sv;
@@ -3331,6 +3332,26 @@ function drawItiSekilli(p, allowSearch){
       if(!hasLabel && (pt.yol.adi||"").trim() && (pt.yol.adi||"")!==(pt.yol.id||"")) hasLabel=true;
     }catch(e){}
 
+    /* v150: T bağlantısı ana yolun UCUNDA ve dal km'si dalın ORTASINDA ise dal, bağlantı noktasından geçer:
+       dalKm noktası ana şeridin ortasına oturur, dal ana yolun ucunun hemen dışında dikey uzanır (turuncu çizgi yok) */
+    var ucMod=null;
+    if(sk==="T" && pt.yol.dalKm!=null && pt.yol.dalKm>(pt.yol.bas||0)+1 && pt.yol.dalKm<(pt.yol.bit||0)-1){
+      if(Math.abs(jkm-ana.bas)<=1) ucMod="bas"; else if(Math.abs(jkm-ana.bit)<=1) ucMod="bit";
+    }
+    if(ucMod){
+      var bandHu=Math.max(24, (m2.yBot||0)-(m2.yTop||0));
+      dkm=pt.yol.dalKm;
+      /* rotate(90): yerel y → ekran x = tx - K*y ; şerit [yTop,yBot] → [tx-K*yBot, tx-K*yTop] */
+      tx = (ucMod==="bas") ? (jx + K*m2.yTop) : (jx + K*m2.yBot);
+      barLeft=tx-K*m2.yBot; barRight=tx-K*m2.yTop;
+      ty = jyMid - m2.xOf(dkm)*K;
+      if(-ty > topShift) topShift = Math.max(topShift, -ty + 14);
+      var botU=ty + sv.w*K + 12; if(botU>botMax) botMax=botU;
+      var fpL=tx-K*(m2.yKmBot||sv.h)-6; if(fpL<minLeft) minLeft=fpL;
+      if(ucMod==="bas"){ var laneX=fpL-78; if(laneX-6<minLeft) minLeft=laneX-6; anaSeritX=laneX; }
+      yerlesim.push({sk:sk, uc:ucMod, taraf:"alt", jkm:jkm, dkm:dkm, jx:jx, cx:(barLeft+barRight)/2, fpL:fpL, tx:tx, ty:ty, k:K, sv:sv, m2:m2, yol:pt.yol, hasLabel:hasLabel, bandH:bandHu, barLeft:barLeft, barRight:barRight});
+      return;
+    }
     if(sk==="+"){
       /* Gerçek kesişim: 2. yolun dalKm noktası, 1. yolun şerit ortasına oturur.
          Böylece dalın bir kolu yolun üstünde, diğeri altında kalır.
@@ -3393,7 +3414,7 @@ function drawItiSekilli(p, allowSearch){
 
   /* ---- Yakın dalları ayır: çubuklar üst üste binmesin ---- */
   function ayirCubuklar(tarafFiltre){
-    var list=yerlesim.filter(function(o){ return o.sk!=="+" && o.taraf===tarafFiltre; });
+    var list=yerlesim.filter(function(o){ return o.sk!=="+" && !o.uc && o.taraf===tarafFiltre; });
     list.sort(function(a,b){ return a.jx-b.jx; });
     var minSep=8; /* çubuklar arası min boşluk (px) */
     for(var i=1;i<list.length;i++){
@@ -3441,17 +3462,21 @@ function drawItiSekilli(p, allowSearch){
       o.barLeft=barLeft; o.barRight=barRight;
     }
     var txt, connY;
-    if(o.sk==="+"){
-      txt="Kesişim: "+anaAd+" × "+(o.yol.adi||o.yol.id);
+    var _dAd=(o.yol.adi||o.yol.id), _jK=(o.jkm!=null?" "+fmtKm(o.jkm):""), _dK=(o.dkm!=null?" "+fmtKm(o.dkm):"");
+    if(o.uc){
+      txt="Bağlantı: "+anaAd+_jK+" → "+_dAd+_dK;
+      connY=jyMid;
+    } else if(o.sk==="+"){
+      txt="Kesişim: "+anaAd+_jK+" × "+_dAd+_dK;
       connY=jyMid;
     } else {
       /* v149: sade cümle; km'ler kendi yollarının üstünde normal km yazısı olarak */
-      txt="Bağlantı: "+anaAd+" → "+(o.yol.adi||o.yol.id);
+      txt="Bağlantı: "+anaAd+_jK+" → "+_dAd+(o.sk==="T"?_dK:"");
       connY=(o.taraf==="ust") ? jyTop : jyBot;
     }
     var textW=txt.length*6.6+10;
     var side=(o.jx>W1/2) ? "left" : "right";
-    var baseY=(o.sk==="+") ? (jyTop-10) : ((o.taraf==="ust") ? (jyTop-18) : (jyBot+18));
+    var baseY=(o.sk==="+"||o.uc) ? (jyTop-10) : ((o.taraf==="ust") ? (jyTop-18) : (jyBot+18));
     var labelX, anchor, labelY=baseY;
     /* Aynı bölgede dolu slot varsa y kaydır veya karşı tarafa al */
     function slotCakisir(x0,x1,y,side0){
@@ -3484,7 +3509,7 @@ function drawItiSekilli(p, allowSearch){
     var sx1=(side==="right")?(labelX+textW):labelX;
     labelSlots.push({x0:sx0, x1:sx1, y:labelY, side:side});
     o.labelText=txt; o.labelX=labelX; o.labelY=labelY;
-    o.labelAnchor=anchor; o.connX=o.jx; o.connY=connY;
+    o.labelAnchor=anchor; o.connX=o.uc ? o.cx : o.jx; o.connY=connY;
     if(side==="right"){ var extR=labelX+textW+6; if(extR>maxRight) maxRight=extR; }
     else { var extL=labelX-textW-6; if(extL<minLeft) minLeft=extL; }
     if(o.taraf==="ust" && labelY<16){ var need=-labelY+20; if(need>topShift) topShift=need; }
@@ -3510,10 +3535,18 @@ function drawItiSekilli(p, allowSearch){
     if(o.sk!=="+") return;
     svg+='<g class="iti-dikey" data-yol-id="'+esc(o.yol.id)+'" transform="translate('+(o.tx+shiftX)+','+(o.ty+topShift)+') rotate(90) scale('+o.k+')">'+o.sv.inner+'</g>';
   });
-  svg+='<g class="iti-yatay" data-yol-id="'+esc(ana.id)+'" transform="translate('+shiftX+','+topShift+')">'+sMain.inner+'</g>';
+  var mainInner=sMain.inner;
+  if(anaSeritX!=null) mainInner=String(mainInner).replace(/<text x="3" (y="[^"]*"[^>]*>(?:SOL|TY|SAĞ)<\/text>)/g, '<text x="'+anaSeritX+'" $1');
+  svg+='<g class="iti-yatay" data-yol-id="'+esc(ana.id)+'" transform="translate('+shiftX+','+topShift+')">'+mainInner+'</g>';
   yerlesim.forEach(function(o){
     var jx=o.jx+shiftX, tx=o.tx+shiftX, ty=o.ty+topShift;
     var yTop=jyTop+topShift, yBot=jyBot+topShift, yMid=jyMid+topShift;
+    if(o.uc){
+      svg+='<g class="iti-dikey" data-yol-id="'+esc(o.yol.id)+'" transform="translate('+tx+','+ty+') rotate(90) scale('+o.k+')">'+o.sv.inner+'</g>';
+      svg+='<circle cx="'+(o.cx+shiftX)+'" cy="'+yMid+'" r="8" fill="#fff" stroke="#e67e22" stroke-width="3.5"/>';
+      svg+=leaderVeEtiket(o);
+      return;
+    }
     if(o.sk==="+"){
       /* kesişim işareti: şerit boyunca geçen dal + halka + etiket */
       svg+='<circle cx="'+jx+'" cy="'+yMid+'" r="9" fill="none" stroke="#e67e22" stroke-width="3.5"/>';

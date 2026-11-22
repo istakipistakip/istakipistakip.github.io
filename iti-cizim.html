@@ -1254,6 +1254,7 @@ function yolPseudoProje(p, yol){
     bas: y.bas, bit: y.bit,
     yolTipi: (_yo.yolTipi==="BY"||_yo.yolTipi==="TY") ? _yo.yolTipi : p.yolTipi,
     _kalinlik: _yo.kalinlik || p._kalinlik || null,
+    _kalinlikK: _yo.kalinlikK || null, _uzunluk: _yo.uzunluk || null,
     kayitlar: yolKayitlari(p, y.id),
     musavat: mus,
     _yolId: y.id,
@@ -2371,7 +2372,17 @@ function drawIti(p, allowSearch){
     h=68; gap=5;
   }
   /* v161: yol bazında boyalı alan kalınlığı (düzenlemeden: ince / normal / kalın) */
-  var _kal={ince:0.7, kalin:1.35}[p._kalinlik]; if(_kal){ h=Math.round(h*_kal); }
+  /* v168: kalınlık / çizim boyu katsayısı (km değişmez) — tek yollu projede yol ayarı da geçerli */
+  var _yo1=(!p._yolId && Array.isArray(p.yollar) && p.yollar.length===1) ? p.yollar[0] : null;
+  var _kal=p._kalinlikK || (_yo1&&_yo1.kalinlikK) || {ince:0.7, kalin:1.35}[p._kalinlik || (_yo1&&_yo1.kalinlik)];
+  if(_kal && _kal!==1 && !(window._pngExport && window._pngExport.W>0)){ h=Math.max(10, Math.round(h*_kal)); }
+  var _uzK=p._uzunluk || (_yo1&&_yo1.uzunluk) || 1;
+  if(_uzK!==1 && !(window._pngExport && window._pngExport.W>0)){
+    /* yazılar sığmazsa daha fazla kısalmaz: her ayrı km noktasına ~18 birim */
+    var _nk={}; (segs||[]).forEach(function(s){ _nk[Math.round(s.b/10)]=1; _nk[Math.round(s.e/10)]=1; });
+    var _minW=Math.max(260, L+R+Object.keys(_nk).length*18);
+    W=Math.max(_minW, Math.round(W*_uzK));
+  }
   var plotW=W-L-R;
   function x(m, prefer){
     var ph=musRawToPhys(musR.ranges, m, prefer);

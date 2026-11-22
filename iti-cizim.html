@@ -3138,7 +3138,9 @@ iconLayer.forEach(function(ic){ if(ic) svg+=ic; });
   kmPlace.forEach(function(kp){
     var xx=kp.xx, yLab=yKmBase + kp.row*rowH;
     var yTop = yLab - kmLenOf(kp.m)/2 - 3; /* yazının üst ucu: çizgi yazının içine girmesin */
-    svg+='<line x1="'+xx+'" y1="'+(ySol-2)+'" x2="'+xx+'" y2="'+yStripBot+'" stroke="#b8bec6" stroke-width="1" stroke-dasharray="3,3"/>';
+    /* v154: TY kesimindeki km çizgisi boş SOL şeridinden (yolun üstünden) başlamaz, TY şeridinden başlar */
+    var _tyIc = hasTY && !onlyTY && tyRanges.some(function(tr){ return kp.m > tr[0]+1 && kp.m < tr[1]-1; });
+    svg+='<line x1="'+xx+'" y1="'+((_tyIc ? yTy : ySol)-2)+'" x2="'+xx+'" y2="'+yStripBot+'" stroke="#b8bec6" stroke-width="1" stroke-dasharray="3,3"/>';
     svg+='<line class="km-ld" data-km="'+kp.m+'" data-zincir="'+(kp.prefer||'')+'" x1="'+xx+'" y1="'+yStripBot+'" x2="'+xx+'" y2="'+yTop+'" stroke="#b8bec6" stroke-width="1.2" stroke-dasharray="2,2"/>';
   });
   kmPlace.forEach(function(kp){

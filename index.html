@@ -2913,23 +2913,33 @@ function kmBirlestir9(kap, lab){
     sil(en.t); });
   // yakın km yazıları
   const L = lab.filter(t => t.isConnected && kmDeg(t) != null).map(t => { let w = 12; try{ w = t.getBBox().height || 12; }catch(_){} return { t, x: +t.getAttribute("x"), w, v: kmDeg(t) }; }).sort((a, b) => a.x - b.x);
-  // v146: zincirleme yok — yazı yalnız kümenin İLK yazısıyla gerçekten üst üste biniyorsa katılır; birleşen yazı aralığın ortasına konur,
-  // her km'nin kendi kılavuz çizgisi yerinde kalır
+  // v154: birbirine değen km yazıları birleşmez — boyu değişmeden, değmeyecek kadar sağa-sola açılır (kesikli çizgisi kendi km noktasından
+  // yazıya hafif eğik gider); açmak için çok kaymak gerekirse yerinde kalır, sıralama alt sıraya indirir
   const kumeler = []; let k = [];
-  // v148: yalnız AYNI kaydın başı-sonu birleşir (kısa köprü, FSK); iki ayrı yapının ucu (T1 çıkışı – T2 girişi) ayrı yazı kalır, alt sıraya iner
-  const kid = t => { const a = t.getAttribute("data-kayit"); return a == null ? null : a.split(",").filter(Boolean); };
-  const ayniKayit = (a, b) => { const A = kid(a.t), B = kid(b.t); if(A == null && B == null) return true; return !!(A && B && A.some(i => B.includes(i))); };
-  L.forEach(o => { const c = kumeler.find(c => o.x - c[0].x < (c[0].w + o.w) / 2 && c.some(q => ayniKayit(q, o))); if(c) c.push(o); else kumeler.push([o]); });
-  kumeler.forEach(k => { if(k.length < 2) return; k.sort((a, b) => a.v - b.v);
-    const ilk = k.reduce((a, b) => a.x <= b.x ? a : b), z = ilk.t.getAttribute("data-zincir") || "";
-    const xs = k.map(o => o.x), mx = (Math.min(...xs) + Math.max(...xs)) / 2, y = +ilk.t.getAttribute("y");
-    ilk.t.textContent = `${k[0].t.textContent.trim()} – ${k[k.length - 1].t.textContent.trim()}`;
-    ilk.t.setAttribute("x", mx); ilk.t.setAttribute("transform", `rotate(-90 ${mx} ${y})`);
-    ilk.t.setAttribute("data-kmek", k.map(o => o.t.getAttribute("data-km")).join(","));
-    let boy = 0; try{ boy = ilk.t.getBBox().width; }catch(_){}
-    k.forEach(o => { const km = o.t.getAttribute("data-km");
-      if(boy) kap.querySelectorAll(`line.km-ld[data-km="${km}"]`).forEach(l => { if((l.getAttribute("data-zincir") || "") === z) l.setAttribute("y2", y - boy / 2 - 3); });
-      if(o !== ilk) o.t.remove(); }); });
+  L.forEach(o => { const s = k[k.length - 1]; if(s && o.x - s.x < (s.w + o.w) / 2 + 2) k.push(o); else { if(k.length) kumeler.push(k); k = [o]; } });
+  if(k.length) kumeler.push(k);
+  kumeler.forEach(k => { if(k.length < 2) return;
+    const w = Math.max(...k.map(o => o.w)) + 3, orta = k.reduce((t, o) => t + o.x, 0) / k.length;
+    const yeni = k.map((o, i) => orta + (i - (k.length - 1) / 2) * w);
+    if(Math.max(...k.map((o, i) => Math.abs(yeni[i] - o.x))) > w * 1.6) return;
+    const eskiX = k.map(o => o.x);
+    const uygula = X => k.forEach((o, i) => { const nx = X[i], y = +o.t.getAttribute("y"), km = o.t.getAttribute("data-km"), z = o.t.getAttribute("data-zincir") || "";
+      o.t.setAttribute("x", (+nx).toFixed(1)); o.t.setAttribute("transform", `rotate(-90 ${(+nx).toFixed(1)} ${y})`);
+      kap.querySelectorAll(`line.km-ld[data-km="${km}"]`).forEach(l => { if((l.getAttribute("data-zincir") || "") === z) l.setAttribute("x2", (+nx).toFixed(1)); }); });
+    uygula(yeni);
+    // açılan yazı şeride / zemin şeridine / başka yazıya binerse yerine döner
+    const sv = kap.ownerSVGElement || kap, SW = sv.getBoundingClientRect().width;
+    const carp = k.some(o => { const r = o.t.getBoundingClientRect();
+      return [...sv.querySelectorAll("rect, text")].some(e => { if(k.some(q => q.t === e) || e.closest("defs")) return false; const f = (e.getAttribute("fill") || "").trim();
+        if(e.tagName === "rect" && /^(#fff|#ffffff|white|none|transparent)$/i.test(f)) return false;
+        const q = e.getBoundingClientRect(); if(!q.width || q.width > SW * .8) return false;
+        return r.left < q.right - .5 && r.right > q.left + .5 && r.top < q.bottom - .5 && r.bottom > q.top + .5; }); });
+    if(carp){ uygula(eskiX); return; }
+    k.forEach((o, i) => { o.x = yeni[i]; });
+    if(0) k.forEach((o, i) => { const nx = yeni[i], y = +o.t.getAttribute("y"), km = o.t.getAttribute("data-km"), z = o.t.getAttribute("data-zincir") || "";
+      o.t.setAttribute("x", nx.toFixed(1)); o.t.setAttribute("transform", `rotate(-90 ${nx.toFixed(1)} ${y})`);
+      kap.querySelectorAll(`line.km-ld[data-km="${km}"]`).forEach(l => { if((l.getAttribute("data-zincir") || "") === z) l.setAttribute("x2", nx.toFixed(1)); });
+      o.x = nx; }); });
   return lab.filter(t => t.isConnected);
 }
 function kmSiraGrup9(kap, lab){

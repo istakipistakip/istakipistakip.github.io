@@ -2774,13 +2774,21 @@ function kmBirlestir9(kap, lab){
     if(!en) return; P.textContent = P.textContent.trim() + " " + en.t.textContent.trim(); sil(en.t); });
   // yakın km yazıları
   const L = lab.filter(t => t.isConnected && kmDeg(t) != null).map(t => { let w = 12; try{ w = t.getBBox().height || 12; }catch(_){} return { t, x: +t.getAttribute("x"), w, v: kmDeg(t) }; }).sort((a, b) => a.x - b.x);
+  // v146: zincirleme yok — yazı yalnız kümenin İLK yazısıyla gerçekten üst üste biniyorsa katılır; birleşen yazı aralığın ortasına konur,
+  // her km'nin kendi kılavuz çizgisi yerinde kalır
   const kumeler = []; let k = [];
-  L.forEach(o => { const s = k[k.length - 1]; if(s && o.x - s.x < (s.w + o.w) / 2 + 2) k.push(o); else { if(k.length) kumeler.push(k); k = [o]; } });
+  L.forEach(o => { const s = k[0]; if(s && o.x - s.x < (s.w + o.w) / 2) k.push(o); else { if(k.length) kumeler.push(k); k = [o]; } });
   if(k.length) kumeler.push(k);
   kumeler.forEach(k => { if(k.length < 2) return; k.sort((a, b) => a.v - b.v);
-    const ilk = k.reduce((a, b) => a.x <= b.x ? a : b);
+    const ilk = k.reduce((a, b) => a.x <= b.x ? a : b), z = ilk.t.getAttribute("data-zincir") || "";
+    const xs = k.map(o => o.x), mx = (Math.min(...xs) + Math.max(...xs)) / 2, y = +ilk.t.getAttribute("y");
     ilk.t.textContent = `${k[0].t.textContent.trim()} – ${k[k.length - 1].t.textContent.trim()}`;
-    k.forEach(o => { if(o !== ilk) sil(o.t); }); });
+    ilk.t.setAttribute("x", mx); ilk.t.setAttribute("transform", `rotate(-90 ${mx} ${y})`);
+    ilk.t.setAttribute("data-kmek", k.map(o => o.t.getAttribute("data-km")).join(","));
+    let boy = 0; try{ boy = ilk.t.getBBox().width; }catch(_){}
+    k.forEach(o => { const km = o.t.getAttribute("data-km");
+      if(boy) kap.querySelectorAll(`line.km-ld[data-km="${km}"]`).forEach(l => { if((l.getAttribute("data-zincir") || "") === z) l.setAttribute("y2", y - boy / 2 - 3); });
+      if(o !== ilk) o.t.remove(); }); });
   return lab.filter(t => t.isConnected);
 }
 function kmSiraGrup9(kap, lab){
@@ -2799,8 +2807,8 @@ function kmSiraGrup9(kap, lab){
     const ny = sat[r]; if(ny === o.y) return;
     const fark = ny - o.y;
     o.t.setAttribute("y", ny); o.t.setAttribute("transform", `rotate(-90 ${o.x} ${ny})`);
-    const km = o.t.getAttribute("data-km"), z = o.t.getAttribute("data-zincir") || "";
-    kap.querySelectorAll(`line.km-ld[data-km="${km}"]`).forEach(l => { if((l.getAttribute("data-zincir") || "") === z) l.setAttribute("y2", +l.getAttribute("y2") + fark); });
+    const kmler = (o.t.getAttribute("data-kmek") || o.t.getAttribute("data-km") || "").split(","), z = o.t.getAttribute("data-zincir") || "";
+    kmler.forEach(km => kap.querySelectorAll(`line.km-ld[data-km="${km}"]`).forEach(l => { if((l.getAttribute("data-zincir") || "") === z) l.setAttribute("y2", +l.getAttribute("y2") + fark); }));
   });
 }
 function itiSvgDuzelt9(svg){

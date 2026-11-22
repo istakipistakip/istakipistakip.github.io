@@ -2457,6 +2457,12 @@ function drawIti(p, allowSearch){
   function _ortuluUc(s, m){
     if(_kapK.indexOf(s)<0) return false;
     var zs=s.zincir||"";
+    /* aynı tür+durum+şeritteki kayıt bu uca bitişik devam ediyorsa (iki KM girişinin sınırı) uç görünmez */
+    var ks=_seritler(s).join(","), sonUc=Math.abs(m-s.e)<0.5;
+    if(_kapK.some(function(t){
+      if(t===s || (t.zincir||"")!==zs || t.tur!==s.tur || t.durum!==s.durum || _seritler(t).join(",")!==ks) return false;
+      return sonUc ? (t.b<=m+1 && t.e>m+1) : (t.e>=m-1 && t.b<m-1);
+    })) return true;
     return _seritler(s).every(function(L){
       return _kapK.some(function(t){
         if(t===s || (t.zincir||"")!==zs || !(t.b < m-1 && t.e > m+1)) return false;
@@ -2673,6 +2679,18 @@ function drawIti(p, allowSearch){
       });
     }
     /* Katman sırası: alt→üst (BSK ve bu yıl biten en üstte) */
+    /* aynı tür+durum+şerit kayıtlar arka arkaya ise tek parça çizilir (KM girişi sınırı yolda dikiş bırakmasın) */
+    var _bir=[];
+    list.slice().sort(function(a,b){return a.b-b.b}).forEach(function(s){
+      if(!isYapi(s.tur) && !s.nokta){
+        for(var i=_bir.length-1;i>=0;i--){ var o=_bir[i];
+          if(!isYapi(o.tur) && !o.nokta && o.tur===s.tur && o.durum===s.durum && o.konum===s.konum && o.sinif===s.sinif && (o.zincir||"")===(s.zincir||"") && (o.byTip||"")===(s.byTip||"") && (o.tyTip||"")===(s.tyTip||"") && (o.altTur||"")===(s.altTur||"") && (o.ad||"")===(s.ad||"") && Math.abs(o.e-s.b)<=1){
+            _bir[i]=Object.assign({},o,{e:Math.max(o.e,s.e),u:+((Math.max(o.e,s.e)-o.b)/1000).toFixed(3)}); return; }
+        }
+      }
+      _bir.push(s);
+    });
+    list=_bir;
     segDurumKatmanHazirla(list);
     var ordered = list.slice().sort(segCizimSirasi);
     ordered.forEach(function(s){

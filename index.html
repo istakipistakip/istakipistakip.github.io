@@ -10173,7 +10173,10 @@ function itiBag9(svg){
       if(!cak(b)){ sec = b; break; }
     }
     if(!sec) return;
-    t.setAttribute("text-anchor", "start"); t.setAttribute("x", sec.x1.toFixed(1)); t.setAttribute("y", (sec.y1 + asc).toFixed(1));
+    // v170: yazı yolun solundaysa sağ ucundan bağlanır — yazı tipi sonradan yüklenip yazı genişlese de yola doğru uzamaz
+    if(sec.x1 < cx){ t.setAttribute("text-anchor", "end"); t.setAttribute("x", sec.x2.toFixed(1)); }
+    else { t.setAttribute("text-anchor", "start"); t.setAttribute("x", sec.x1.toFixed(1)); }
+    t.setAttribute("y", (sec.y1 + asc).toFixed(1));
     t.setAttribute("data-bag9", "1");
     E.push(sec);
     const hx = sec.x1 > cx ? sec.x1 - 2 : sec.x2 + 2, hy = Math.max(sec.y1, Math.min(sec.y2, cy));

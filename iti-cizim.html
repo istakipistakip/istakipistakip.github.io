@@ -3716,24 +3716,33 @@ function drawItiBilesen(p, allowSearch){
   var B=yolBilesenleri(p); if(!B || B.length<2 || !B.some(function(b){ return b.dal.length; })) return null;
   var ys=getYollar(p), ana0=ys[0].id;
   var kay=(p.kayitlar||[]).map(function(k){ return k.yolId ? k : Object.assign({}, k, {yolId: ana0}); });
-  var parts=[], _prevC=window._itiCompact;
+  var parts=[], _prevC=window._itiCompact, _bi=0;
   window._itiCompact=true;
   try{
     B.forEach(function(b){
       var src=function(id){ return (p.yollar||[]).find(function(q){ return q.id===id; }) || {}; };
       var yl=[Object.assign({}, src(b.kok.id), b.kok, {sekil:"ana"})].concat(b.dal.map(function(d){ return Object.assign({}, src(d.id), d, {bagliYolId: b.kok.id}); }));
-      var p2=Object.assign({}, p, {yollar: yl, kayitlar: kay, bas: b.kok.bas, bit: b.kok.bit, _kok: p._kok||p});
+      /* v167: her bölüm yalnız kendi yollarının kayıtları / km eşitlikleriyle; 2. bölümden sonrası kendi istikametiyle */
+      var _ids={}; yl.forEach(function(q){ _ids[q.id]=1; });
+      var _sk=src(b.kok.id), _ilk=(_bi++===0);
+      var p2=Object.assign({}, p, {yollar: yl, kayitlar: kay.filter(function(k){ return _ids[k.yolId]; }),
+        musavat: (p.musavat||[]).filter(function(m){ return _ilk ? (!m.yolId || _ids[m.yolId]) : (m.yolId && _ids[m.yolId]); }),
+        istikametBas: (_ilk || _sk.istikametBas===undefined) ? p.istikametBas : (_sk.istikametBas||""), istikametBit: (_ilk || _sk.istikametBas===undefined) ? p.istikametBit : (_sk.istikametBit||""),
+        bas: b.kok.bas, bit: b.kok.bit, _kok: p._kok||p});
       var hh = b.dal.length ? drawItiSekilli(p2, false) : drawIti(yolPseudoProje(p2, getYollar(p2)[0]), false);
-      var sv=_itiSvgAyir(hh); if(sv) parts.push({b:b, sv:sv});
+      /* v167: tek yollu bölümde istikamet okları şeridin 175 üstünde — üstteki bölüme taşmasın diye o kadar boşluk */
+      var _m=window._itiLastMap, _ek=(parts.length && !b.dal.length && _m && _m.yTop!=null) ? Math.max(0, 205-_m.yTop) : 0;
+      var sv=_itiSvgAyir(hh); if(sv) parts.push({b:b, sv:sv, ek:_ek});
     });
   }finally{ window._itiCompact=_prevC; }
   if(parts.length<2) return null;
   var gap=24, maxW=0, totalH=0;
-  parts.forEach(function(pt){ maxW=Math.max(maxW, pt.sv.w||400); totalH+=(pt.sv.h||300); });
+  parts.forEach(function(pt){ maxW=Math.max(maxW, pt.sv.w||400); totalH+=(pt.sv.h||300)+(pt.ek||0); });
   totalH+=gap*(parts.length-1)+4;
   var svg='<svg id="itiSvg" width="100%" viewBox="0 0 '+maxW+' '+totalH+'" preserveAspectRatio="xMinYMin meet" style="display:block;width:100%;height:auto">', yOff=0;
   parts.forEach(function(pt, i){
     if(i>0) svg+='<line x1="0" y1="'+(yOff-gap/2)+'" x2="'+maxW+'" y2="'+(yOff-gap/2)+'" stroke="#c5d0dc" stroke-width="1"/>';
+    yOff+=(pt.ek||0);
     svg+='<g class="iti-grup" transform="translate(0,'+yOff+')">'+pt.sv.inner+'</g>';
     yOff+=(pt.sv.h||300)+gap;
   });
@@ -3771,7 +3780,9 @@ function drawItiAyriCoklu(p, allowSearch){
   try{
     ys.forEach(function(y){
       topUz+=yolFizikiUzunlukKm(p,y);
-      var hh=drawIti(yolPseudoProje(p,y), false);
+      var _pp=yolPseudoProje(p,y), _sy=(p.yollar||[]).find(function(q){ return q.id===y.id; });
+      if(y.sekil==="ayri" && _sy && _sy.istikametBas!==undefined){ _pp.istikametBas=_sy.istikametBas||""; _pp.istikametBit=_sy.istikametBit||""; }
+      var hh=drawIti(_pp, false);
       var sv=_itiSvgAyir(hh);
       if(sv) parts.push({yol:y, sv:sv, map:window._itiLastMap});
     });

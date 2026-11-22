@@ -2471,7 +2471,23 @@ function drawIti(p, allowSearch){
       });
     });
   }
+  /* v153: kaydın tamamı üstte çizilen başka kaplamaların altında kalıyorsa (ör. iş yok BSK'nın üstü önceki yıllar KM'siyle boyanmış) uçları yazılmaz */
+  function _tamOrtulu(s){
+    if(_kapK.indexOf(s)<0 || !(s.e>s.b)) return false;
+    var zs=s.zincir||"";
+    return _seritler(s).every(function(L){
+      var I=_kapK.filter(function(t){ return t!==s && (t.zincir||"")===zs && _seritler(t).indexOf(L)>=0 && segCizimSirasi(s,t)<0 && t.e>s.b && t.b<s.e; })
+        .map(function(t){ return [t.b,t.e]; }).sort(function(a,b){ return a[0]-b[0]; });
+      var c=s.b+1;
+      for(var i=0;i<I.length;i++){ if(I[i][0]>c) return false; c=Math.max(c,I[i][1]); if(c>=s.e-1) return true; }
+      return c>=s.e-1;
+    });
+  }
+  /* v153: yapıların km'si kendi yazısında ("Köprü 30+710 – 30+730") — ayrı km yazısı almaz */
+  var _yapiEtiketli=function(s){ return isYapi(s.tur); };
   segs.forEach(function(s, si){
+    if(_yapiEtiketli(s)) return;
+    if(_tamOrtulu(s)) return;
     if(_ortuluUc(s, s.b) && _ortuluUc(s, s.e)) return;
     if(_ortuluUc(s, s.b)){ addKmTick(s.e, s.zincir, si); return; }
     if(_ortuluUc(s, s.e)){ addKmTick(s.b, s.zincir, si); return; }
@@ -2953,9 +2969,11 @@ function drawIcon(cins, cx, cy, col, w){
   if(!onlyTY) paintLane(sagL, ySag, false, "SAG");
   /* ikonlar en sonda eklenir — z-order en üst */
 
-    /* Yapı etiketleri: aynı hiza, dikey, 2 satır */
+    /* v153: yapı etiketleri BSK gibi yatay, km'si yanında ("Köprü 30+710 – 30+730"); yakın olanlar üst üste sıralanır, her biri kesikli çizgiyle yerine bağlı */
   (function(){
     var list=segs.filter(function(s){return isYapi(s.tur);});
+    var fsY=12, satirH=19, sat=[];
+    var et=[];
     list.forEach(function(s){
       if(s.konum==="SAG"){
         for(var i=0;i<list.length;i++){
@@ -2963,34 +2981,42 @@ function drawIcon(cins, cx, cy, col, w){
           if(o!==s && (o.konum==="SOL"||o.konum==="HER") && (o.ad||o.tur)===(s.ad||s.tur) && Math.abs((o.b||0)-(s.b||0))<80) return;
         }
       }
-      var x1=x(s.b), x2=x(s.e);
+      var x1=x(s.b, s.zincir), x2=x(s.e, s.zincir);
       if(isNaN(x1)||isNaN(x2)) return;
       var cx=(x1+x2)/2;
-      /* isim her zaman üst şerit hizasından (SOL) yukarı — şerit içine yazılmaz */
-      var ySeg=ySol;
       var col=RENK[s.durum]||"#1a1a1a";
       var _ad=(s.ad!=null?String(s.ad):"").trim();
       var raw=_ad ? _ad : String(s.tur||"Yapı");
       var _alt=(s.altTur!=null?String(s.altTur):"").trim();
       if(_alt) raw=raw+" ("+_alt+")";
-      /* isim varsa tür eklenmez; alt tür parantezde */
-      var line1=raw, line2="";
-      /* FSK/kavşak alt türü mümkünse aynı satırda kalsın */
-      var maxLen=(/fsk|kavşak|kavsak/i.test(s.tur||""))?22:14;
-      if(raw.length>maxLen){
-        var sp=raw.lastIndexOf(" ", maxLen);
-        if(sp<3) sp=Math.ceil(raw.length/2);
-        line1=raw.slice(0,sp).trim();
-        line2=raw.slice(sp).trim();
-      }
-      var yDot=ySeg-48;
-      var yText=yDot-8;
+      var kmT=(Math.abs((s.e||0)-(s.b||0))<1) ? fmtKm(s.b) : (fmtKm(s.b)+" – "+fmtKm(s.e));
+      var txt=raw+" "+kmT;
+      et.push({cx:cx, col:col, txt:txt, w:txt.length*fsY*0.6+10});
+    });
+    et.sort(function(a,b){ return b.cx-a.cx; }); /* sağdan sola: yazı sağa uzadığı için çizgi kesişmesi en az */
+    et.forEach(function(o){
+      /* her satırda önce sağa, olmazsa sola yazmayı dener; en alttaki uygun satır seçilir:
+         aynı satırda yazı yazıya binmez; kendi çizgisi alttaki satırların yazısından geçmez; üst satırların çizgileri bu yazıdan geçmez */
+      var aralik=function(sg){ return sg ? [o.cx-4, o.cx+8+o.w] : [o.cx-o.w-4, o.cx+4]; };
+      /* puan: yazı yazıya binerse geçersiz; her çizgi kesişmesi büyük ceza; sonra alttaki satır, sonra sağa yazma tercih edilir */
+      var puan=function(r, x0, x1, sg){
+        if(x0<2 || x1>W-2) return Infinity;
+        if(sat[r] && sat[r].some(function(q){ return !(x1+6<q[0] || x0-6>q[1]); })) return Infinity;
+        var c=0;
+        for(var k=0;k<r;k++) if(sat[k]) sat[k].forEach(function(q){ if(o.cx>q[0]-4 && o.cx<q[1]+4) c++; });
+        for(var k2=r+1;k2<sat.length;k2++) if(sat[k2]) sat[k2].forEach(function(q){ if(q[2]>x0-4 && q[2]<x1+4) c++; });
+        return c*1000 + r*10 + (sg?0:200); };
+      var en=Infinity, r=0, sag=true, x0, x1;
+      var rMax=Math.max(4, Math.floor((ySol-90)/satirH));
+      for(var rr=0; rr<rMax; rr++) for(var t=0;t<2;t++){ var sg=(t===0), A=aralik(sg), pu=puan(rr, A[0], A[1], sg); if(pu<en){ en=pu; r=rr; sag=sg; x0=A[0]; x1=A[1]; } }
+      if(en===Infinity){ var A2=aralik(true); x0=A2[0]; x1=A2[1]; sag=true; r=0; while(sat[r] && sat[r].some(function(q){ return !(x1+6<q[0] || x0-6>q[1]); })) r++; }
+      (sat[r]||(sat[r]=[])).push([x0,x1,o.cx]); o.r=r;
+      var yDot=ySol-40-r*satirH;
       svg+='<g class="yapi-etiket">';
-      svg+='<line x1="'+cx+'" y1="'+yDot+'" x2="'+cx+'" y2="'+ySeg+'" stroke="'+col+'" stroke-width="1.5" stroke-dasharray="3,2"/>';
-      svg+='<circle cx="'+cx+'" cy="'+yDot+'" r="3.5" fill="'+col+'" stroke="#fff" stroke-width="1.5"/>';
-      svg+='<text transform="rotate(-90 '+cx+' '+yText+')" x="'+cx+'" y="'+yText+'" text-anchor="start" font-size="11" font-weight="800" fill="'+col+'" stroke="#fff" stroke-width="3" paint-order="stroke">'+esc(line1);
-      if(line2) svg+='<tspan x="'+cx+'" dy="13">'+esc(line2)+'</tspan>';
-      svg+='</text></g>';
+      svg+='<line x1="'+o.cx+'" y1="'+yDot+'" x2="'+o.cx+'" y2="'+ySol+'" stroke="'+o.col+'" stroke-width="1.5" stroke-dasharray="3,2"/>';
+      svg+='<circle cx="'+o.cx+'" cy="'+yDot+'" r="3.5" fill="'+o.col+'" stroke="#fff" stroke-width="1.5"/>';
+      svg+='<text x="'+(sag?o.cx+8:o.cx-8)+'" y="'+(yDot+4)+'" text-anchor="'+(sag?"start":"end")+'" font-size="'+fsY+'" font-weight="800" fill="'+o.col+'" stroke="#fff" stroke-width="3" paint-order="stroke">'+esc(o.txt)+'</text>';
+      svg+='</g>';
     });
   })();
 
@@ -3570,9 +3596,9 @@ function drawItiSekilli(p, allowSearch){
       svg+='<g class="iti-dikey" data-yol-id="'+esc(o.yol.id)+'" transform="translate('+tx+','+ty+') rotate(90) scale('+o.k+')">'+o.sv.inner+'</g>';
       svg+='<circle cx="'+(o.cx+shiftX)+'" cy="'+yMid+'" r="8" fill="#fff" stroke="#e67e22" stroke-width="3.5"/>';
       if(o.ucOk){ var ax1=o.ucOk.x1+shiftX, ax2=o.ucOk.x2+shiftX, ay=o.ucOk.y+topShift;
-        svg+='<path d="M'+ax2+' '+ay+' L'+ax1+' '+ay+' L'+(ax1+11)+' '+(ay-10)+' M'+ax1+' '+ay+' L'+(ax1+11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
+        svg+='<path d="M'+ax2+' '+ay+' L'+ax1+' '+ay+' L'+(ax1+11)+' '+(ay-10)+' M'+ax1+' '+ay+' L'+(ax1+11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" data-ucok="1"/>';
         var _ist=esc(((yolPseudoProje(p,ana)||{}).istikametBas)||p.istikametBas||"");
-        if(_ist) svg+='<text x="'+ax2+'" y="'+(ay-16)+'" text-anchor="end" font-size="11" font-weight="700" fill="#1a1a1a">'+_ist+'</text>'; }
+        if(_ist) svg+='<text x="'+ax2+'" y="'+(ay-16)+'" text-anchor="end" font-size="11" font-weight="700" fill="#1a1a1a" data-ucok="1">'+_ist+'</text>'; }
       svg+=leaderVeEtiket(o);
       return;
     }

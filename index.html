@@ -2714,8 +2714,45 @@ function itiDuzelt9(kok, j){
     try{ if(itiKilavuz9(svg)) degisti = true; }catch(_){}
     try{ if(itiBasYer9(svg)) degisti = true; }catch(_){}
     try{ if(itiSeritYazi9(svg)) degisti = true; }catch(_){}
-    try{ if(itiSeritYer9(svg)) degisti = true; }catch(_){} });
+    try{ if(itiSeritYer9(svg)) degisti = true; }catch(_){}
+    try{ if(itiKolUc9(svg)) degisti = true; }catch(_){} });
   return degisti;
+}
+// v153: (1) bağlantı satırında dal km'si ve ok SOL/TY/SAĞ sütununa yaklaşır; (2) dikey kol yolunun "Proje başı / sonu" yazıları şeritten
+// aynı boşlukla hizalı başlar, yön okları (↑ ↓) da tek hizada durur
+function itiKolUc9(svg){
+  if(svg._ku9) return false; svg._ku9 = 1;
+  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse();
+  const kutu = el => { const b = el.getBBox(), m = ki.multiply(el.getCTM()); let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m); x1 = Math.min(x1, q.x); y1 = Math.min(y1, q.y); x2 = Math.max(x2, q.x); y2 = Math.max(y2, q.y); });
+    return { x1, y1, x2, y2 }; };
+  const kay = (el, dx, dy = 0) => { const m = ki.multiply(el.getCTM()); el.setAttribute("transform", `translate(${dx.toFixed(1)} ${dy.toFixed(1)}) matrix(${[m.a, m.b, m.c, m.d, m.e, m.f].map(v => +v.toFixed(4)).join(" ")})`); if(el.parentNode !== svg) svg.appendChild(el); };
+  const zemin = r => /^(#fff|#ffffff|white|none|transparent|#eef0f3|#f3eef8)$/i.test((r.getAttribute("fill") || "").trim()) || /^url\(/.test(r.getAttribute("fill") || "");
+  const okMu = p => p.getAttribute("fill") === "none" && +p.getAttribute("stroke-width") >= 4 && /^M[\d.\- ]+L[\d.\- ]+L[\d.\- ]+M/.test(p.getAttribute("d") || "");
+  let n = 0;
+  // (1) bağlantı satırı
+  const km = svg.querySelector("text.km-lab[data-sabit9]");
+  if(km){ const kb = kutu(km);
+    const sut = [...svg.querySelectorAll("text")].filter(t => /^(SOL|SAĞ|TY|BY)$/.test(t.textContent.trim()) && t.getAttribute("display") !== "none").map(t => kutu(t)).filter(b => b.x1 > kb.x2 && b.y2 > kb.y1 - 80 && b.y1 < kb.y2 + 80);
+    if(sut.length){ const sol = Math.min(...sut.map(b => b.x1)), dx = sol - 14 - kb.x2;
+      if(dx > 1){ kay(km, dx); svg.querySelectorAll("[data-ucok]").forEach(e => kay(e, dx)); n++; } } }
+  // (2) dikey kol yolları
+  svg.querySelectorAll("g.iti-dikey").forEach(g => {
+    const bar = [...g.querySelectorAll("rect")].filter(r => !zemin(r)).map(r => kutu(r)).filter(b => (b.y2 - b.y1) > (b.x2 - b.x1));
+    if(!bar.length) return;
+    const bL = Math.min(...bar.map(b => b.x1)), bR = Math.max(...bar.map(b => b.x2)), bM = (bL + bR) / 2;
+    const P = [...g.querySelectorAll("text")].filter(t => /^Proje\s+(başı|sonu)/i.test(t.textContent.trim())).map(t => ({ t, b: kutu(t) })).filter(o => (o.b.x2 - o.b.x1) > (o.b.y2 - o.b.y1));
+    if(!P.length) return;
+    const sag = P.every(o => (o.b.x1 + o.b.x2) / 2 > bM);
+    if(!sag && !P.every(o => (o.b.x1 + o.b.x2) / 2 < bM)) return;
+    P.forEach(o => { const dx = sag ? (bR + 8 - o.b.x1) : (bL - 8 - o.b.x2); if(Math.abs(dx) > 0.5){ kay(o.t, dx); o.b = { x1: o.b.x1 + dx, x2: o.b.x2 + dx, y1: o.b.y1, y2: o.b.y2 }; n++; } });
+    const bT = Math.min(...bar.map(b => b.y1)), bB = Math.max(...bar.map(b => b.y2));
+    const ok = [...svg.querySelectorAll("path")].filter(okMu).map(p => ({ p, b: kutu(p) })).filter(o => (o.b.y2 - o.b.y1) > (o.b.x2 - o.b.x1) && o.b.y2 > bT - 40 && o.b.y1 < bB + 40 && (sag ? (o.b.x1 > bR && o.b.x1 < bR + 260) : (o.b.x2 < bL && o.b.x2 > bL - 260)));
+    if(!ok.length) return;
+    const hiza = sag ? Math.max(...P.map(o => o.b.x2)) + 12 : Math.min(...P.map(o => o.b.x1)) - 12;
+    ok.forEach(o => { const w = o.b.x2 - o.b.x1, dx = sag ? (hiza - o.b.x1) : (hiza - o.b.x2); if(Math.abs(dx) > 0.5){ kay(o.p, dx); n++; } });
+  });
+  return n > 0;
 }
 // v151: SOL / SAĞ / TY / BY yazıları boyalı alana en yakın (üst üste binmeden) durur — yolun başına sağa yaslı tek sütun;
 // yön okları bu yazıların, şeritlerin ve başka yazıların üstüne binmez (en yakın boş yere kayar, istikamet yazısıyla birlikte)

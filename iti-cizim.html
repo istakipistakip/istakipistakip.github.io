@@ -3562,7 +3562,7 @@ function drawItiSekilli(p, allowSearch){
       o.barLeft=barLeft; o.barRight=barRight;
     }
     var txt, connY;
-    var _dAd=(o.yol.adi && !_kmAd(o.yol.adi)) ? o.yol.adi : ("Yol "+(ys.indexOf(o.yol)+1)), _jK=(o.jkm!=null?" "+fmtKm(o.jkm):""), _dK=(o.dkm!=null?" "+fmtKm(o.dkm):"");
+    var _dAd=(o.yol.adi && !_kmAd(o.yol.adi)) ? o.yol.adi : ("Yol "+(ys.indexOf(o.yol)+1)), _jK=(o.jkm!=null?" · "+fmtKm(o.jkm):""), _dK=(o.dkm!=null?" · "+fmtKm(o.dkm):""); /* v172: yol adı · km */
     if(o.uc || o.kes){
       txt="Bağlantı: "+anaAd+_jK+" → "+_dAd+_dK;
       connY=jyMid;
@@ -3571,7 +3571,7 @@ function drawItiSekilli(p, allowSearch){
       connY=jyMid;
     } else {
       /* v149: sade cümle; km'ler kendi yollarının üstünde normal km yazısı olarak */
-      txt="Bağlantı: "+anaAd+_jK+" → "+_dAd+(o.sk==="T"?_dK:(o.yol.bas!=null?" "+fmtKm(o.yol.bas):""));
+      txt="Bağlantı: "+anaAd+_jK+" → "+_dAd+(o.sk==="T"?_dK:(o.yol.bas!=null?" · "+fmtKm(o.yol.bas):""));
       connY=(o.taraf==="ust") ? jyTop : jyBot;
     }
     var textW=txt.length*6.6+10;
@@ -3635,7 +3635,7 @@ function drawItiSekilli(p, allowSearch){
     if(x1+10>maxRight) maxRight=x1+10; if(x0-10<minLeft) minLeft=x0-10;
     if(-y0>topShift) topShift=-y0+14; if(y1+10>botMax) botMax=y1+10;
     var _ad=function(y, k){ return (y.adi && !/^\s*-?\d+\+\d{3}\s*[-–]/.test(y.adi)) ? y.adi : ("Yol "+(ys.indexOf(y)+1)); };
-    var txt="Bağlantı: "+_ad(o.yol)+" "+fmtKm(kv)+" → "+_ad(d)+" "+fmtKm(dkI ? d.dalKm : (sol ? d.bit : d.bas));
+    var txt="Bağlantı: "+_ad(o.yol)+" · "+fmtKm(kv)+" → "+_ad(d)+" · "+fmtKm(dkI ? d.dalKm : (sol ? d.bit : d.bas));
     { var kmB=Math.round(dkI ? d.dalKm : (sol ? d.bit : d.bas)); /* bağlantı ucundaki km yazısı bağlı kolun şeridine düşer — bağlantı yazısında var */
       sv.inner=String(sv.inner).replace(new RegExp('<text class="km-lab" data-km="'+kmB+'"[^>]*>[^<]*<\\/text>','g'),'').replace(new RegExp('<line class="km-ld" data-km="'+kmB+'"[^>]*\\/>','g'),''); }
     altYer.push({yol:d, sv:sv, k:K, tx:tx2, ty:ty2, cx:cxJ, cy:yJ, txt:txt, sol:sol});

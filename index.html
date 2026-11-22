@@ -9511,6 +9511,9 @@ ${Array.isArray(P.yollar) && P.yollar.length > 1 ? `<label>Hangi yol</label>${ch
 <label>Ad <small class="kk9">(isteğe bağlı, ör. köprü adı)</small></label><input id="itkA" value="${esc(r.ad || "")}">
 <button class="ok9" type="submit">${i === null ? "Ekle" : "Kaydet"}</button>${i === null ? "" : `<button type="button" class="itd9sil" data-itksil>Kaydı sil</button>`}</form>`);
     const f = s.querySelector("#itk9");
+    // iPhone: seçim dokununca hemen (tıklama bazen kaçıyor) — seçilen düğme turuncu yanar
+    f.addEventListener("pointerup", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
+      ["ks", "kt", "kk", "kd", "ky"].forEach(a => { if(b.dataset[a] !== undefined) b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); }); });
     f.addEventListener("click", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
       if(b.hasAttribute("data-itksil")){ P.kayitlar.splice(i, 1); degisti = true; kapatAlt(); ciz(); onizle(); return; }
       ["ks", "kt", "kk", "kd", "ky"].forEach(a => { if(b.dataset[a] !== undefined){ b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); } }); });
@@ -9544,6 +9547,9 @@ ${ana ? "" : `<label>Bağlantı şekli</label>${ch("ys", [["ayri", "Ayrı yerde 
 <label>Çizimde</label>${ch("yt", [["alt", "Altına"], ["ust", "Üstüne"]], y.taraf === "ust" ? "ust" : "alt")}</div>`}
 <button class="ok9" type="submit">Kaydet</button>${ana ? "" : `<button type="button" class="itd9sil" data-itysil>Yolu sil</button>`}</form>`);
     const f = s.querySelector("#ity9");
+    f.addEventListener("pointerup", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
+      let deg = false; ["ys", "yb", "yt", "yy", "yk"].forEach(a => { if(b.dataset[a] !== undefined){ b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); deg = true; } });
+      if(deg) setTimeout(() => { try{ goster(); }catch(_){} }, 0); });
     const goster = () => { const sk = (f.querySelector("[data-ys].on") || {}).dataset; const v = sk ? sk.ys : "ayri";
       const bg = f.querySelector("#ityBag"); if(bg) bg.style.display = v === "ayri" ? "none" : "";
       const dk = f.querySelector("#ityDk"); if(dk) dk.style.visibility = v === "T" || v === "+" ? "" : "hidden";

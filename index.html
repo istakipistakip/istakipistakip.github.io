@@ -2712,7 +2712,32 @@ function itiDuzelt9(kok, j){
     try{ if(itiOne9(svg)) degisti = true; }catch(_){}
     try{ if(itiOkDisari9(svg)) degisti = true; }catch(_){}
     try{ if(itiKilavuz9(svg)) degisti = true; }catch(_){}
-    try{ if(itiBasYer9(svg)) degisti = true; }catch(_){} });
+    try{ if(itiBasYer9(svg)) degisti = true; }catch(_){}
+    try{ if(itiSeritYazi9(svg)) degisti = true; }catch(_){} });
+  return degisti;
+}
+// v149: SOL / SAĞ / TY yazıları iki kat; bir yerde çakışırsa bu itinererde çakışmayan en büyük ortak oran (2'ye en yakın)
+function itiSeritYazi9(svg){
+  if(svg._sy9) return false; svg._sy9 = 1;
+  const S = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && /^(SOL|SAĞ|TY)$/.test(t.textContent.trim()) && t.getAttribute("display") !== "none" && !t.hasAttribute("data-serit9"));
+  if(!S.length) return false;
+  const kutu = el => { const r = el.getBoundingClientRect(); return r.width || r.height ? r : null; };
+  const zemin = e => e.tagName === "rect" && /^(#fff|#ffffff|white|none|transparent)$/i.test((e.getAttribute("fill") || "").trim());
+  const diger = [...svg.querySelectorAll("text, rect, line, path, polyline, polygon, circle")].filter(e => !e.closest("defs") && !S.includes(e) && e.getAttribute("display") !== "none" && !zemin(e))
+    .map(e => { const cs = getComputedStyle(e); if(cs.display === "none" || cs.visibility === "hidden" || +cs.opacity === 0) return null; return kutu(e); }).filter(Boolean);
+  const vbR = svg.getBoundingClientRect();
+  // her yol (ana yol, kol yolları) kendi içinde tek oran
+  const grup = new Map(); S.forEach(t => { const g = t.closest("g.iti-yatay, g.iti-dikey") || svg; (grup.get(g) || grup.set(g, []).get(g)).push(t); });
+  let degisti = false;
+  grup.forEach(L => {
+    const ilk = L.map(t => ({ t, fs: parseFloat(t.getAttribute("font-size")) || 8, y: +t.getAttribute("y") }));
+    const kur = f => ilk.forEach(o => { const nf = o.fs * f; o.t.setAttribute("font-size", nf); o.t.setAttribute("y", o.y + (nf - o.fs) * 0.35); });
+    const temiz = () => ilk.every(o => { const r = kutu(o.t); if(!r) return true;
+      if(r.left < vbR.left - 1 || r.top < vbR.top - 1) return false;
+      return diger.every(q => q.width > vbR.width * 0.8 && q.height > vbR.height * 0.8 ? true : (r.right <= q.left + 0.5 || r.left >= q.right - 0.5 || r.bottom <= q.top + 0.5 || r.top >= q.bottom - 0.5)); });
+    for(let f = 2; f > 1.001; f -= 0.1){ kur(f); if(temiz()){ degisti = true; return; } }
+    kur(1);
+  });
   return degisti;
 }
 const itiIs9 = kod => ISLER.find(x => (x.iti || []).includes(kod)) || null;

@@ -2479,6 +2479,8 @@ function drawIti(p, allowSearch){
     addKmTick(s.e, s.zincir, si);
   });
   (p.yerlesimler||[]).forEach(function(y){addKmTick(typeof y.km==="number"?y.km:parseKm(y.km));});
+  /* v149: yolların bağlantı km'si kendi yolunda km yazısı olarak */
+  (window._itiEkKm||[]).forEach(function(v){ v=typeof v==="number"?v:parseKm(v); if(v!=null && !isNaN(v) && v>=bas-1 && v<=bit+1) addKmTick(v); });
   (p.ilSinirlari||[]).forEach(function(y){addKmTick(typeof y.km==="number"?y.km:parseKm(y.km));});
   var musKmSkip={};
   (p.musavat||[]).forEach(function(m){
@@ -3220,16 +3222,19 @@ function drawItiSekilli(p, allowSearch){
   window._itiCompact=true;
   try{
     dallar.forEach(function(d){
+      window._itiEkKm = (d.dalKm!=null && d.sekil!=="L") ? [d.dalKm] : [];
       var hh=drawIti(yolPseudoProje(p,d), false);
       parts.push({yol:d, map:window._itiLastMap, sv:_itiSvgAyir(hh)});
     });
   }finally{
-    window._itiCompact=_prevCompact;
+    window._itiCompact=_prevCompact; window._itiEkKm=null;
   }
   /* ana yol en son çizilir → km navigasyonu ana yola bağlı kalsın
      Toplam km/durum özetine TÜM yollar dahil edilsin */
   window._itiToplamTumYollar=true;
-  var hMain=drawIti(yolPseudoProje(p,ana), allowSearch);
+  window._itiEkKm = dallar.map(function(d){ return d.kavsakKm; }).filter(function(v){ return v!=null; });
+  var hMain;
+  try{ hMain=drawIti(yolPseudoProje(p,ana), allowSearch); }finally{ window._itiEkKm=null; }
   window._itiToplamTumYollar=false;
   var mMain=window._itiLastMap, sMain=_itiSvgAyir(hMain);
   if(!sMain||!mMain) return null;
@@ -3424,6 +3429,7 @@ function drawItiSekilli(p, allowSearch){
     yerlesim.forEach(function(o){ o.sv.inner=dalKmTemizle(o,_obst); });
   }catch(e){ console.error(e); }
 
+  var anaAd=(ana.adi && String(ana.adi).trim() && ana.adi!==ana.id) ? String(ana.adi).trim() : ((p.adi && String(p.adi).trim()) || "1. yol");
   /* Etiketleri konumlandır — yakın olanlar kademeli y/x ile üst üste binmesin */
   var labelSlots=[]; /* {x0,x1,y, side} dolu dilimler */
   yerlesim.forEach(function(o){
@@ -3436,11 +3442,11 @@ function drawItiSekilli(p, allowSearch){
     }
     var txt, connY;
     if(o.sk==="+"){
-      txt="+ kesişim · 1. yol "+fmtKm(o.jkm)+" × "+(o.yol.adi||o.yol.id)+" "+fmtKm(o.dkm);
+      txt="Kesişim: "+anaAd+" × "+(o.yol.adi||o.yol.id);
       connY=jyMid;
     } else {
-      txt=(o.sk==="L"?"L bağlantı · "+fmtKm(o.jkm)+" · "+(o.yol.adi||o.yol.id)
-          :"T bağlantı · 1. yol "+fmtKm(o.jkm)+" × "+(o.yol.adi||o.yol.id)+" "+(o.dkm!=null?fmtKm(o.dkm):""));
+      /* v149: sade cümle; km'ler kendi yollarının üstünde normal km yazısı olarak */
+      txt="Bağlantı: "+anaAd+" → "+(o.yol.adi||o.yol.id);
       connY=(o.taraf==="ust") ? jyTop : jyBot;
     }
     var textW=txt.length*6.6+10;

@@ -2713,30 +2713,82 @@ function itiDuzelt9(kok, j){
     try{ if(itiOkDisari9(svg)) degisti = true; }catch(_){}
     try{ if(itiKilavuz9(svg)) degisti = true; }catch(_){}
     try{ if(itiBasYer9(svg)) degisti = true; }catch(_){}
-    try{ if(itiSeritYazi9(svg)) degisti = true; }catch(_){} });
+    try{ if(itiSeritYazi9(svg)) degisti = true; }catch(_){}
+    try{ if(itiSeritYer9(svg)) degisti = true; }catch(_){} });
   return degisti;
 }
-// v149: SOL / SAĞ / TY yazıları iki kat; bir yerde çakışırsa bu itinererde çakışmayan en büyük ortak oran (2'ye en yakın)
+// v151: SOL / SAĞ / TY / BY yazıları boyalı alana en yakın (üst üste binmeden) durur — yolun başına sağa yaslı tek sütun;
+// yön okları bu yazıların, şeritlerin ve başka yazıların üstüne binmez (en yakın boş yere kayar, istikamet yazısıyla birlikte)
+function itiSeritYer9(svg){
+  if(svg._syr9) return false; svg._syr9 = 1;
+  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse(), vb = svg.viewBox.baseVal;
+  const kutu = el => { const b = el.getBBox(), m = ki.multiply(el.getCTM()); let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9;
+    [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m); x1 = Math.min(x1, q.x); y1 = Math.min(y1, q.y); x2 = Math.max(x2, q.x); y2 = Math.max(y2, q.y); });
+    return { x1, y1, x2, y2 }; };
+  const kes = (a, b, p = 0) => a.x1 < b.x2 + p && a.x2 > b.x1 - p && a.y1 < b.y2 + p && a.y2 > b.y1 - p;
+  const gor = el => { for(let e = el; e && e !== svg; e = e.parentNode) if(e.getAttribute && e.getAttribute("display") === "none") return false; return true; };
+  const zemin = r => /^(#fff|#ffffff|white|none|transparent|#eef0f3|#f3eef8)$/i.test((r.getAttribute("fill") || "").trim()) || /^url\(/.test(r.getAttribute("fill") || "");
+  const S = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && gor(t) && /^(SOL|SAĞ|TY|BY)$/.test(t.textContent.trim()) && !t.hasAttribute("data-serit9") && !t.getAttribute("transform"));
+  let n = 0;
+  const grup = new Map(); S.forEach(t => { const g = t.parentNode; (grup.get(g) || grup.set(g, []).get(g)).push(t); });
+  grup.forEach((L, g) => {
+    try{ const m = ki.multiply(L[0].getCTM()); if(Math.abs(m.b) > 1e-3 || Math.abs(m.c) > 1e-3 || m.a <= 0) return; }catch(_){ return; }   // yalnız yatay çizilen yollar
+    const rows = L.map(t => kutu(t));
+    const y1 = Math.min(...rows.map(b => b.y1)) - 40, y2 = Math.max(...rows.map(b => b.y2)) + 40;
+    const bar = [...g.children].filter(r => r.tagName === "rect" && gor(r) && !zemin(r)).map(r => ({ r, b: kutu(r) })).filter(o => o.b.y2 > y1 && o.b.y1 < y2 && (o.b.x2 - o.b.x1) > 1);
+    if(!bar.length) return;
+    const bas = Math.min(...bar.map(o => o.b.x1));
+    const engel = [...svg.querySelectorAll("text, rect, line, path, circle, polyline, polygon")].filter(e => !e.closest("defs") && gor(e) && !L.includes(e) && !(e.tagName === "rect" && zemin(e)))
+      .map(e => { try{ return kutu(e); }catch(_){ return null; } }).filter(b => b && !((b.x2 - b.x1) > vb.width * .8 && (b.y2 - b.y1) > vb.height * .8));
+    // sağa yaslı sütun: sağ kenar yolun başından 6 birim solda; çakışırsa sola kayar
+    const eski = L.map(t => ({ t, x: t.getAttribute("x"), a: t.getAttribute("text-anchor") }));
+    const yaz = xr => L.forEach(t => { t.setAttribute("text-anchor", "end"); t.setAttribute("x", (+t.getAttribute("x") + (xr - kutu(t).x2)).toFixed(1)); });
+    let xr = bas - 6, ok = false;
+    for(let i = 0; i < 60; i++, xr -= 4){ yaz(xr); if(L.every(t => { const b = kutu(t); return b.x1 >= vb.x && b.y1 >= vb.y && b.y2 <= vb.y + vb.height && !engel.some(e => kes(b, e, 10)); })){ ok = true; break; } }
+    if(!ok){ eski.forEach(o => { o.t.setAttribute("x", o.x); if(o.a) o.t.setAttribute("text-anchor", o.a); else o.t.removeAttribute("text-anchor"); }); return; }
+    n++;
+  });
+  // yön okları: şerit, yazı, SOL/SAĞ/TY üstüne binmesin
+  const oklar = [...svg.querySelectorAll("path")].filter(p => !p.closest("defs") && gor(p) && p.getAttribute("fill") === "none" && +p.getAttribute("stroke-width") >= 4 && /^M[\d.\- ]+L[\d.\- ]+L[\d.\- ]+M/.test(p.getAttribute("d") || ""));
+  const tum = [...svg.querySelectorAll("text, rect")].filter(e => !e.closest("defs") && gor(e) && e.textContent !== undefined && !(e.tagName === "rect" && zemin(e)));
+  oklar.forEach(p => {
+    const b = kutu(p);
+    const ist = tum.filter(e => e.tagName === "text" && (() => { const t = kutu(e); return t.y2 <= b.y1 + 2 && t.y2 >= b.y1 - 30 && t.x2 > b.x1 - 4 && t.x1 < b.x2 + 60; })());   // istikamet yazısı
+    const eng = tum.filter(e => !ist.includes(e)).map(e => { try{ return kutu(e); }catch(_){ return null; } }).filter(q => q && !((q.x2 - q.x1) > vb.width * .8 && (q.y2 - q.y1) > vb.height * .8));
+    const bos = (dx, dy) => { const nb = { x1: b.x1 + dx, y1: b.y1 + dy, x2: b.x2 + dx, y2: b.y2 + dy }; if(nb.x1 < vb.x || nb.x2 > vb.x + vb.width || nb.y1 < vb.y) return false;
+      return !eng.some(q => kes(nb, q, 4)) && ist.every(e => { const t = kutu(e), tb = { x1: t.x1 + dx, y1: t.y1 + dy, x2: t.x2 + dx, y2: t.y2 + dy }; return !eng.some(q => kes(tb, q, 2)); }); };
+    if(bos(0, 0)) return;
+    const aday = []; for(let d = 6; d <= 400; d += 6) aday.push([d, 0], [-d, 0], [0, -d]);
+    const sec = aday.find(([dx, dy]) => bos(dx, dy)); if(!sec) return;
+    [p, ...ist].forEach(el => { const m = ki.multiply(el.getCTM()); el.setAttribute("transform", `translate(${sec[0].toFixed(1)} ${sec[1].toFixed(1)}) matrix(${[m.a, m.b, m.c, m.d, m.e, m.f].map(v => +v.toFixed(4)).join(" ")})`);
+      if(el.parentNode !== svg) svg.appendChild(el); });
+    n++;
+  });
+  return n > 0;
+}
+// v151: bütün SOL / SAĞ / TY yazıları ekranda km yazılarıyla aynı boyda (ana yol ve kol yolları); bir yolda çakışırsa o yolda sığan en büyük boy
 function itiSeritYazi9(svg){
   if(svg._sy9) return false; svg._sy9 = 1;
   const S = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && /^(SOL|SAĞ|TY)$/.test(t.textContent.trim()) && t.getAttribute("display") !== "none" && !t.hasAttribute("data-serit9"));
   if(!S.length) return false;
+  const olc = el => { try{ const m = el.getScreenCTM(); return Math.sqrt(Math.abs(m.a * m.d - m.b * m.c)) || 1; }catch(_){ return 1; } };
+  const kmF = [...svg.querySelectorAll("text.km-lab")].filter(t => t.getAttribute("display") !== "none").map(t => (parseFloat(t.getAttribute("font-size")) || 12) * olc(t)).sort((a, b) => a - b);
+  const hedef = kmF.length ? kmF[Math.floor(kmF.length / 2)] : null;
   const kutu = el => { const r = el.getBoundingClientRect(); return r.width || r.height ? r : null; };
   const zemin = e => e.tagName === "rect" && /^(#fff|#ffffff|white|none|transparent)$/i.test((e.getAttribute("fill") || "").trim());
   const diger = [...svg.querySelectorAll("text, rect, line, path, polyline, polygon, circle")].filter(e => !e.closest("defs") && !S.includes(e) && e.getAttribute("display") !== "none" && !zemin(e))
     .map(e => { const cs = getComputedStyle(e); if(cs.display === "none" || cs.visibility === "hidden" || +cs.opacity === 0) return null; return kutu(e); }).filter(Boolean);
   const vbR = svg.getBoundingClientRect();
-  // her yol (ana yol, kol yolları) kendi içinde tek oran
   const grup = new Map(); S.forEach(t => { const g = t.closest("g.iti-yatay, g.iti-dikey") || svg; (grup.get(g) || grup.set(g, []).get(g)).push(t); });
   let degisti = false;
   grup.forEach(L => {
-    const ilk = L.map(t => ({ t, fs: parseFloat(t.getAttribute("font-size")) || 8, y: +t.getAttribute("y") }));
-    const kur = f => ilk.forEach(o => { const nf = o.fs * f; o.t.setAttribute("font-size", nf); o.t.setAttribute("y", o.y + (nf - o.fs) * 0.35); });
+    const ilk = L.map(t => { const fs = parseFloat(t.getAttribute("font-size")) || 8; return { t, fs, y: +t.getAttribute("y"), h: hedef ? hedef / olc(t) : fs * 2 }; });
+    const kur = f => ilk.forEach(o => { const nf = Math.max(o.fs, o.h * f); o.t.setAttribute("font-size", nf); o.t.setAttribute("y", o.y + (nf - o.fs) * 0.35); });
     const temiz = () => ilk.every(o => { const r = kutu(o.t); if(!r) return true;
       if(r.left < vbR.left - 1 || r.top < vbR.top - 1) return false;
       return diger.every(q => q.width > vbR.width * 0.8 && q.height > vbR.height * 0.8 ? true : (r.right <= q.left + 0.5 || r.left >= q.right - 0.5 || r.bottom <= q.top + 0.5 || r.top >= q.bottom - 0.5)); });
-    for(let f = 2; f > 1.001; f -= 0.1){ kur(f); if(temiz()){ degisti = true; return; } }
-    kur(1);
+    for(let f = 1; f > 0.3; f -= 0.05){ kur(f); if(temiz()){ degisti = true; return; } }
+    kur(0);
   });
   return degisti;
 }

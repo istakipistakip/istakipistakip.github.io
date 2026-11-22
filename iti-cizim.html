@@ -2660,6 +2660,8 @@ function drawIti(p, allowSearch){
 
   var yapiRowToggle=0;
   var iconLayer=[];
+  /* v151: TY'den BY'ye geçen (karışık) yolda SOL/SAĞ parçalarının içine şerit ayırıcı çizilmez */
+  var _karisik = hasTY && !onlyTY;
   function paintLane(list, y, isTY, laneKind){
     if(isTY){
       tyRanges.forEach(function(tr){
@@ -2730,7 +2732,7 @@ function drawIti(p, allowSearch){
             svg+='<rect x="'+(x1+1)+'" y="'+(y+2)+'" width="'+Math.max(w-2,1)+'" height="'+(h-4)+'" rx="3" fill="none" stroke="#ffffff" stroke-opacity="0.85" stroke-width="1.6" pointer-events="none"/>';
           }
           var _kes=(s.sinif==="TY"?(s.tyTip||s.byTip):(s.byTip||s.tyTip))||"";
-          if(!s.nokta && Math.abs((s.e||0)-(s.b||0))>0) svg+=drawLaneDividers(x1, w, y+1, h-2, laneDividerCount(s.sinif, _kes));
+          if(!s.nokta && Math.abs((s.e||0)-(s.b||0))>0 && !(_karisik && laneKind!=="TY")) svg+=drawLaneDividers(x1, w, y+1, h-2, laneDividerCount(s.sinif, _kes));
           if(w>14){
             try{ iconLayer.push(drawIconOnLane(cinsY, cx, cy, col, Math.min(w, 34))); }catch(e){}
           }
@@ -2748,7 +2750,7 @@ function drawIti(p, allowSearch){
         var strokeCol = isSkOnly ? "#6e6e6e" : (bcol||col);
         svg+='<rect x="'+x1+'" y="'+(y+1)+'" width="'+w+'" height="'+(h-2)+'" rx="2" fill="'+col+'"'+(sw?(' stroke="'+strokeCol+'" stroke-width="'+sw+'"'):'')+extra+'><title>'+titleTxt+'</title></rect>';
         var _kes2=(s.sinif==="TY"?(s.tyTip||s.byTip):(s.byTip||s.tyTip))||"";
-        if(!s.nokta && Math.abs((s.e||0)-(s.b||0))>0) svg+=drawLaneDividers(x1, w, y+1, h-2, laneDividerCount(s.sinif, _kes2));
+        if(!s.nokta && Math.abs((s.e||0)-(s.b||0))>0 && !(_karisik && laneKind!=="TY")) svg+=drawLaneDividers(x1, w, y+1, h-2, laneDividerCount(s.sinif, _kes2));
         var kt=kisaEtiket(s.tur);
         if(w>36){
           var k1=kt,k2="";
@@ -3001,25 +3003,25 @@ function drawIcon(cins, cx, cy, col, w){
   /* yBot0 km kademesinden hesaplandı */
   /* Sol ok ← + başlangıç tarafı üstte */
   (function(){
-    var xx=x(bas);
+    var xx=x(bas), _ucB=!!(window._itiUc && window._itiUc.bas);
     var ay = ySol - 175;
     var taraf=esc(p.istikametBas||"");
     svg+='<path d="M'+(xx+36)+' '+ay+' L'+xx+' '+ay+' L'+(xx+11)+' '+(ay-10)+' M'+xx+' '+ay+' L'+(xx+11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
     if(taraf) svg+='<text x="'+(xx+16)+'" y="'+(ay-12)+'" text-anchor="start" font-size="11" font-weight="700" fill="#1a1a1a">'+taraf+'</text>';
     /* Proje başı: eski yer — şerit hemen üstü (döndürünce yolun sağı). topPad yazıyı viewBox'ta tutar */
     var tyPb = window._itiCompact ? Math.max(18, ySol - 16) : Math.max(14, ySol - 22);
-    svg+='<text transform="rotate(-90 '+xx+' '+tyPb+')" x="'+xx+'" y="'+tyPb+'" text-anchor="start" font-size="'+(window._itiCompact?14:12)+'" font-weight="800" fill="#111" stroke="#fff" stroke-width="3.5" paint-order="stroke">Proje başı</text>';
+    if(!_ucB) svg+='<text transform="rotate(-90 '+xx+' '+tyPb+')" x="'+xx+'" y="'+tyPb+'" text-anchor="start" font-size="'+(window._itiCompact?14:12)+'" font-weight="800" fill="#111" stroke="#fff" stroke-width="3.5" paint-order="stroke">Proje başı</text>';
   })();
   /* Sağ ok → + bitiş tarafı üstte */
   (function(){
-    var xx=x(bit);
+    var xx=x(bit), _ucS=!!(window._itiUc && window._itiUc.bit);
     var ay = ySol - 175;
     var taraf=esc(p.istikametBit||"");
     svg+='<path d="M'+(xx-36)+' '+ay+' L'+xx+' '+ay+' L'+(xx-11)+' '+(ay-10)+' M'+xx+' '+ay+' L'+(xx-11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
     if(taraf) svg+='<text x="'+(xx-16)+'" y="'+(ay-12)+'" text-anchor="end" font-size="11" font-weight="700" fill="#1a1a1a">'+taraf+'</text>';
     /* Proje sonu: eski yer — şerit hemen üstü (döndürünce yolun sağı) */
     var tyPs = window._itiCompact ? Math.max(18, ySol - 16) : Math.max(14, ySol - 22);
-    svg+='<text transform="rotate(-90 '+xx+' '+tyPs+')" x="'+xx+'" y="'+tyPs+'" text-anchor="start" font-size="'+(window._itiCompact?14:12)+'" font-weight="800" fill="#111" stroke="#fff" stroke-width="3.5" paint-order="stroke">Proje sonu</text>';
+    if(!_ucS) svg+='<text transform="rotate(-90 '+xx+' '+tyPs+')" x="'+xx+'" y="'+tyPs+'" text-anchor="start" font-size="'+(window._itiCompact?14:12)+'" font-weight="800" fill="#111" stroke="#fff" stroke-width="3.5" paint-order="stroke">Proje sonu</text>';
   })();
   /* Müsavat (İ/G) yazıları: yazı YUKARI doğru uzar; km kademelerinin altında başlatılır,
      birbirine yakın olanlar farklı bantlara alınır → hiçbir km yazısının üstüne binmez. */
@@ -3233,8 +3235,11 @@ function drawItiSekilli(p, allowSearch){
      Toplam km/durum özetine TÜM yollar dahil edilsin */
   window._itiToplamTumYollar=true;
   window._itiEkKm = dallar.map(function(d){ return d.kavsakKm; }).filter(function(v){ return v!=null; });
+  /* v151: dal ana yolun ucundan geçiyorsa o ucun "Proje başı/sonu" yazısı ve km'si (bağlantı yazısında var) çizilmez */
+  var _ucDal=function(d, uc){ return d.sekil==="T" && d.dalKm!=null && d.dalKm>(d.bas||0)+1 && d.dalKm<(d.bit||0)-1 && d.kavsakKm!=null && Math.abs(d.kavsakKm-uc)<=1; };
+  window._itiUc = { bas: dallar.some(function(d){ return _ucDal(d, ana.bas); }), bit: dallar.some(function(d){ return _ucDal(d, ana.bit); }) };
   var hMain;
-  try{ hMain=drawIti(yolPseudoProje(p,ana), allowSearch); }finally{ window._itiEkKm=null; }
+  try{ hMain=drawIti(yolPseudoProje(p,ana), allowSearch); }finally{ window._itiEkKm=null; window._itiUc=null; }
   window._itiToplamTumYollar=false;
   var mMain=window._itiLastMap, sMain=_itiSvgAyir(hMain);
   if(!sMain||!mMain) return null;
@@ -3536,6 +3541,8 @@ function drawItiSekilli(p, allowSearch){
     svg+='<g class="iti-dikey" data-yol-id="'+esc(o.yol.id)+'" transform="translate('+(o.tx+shiftX)+','+(o.ty+topShift)+') rotate(90) scale('+o.k+')">'+o.sv.inner+'</g>';
   });
   var mainInner=sMain.inner;
+  yerlesim.forEach(function(o){ if(!o.uc || o.jkm==null) return; var km=Math.round(o.jkm);
+    mainInner=String(mainInner).replace(new RegExp('<text class="km-lab" data-km="'+km+'"[^>]*>[^<]*<\\/text>','g'),'').replace(new RegExp('<line class="km-ld" data-km="'+km+'"[^>]*\\/>','g'),''); });
   if(anaSeritX!=null) mainInner=String(mainInner).replace(/<text x="3" (y="[^"]*"[^>]*>(?:SOL|TY|SAĞ)<\/text>)/g, '<text x="'+anaSeritX+'" $1');
   svg+='<g class="iti-yatay" data-yol-id="'+esc(ana.id)+'" transform="translate('+shiftX+','+topShift+')">'+mainInner+'</g>';
   yerlesim.forEach(function(o){

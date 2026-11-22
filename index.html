@@ -9547,7 +9547,7 @@ ${O.length ? `<div class="itd9not"><b>KMZ'ye göre:</b><br>${O.map(o => esc(o.m)
 ${ana ? "" : `<label>Bağlantı şekli</label>${ch("ys", [["ayri", "Ayrı yerde (altta çizilir)"], ["devam", "Devam (ucundan)"], ["L", "L"], ["T", "T"], ["+", "+ (kesişim)"]], y.devam ? "devam" : (y.sekil || "ayri"))}
 <div id="ityBag">${digerler.length > 1 ? `<label>Hangi yola bağlı</label>${ch("yb", digerler.map(o => [o.q.id, (o.q.adi && !/^\s*-?\d+\+\d{3}\s*[-–]/.test(o.q.adi)) ? o.q.adi : "Yol " + (P.yollar.indexOf(o.q) + 1)]), y.bagliYolId || P.yollar[0].id)}` : ""}
 <div class="ik2"><div><label>Bağlandığı yolda km</label>${kmIn("ityK", y.kavsakKm)}</div><div id="ityDk"><label>Bu yolda km <small class="kk9">(T / +)</small></label>${kmIn("ityD", y.dalKm)}</div></div>
-<label>Çizimde</label>${ch("yt", [["alt", "Altına (aşağı)"], ["ust", "Üstüne (yukarı)"]], y.taraf === "ust" ? "ust" : "alt")}</div>`}
+<label>Çizimde <small class="kk9">(kol yoluna bağlıysa: Altına = sağına, Üstüne = soluna)</small></label>${ch("yt", [["alt", "Altına (aşağı)"], ["ust", "Üstüne (yukarı)"]], y.taraf === "ust" ? "ust" : "alt")}</div>`}
 <button class="ok9" type="submit">Kaydet</button>${ana ? "" : `<button type="button" class="itd9sil" data-itysil>Yolu sil</button>`}</form>`);
     const f = s.querySelector("#ity9");
     f.addEventListener("pointerup", e => { const b = e.target.closest("button[type=button]"); if(!b) return;

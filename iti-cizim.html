@@ -1210,13 +1210,16 @@ function projeSirasiKaydet(yeniSir){
   save();
 }
 /* ---- Çoklu yol (birleşik itiner) ---- */
+/* v174: gerçek yol adı — boş, km aralığı ("0+000-4+700") ya da kendiliğinden verilmiş "Yol 2" ad sayılmaz */
+function yolAdTemiz(a){ a=String(a||"").trim(); if(!a || /^\s*-?\d+\+\d{3}\s*[-–]/.test(a) || /^Yol\s*\d+$/i.test(a) || /^Y\d+$/.test(a)) return ""; return a; }
+function bagParca(ad, km){ return ad && km ? ad+" · "+km : (ad||km||""); }
 function getYollar(p){
   if(!p) return [];
   if(Array.isArray(p.yollar) && p.yollar.length){
     return p.yollar.map(function(y,i){
       return {
         id: y.id || ("Y"+(i+1)),
-        adi: y.adi || ("Yol "+(i+1)),
+        adi: y.adi || "", /* v174: kendiliğinden "Yol 1" adı verilmez */
         bas: (y.bas!=null?y.bas:(p.bas||0)),
         bit: (y.bit!=null?y.bit:(p.bit||1000)),
         /* i>0 için bağlanma şekli: "ayri" | "L" | "T" */
@@ -3558,7 +3561,7 @@ function drawItiSekilli(p, allowSearch){
 
   /* v156: km aralığı gibi görünen ad ("0+000-4+700") ad sayılmaz */
   var _kmAd=function(a){ return /^\s*-?\d+\+\d{3}\s*[-–]\s*-?\d+\+\d{3}\s*$/.test(String(a||"")); };
-  var anaAd=(ana.adi && String(ana.adi).trim() && ana.adi!==ana.id && !_kmAd(ana.adi)) ? String(ana.adi).trim() : "Yol 1";
+  var anaAd=yolAdTemiz(ana.adi);
   /* Etiketleri konumlandır — yakın olanlar kademeli y/x ile üst üste binmesin */
   var labelSlots=[]; /* {x0,x1,y, side} dolu dilimler */
   yerlesim.forEach(function(o){
@@ -3570,16 +3573,16 @@ function drawItiSekilli(p, allowSearch){
       o.barLeft=barLeft; o.barRight=barRight;
     }
     var txt, connY;
-    var _dAd=(o.yol.adi && !_kmAd(o.yol.adi)) ? o.yol.adi : ("Yol "+(ys.indexOf(o.yol)+1)), _jK=(o.jkm!=null?" · "+fmtKm(o.jkm):""), _dK=(o.dkm!=null?" · "+fmtKm(o.dkm):""); /* v172: yol adı · km */
+    var _dAd=yolAdTemiz(o.yol.adi), _jK=(o.jkm!=null?fmtKm(o.jkm):""), _dK=(o.dkm!=null?fmtKm(o.dkm):""); /* v172/v174: yol adı · km; ad yoksa yalnız km */
     if(o.uc || o.kes){
-      txt="Bağlantı: "+anaAd+_jK+" → "+_dAd+_dK;
+      txt="Bağlantı: "+bagParca(anaAd,_jK)+" → "+bagParca(_dAd,_dK);
       connY=jyMid;
     } else if(o.sk==="+"){
-      txt="Bağlantı: "+anaAd+_jK+" → "+_dAd+_dK;
+      txt="Bağlantı: "+bagParca(anaAd,_jK)+" → "+bagParca(_dAd,_dK);
       connY=jyMid;
     } else {
       /* v149: sade cümle; km'ler kendi yollarının üstünde normal km yazısı olarak */
-      txt="Bağlantı: "+anaAd+_jK+" → "+_dAd+(o.sk==="T"?_dK:(o.yol.bas!=null?" · "+fmtKm(o.yol.bas):""));
+      txt="Bağlantı: "+bagParca(anaAd,_jK)+" → "+bagParca(_dAd,(o.sk==="T"?_dK:(o.yol.bas!=null?fmtKm(o.yol.bas):"")));
       connY=(o.taraf==="ust") ? jyTop : jyBot;
     }
     var textW=txt.length*6.6+10;
@@ -3642,8 +3645,7 @@ function drawItiSekilli(p, allowSearch){
     var x0=tx2, x1=tx2+K*sv.w, y0=ty2, y1=ty2+K*sv.h;
     if(x1+10>maxRight) maxRight=x1+10; if(x0-10<minLeft) minLeft=x0-10;
     if(-y0>topShift) topShift=-y0+14; if(y1+10>botMax) botMax=y1+10;
-    var _ad=function(y, k){ return (y.adi && !/^\s*-?\d+\+\d{3}\s*[-–]/.test(y.adi)) ? y.adi : ("Yol "+(ys.indexOf(y)+1)); };
-    var txt="Bağlantı: "+_ad(o.yol)+" · "+fmtKm(kv)+" → "+_ad(d)+" · "+fmtKm(dkI ? d.dalKm : (sol ? d.bit : d.bas));
+    var txt="Bağlantı: "+bagParca(yolAdTemiz(o.yol.adi), fmtKm(kv))+" → "+bagParca(yolAdTemiz(d.adi), fmtKm(dkI ? d.dalKm : (sol ? d.bit : d.bas)));
     { var kmB=Math.round(dkI ? d.dalKm : (sol ? d.bit : d.bas)); /* bağlantı ucundaki km yazısı bağlı kolun şeridine düşer — bağlantı yazısında var */
       sv.inner=String(sv.inner).replace(new RegExp('<text class="km-lab" data-km="'+kmB+'"[^>]*>[^<]*<\\/text>','g'),'').replace(new RegExp('<line class="km-ld" data-km="'+kmB+'"[^>]*\\/>','g'),''); }
     altYer.push({yol:d, sv:sv, k:K, tx:tx2, ty:ty2, cx:cxJ, cy:yJ, txt:txt, sol:sol});
@@ -3822,7 +3824,7 @@ function drawItiAyriCoklu(p, allowSearch){
     var h=pt.sv.h||300;
     var y=pt.yol;
     var uz=yolFizikiUzunlukKm(p,y);
-    var baslik=esc(y.adi||y.id)+" · "+fmtKm(y.bas)+"–"+fmtKm(y.bit)+" ("+fmtUzunlukKm(uz)+")";
+    var baslik=(yolAdTemiz(y.adi) ? esc(yolAdTemiz(y.adi))+" · " : "")+fmtKm(y.bas)+"–"+fmtKm(y.bit)+" ("+fmtUzunlukKm(uz)+")";
     if(i>0){
       svg+='<line x1="0" y1="'+(yOff-gap/2)+'" x2="'+maxW+'" y2="'+(yOff-gap/2)+'" stroke="#c5d0dc" stroke-width="1"/>';
     }

@@ -2752,6 +2752,25 @@ function itiKolUc9(svg){
     const hiza = sag ? Math.max(...P.map(o => o.b.x2)) + 12 : Math.min(...P.map(o => o.b.x1)) - 12;
     ok.forEach(o => { const w = o.b.x2 - o.b.x1, dx = sag ? (hiza - o.b.x1) : (hiza - o.b.x2); if(Math.abs(dx) > 0.5){ kay(o.p, dx); n++; } });
   });
+  // (3) v156: birleşik dallar — ana yolun km yazısı dalın şeridine binerse en yakın yana kayar (çizgisi kendi km'sinden eğik gider);
+  // dalın "Proje başı/sonu" yazısı ana yolun şeridine binerse dal boyunca dışarı kayar
+  const yatayBar = [...svg.querySelectorAll("g.iti-yatay rect")].filter(r => !zemin(r)).map(r => kutu(r)).filter(b => (b.x2 - b.x1) > (b.y2 - b.y1));
+  svg.querySelectorAll("g.iti-dikey").forEach(g => {
+    const db = [...g.querySelectorAll("rect")].filter(r => !zemin(r)).map(r => kutu(r)).filter(b => (b.y2 - b.y1) > (b.x2 - b.x1));
+    if(!db.length) return;
+    const D = { x1: Math.min(...db.map(b => b.x1)) - 4, x2: Math.max(...db.map(b => b.x2)) + 4, y1: Math.min(...db.map(b => b.y1)), y2: Math.max(...db.map(b => b.y2)) };
+    svg.querySelectorAll("g.iti-yatay text.km-lab").forEach(t => { const b = kutu(t); if(!(b.x1 < D.x2 && b.x2 > D.x1 && b.y1 < D.y2 && b.y2 > D.y1)) return;
+      const sol = D.x1 - b.x2, sag = D.x2 - b.x1, dx = Math.abs(sol) < Math.abs(sag) ? sol : sag;
+      const x = +t.getAttribute("x") + dx, y = +t.getAttribute("y"); t.setAttribute("x", x.toFixed(1)); t.setAttribute("transform", `rotate(-90 ${x.toFixed(1)} ${y})`);
+      const km = t.getAttribute("data-km"), z = t.getAttribute("data-zincir") || "";
+      t.parentNode.querySelectorAll(`line.km-ld[data-km="${km}"]`).forEach(l => { if((l.getAttribute("data-zincir") || "") === z) l.setAttribute("x2", x.toFixed(1)); }); n++; });
+  });
+  // kol yollarına ait (ana yol grubunda olmayan) yatay yazılar ana yolun şeridine binerse dikeyde dışarı kayar
+  if(svg.querySelector("g.iti-dikey")) [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && !t.closest("g.iti-yatay") && !t.closest("[data-bas9]") && t.textContent.trim() && !/bağlantı|kesişim/i.test(t.textContent)).forEach(t => {
+    let b; try{ b = kutu(t); }catch(_){ return; } if((b.x2 - b.x1) < (b.y2 - b.y1)) return;
+    const ust = yatayBar.find(y => b.x1 < y.x2 && b.x2 > y.x1 && b.y1 < y.y2 + 3 && b.y2 > y.y1 - 3); if(!ust) return;
+    const dy = (b.y1 + b.y2) / 2 > (ust.y1 + ust.y2) / 2 ? (ust.y2 + 4 - b.y1) : (ust.y1 - 4 - b.y2); kay(t, 0, dy); n++; });
+  if(n){ try{ itiBag9(svg); }catch(_){} }   // kayan yazılardan sonra bağlantı yazıları boş yere yeniden
   return n > 0;
 }
 // v151: SOL / SAĞ / TY / BY yazıları boyalı alana en yakın (üst üste binmeden) durur — yolun başına sağa yaslı tek sütun;

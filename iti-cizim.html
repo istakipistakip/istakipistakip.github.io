@@ -2995,7 +2995,7 @@ function drawIcon(cins, cx, cy, col, w){
   })();
 
   if(!onlyTY) svg+='<text x="3" y="'+(ySol+h/2+3)+'" font-size="8" font-weight="700">SOL</text>';
-  if(hasTY) svg+='<text x="3" y="'+(yTy+h/2+3)+'" font-size="7" fill="#6c3483" font-weight="600">TY</text>';
+  if(hasTY) svg+='<text x="3" y="'+(yTy+h/2+3)+'" font-size="8" font-weight="700">TY</text>';
   if(!onlyTY) svg+='<text x="3" y="'+(ySag+h/2+3)+'" font-size="8" font-weight="700">SAĞ</text>';
 
   
@@ -3006,6 +3006,7 @@ function drawIcon(cins, cx, cy, col, w){
     var xx=x(bas), _ucB=!!(window._itiUc && window._itiUc.bas);
     var ay = ySol - 175;
     var taraf=esc(p.istikametBas||"");
+    if(_ucB) return; /* v152: ok ve "Proje başı" bağlantı satırına (dal km'sinin soluna) taşındı */
     svg+='<path d="M'+(xx+36)+' '+ay+' L'+xx+' '+ay+' L'+(xx+11)+' '+(ay-10)+' M'+xx+' '+ay+' L'+(xx+11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
     if(taraf) svg+='<text x="'+(xx+16)+'" y="'+(ay-12)+'" text-anchor="start" font-size="11" font-weight="700" fill="#1a1a1a">'+taraf+'</text>';
     /* Proje başı: eski yer — şerit hemen üstü (döndürünce yolun sağı). topPad yazıyı viewBox'ta tutar */
@@ -3353,8 +3354,25 @@ function drawItiSekilli(p, allowSearch){
       if(-ty > topShift) topShift = Math.max(topShift, -ty + 14);
       var botU=ty + sv.w*K + 12; if(botU>botMax) botMax=botU;
       var fpL=tx-K*(m2.yKmBot||sv.h)-6; if(fpL<minLeft) minLeft=fpL;
-      if(ucMod==="bas"){ var laneX=fpL-78; if(laneX-6<minLeft) minLeft=laneX-6; anaSeritX=laneX; }
-      yerlesim.push({sk:sk, uc:ucMod, taraf:"alt", jkm:jkm, dkm:dkm, jx:jx, cx:(barLeft+barRight)/2, fpL:fpL, tx:tx, ty:ty, k:K, sv:sv, m2:m2, yol:pt.yol, hasLabel:hasLabel, bandH:bandHu, barLeft:barLeft, barRight:barRight});
+      var ucOk=null;
+      if(ucMod==="bas"){
+        /* v152: bağlantı satırı soldan sağa: ← ok · dal bağlantı km'si · SOL/TY/SAĞ · dal şeridi.
+           Dalın bağlantı km yazısı SOL/TY/SAĞ sütununa yer açmak için sola alınır (telefon sıralamasında sabit kalır) */
+        var dk=Math.round(dkm), kmFsD=18, acik=(kmFsD*2.6+34)/K;
+        var reT=new RegExp('<text class="km-lab" data-km="'+dk+'"([^>]*?) y="(-?[\\d.]+)"([^>]*?)transform="rotate\\(-90 (-?[\\d.]+) (-?[\\d.]+)\\)"([^>]*)>([^<]*)<\\/text>');
+        var mt=reT.exec(sv.inner);
+        if(mt){
+          var yOld=+mt[2], yNew=yOld+acik, txtK=mt[7];
+          sv.inner=sv.inner.replace(reT, '<text class="km-lab" data-km="'+dk+'"'+mt[1]+' y="'+yNew+'"'+mt[3]+'transform="rotate(-90 '+mt[4]+' '+yNew+')"'+mt[6]+' data-sabit9="1">'+txtK+'</text>');
+          sv.inner=sv.inner.replace(new RegExp('(<line class="km-ld" data-km="'+dk+'"[^>]*?y2=")(-?[\\d.]+)(")'), function(a,b,c,d){ return b+(+c+acik)+d; });
+          var lenK=String(txtK).length*kmFsD*0.66+6;
+          var kmSol=tx-K*(yNew+lenK/2);
+          ucOk={x2:kmSol-12, x1:kmSol-12-36, y:jyMid};
+          if(ucOk.x1-10<minLeft) minLeft=ucOk.x1-10;
+        }
+        var fp2=tx-K*(m2.yKmBot||sv.h)-6-acik*K; if(fp2<minLeft) minLeft=fp2;
+      }
+      yerlesim.push({sk:sk, uc:ucMod, ucOk:ucOk, taraf:"alt", jkm:jkm, dkm:dkm, jx:jx, cx:(barLeft+barRight)/2, fpL:fpL, tx:tx, ty:ty, k:K, sv:sv, m2:m2, yol:pt.yol, hasLabel:hasLabel, bandH:bandHu, barLeft:barLeft, barRight:barRight});
       return;
     }
     if(sk==="+"){
@@ -3551,6 +3569,10 @@ function drawItiSekilli(p, allowSearch){
     if(o.uc){
       svg+='<g class="iti-dikey" data-yol-id="'+esc(o.yol.id)+'" transform="translate('+tx+','+ty+') rotate(90) scale('+o.k+')">'+o.sv.inner+'</g>';
       svg+='<circle cx="'+(o.cx+shiftX)+'" cy="'+yMid+'" r="8" fill="#fff" stroke="#e67e22" stroke-width="3.5"/>';
+      if(o.ucOk){ var ax1=o.ucOk.x1+shiftX, ax2=o.ucOk.x2+shiftX, ay=o.ucOk.y+topShift;
+        svg+='<path d="M'+ax2+' '+ay+' L'+ax1+' '+ay+' L'+(ax1+11)+' '+(ay-10)+' M'+ax1+' '+ay+' L'+(ax1+11)+' '+(ay+10)+'" fill="none" stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>';
+        var _ist=esc(((yolPseudoProje(p,ana)||{}).istikametBas)||p.istikametBas||"");
+        if(_ist) svg+='<text x="'+ax2+'" y="'+(ay-16)+'" text-anchor="end" font-size="11" font-weight="700" fill="#1a1a1a">'+_ist+'</text>'; }
       svg+=leaderVeEtiket(o);
       return;
     }

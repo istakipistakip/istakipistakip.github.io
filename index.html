@@ -2738,14 +2738,19 @@ function itiSeritYer9(svg){
     const bar = [...g.children].filter(r => r.tagName === "rect" && gor(r) && !zemin(r)).map(r => ({ r, b: kutu(r) })).filter(o => o.b.y2 > y1 && o.b.y1 < y2 && (o.b.x2 - o.b.x1) > 1);
     if(!bar.length) return;
     const bas = Math.min(...bar.map(o => o.b.x1));
-    const engel = [...svg.querySelectorAll("text, rect, line, path, circle, polyline, polygon")].filter(e => !e.closest("defs") && gor(e) && !L.includes(e) && !(e.tagName === "rect" && zemin(e)))
+    const engel = [...svg.querySelectorAll("text, rect, line, path, circle, polyline, polygon")].filter(e => !e.closest("defs") && gor(e) && !L.includes(e) && !(e.tagName === "rect" && zemin(e)) && !(e.tagName === "line" && e.getAttribute("stroke-dasharray")))
       .map(e => { try{ return kutu(e); }catch(_){ return null; } }).filter(b => b && !((b.x2 - b.x1) > vb.width * .8 && (b.y2 - b.y1) > vb.height * .8));
     // sağa yaslı sütun: sağ kenar yolun başından 6 birim solda; çakışırsa sola kayar
     const eski = L.map(t => ({ t, x: t.getAttribute("x"), a: t.getAttribute("text-anchor") }));
-    const yaz = xr => L.forEach(t => { t.setAttribute("text-anchor", "end"); t.setAttribute("x", (+t.getAttribute("x") + (xr - kutu(t).x2)).toFixed(1)); });
-    let xr = bas - 6, ok = false;
-    for(let i = 0; i < 60; i++, xr -= 4){ yaz(xr); if(L.every(t => { const b = kutu(t); return b.x1 >= vb.x && b.y1 >= vb.y && b.y2 <= vb.y + vb.height && !engel.some(e => kes(b, e, 10)); })){ ok = true; break; } }
-    if(!ok){ eski.forEach(o => { o.t.setAttribute("x", o.x); if(o.a) o.t.setAttribute("text-anchor", o.a); else o.t.removeAttribute("text-anchor"); }); return; }
+    // v152: alt alta ortadan hizalı sütun (sağ kenarı en geniş yazıya göre)
+    const yaz = xr => { const gen = Math.max(...L.map(t => { const b = kutu(t); return b.x2 - b.x1; })), orta = xr - gen / 2;
+      L.forEach(t => { t.setAttribute("text-anchor", "middle"); const b = kutu(t); t.setAttribute("x", (+t.getAttribute("x") + (orta - (b.x1 + b.x2) / 2)).toFixed(1)); }); };
+    const fs0 = L.map(t => ({ t, f: t.getAttribute("font-size"), y: t.getAttribute("y") }));
+    const boyut = f => fs0.forEach(o => { const a = parseFloat(o.f) || 8, nf = a * f; o.t.setAttribute("font-size", nf); o.t.setAttribute("y", (+o.y + (nf - a) * 0.35).toFixed(2)); });
+    const yerles = () => { let xr = bas - 6; for(let i = 0; i < 60; i++, xr -= 4){ yaz(xr); if(L.every(t => { const b = kutu(t); return b.x1 >= vb.x && b.y1 >= vb.y && b.y2 <= vb.y + vb.height && !engel.some(e => kes(b, e, 10)); })) return true; } return false; };
+    let ok = false;
+    for(let f = 1; f >= 0.45 && !ok; f -= 0.05){ boyut(f); ok = yerles(); }   // yer yoksa yazılar küçülerek sığar
+    if(!ok){ fs0.forEach(o => { o.t.setAttribute("font-size", o.t.getAttribute("data-fs0") || o.f); o.t.setAttribute("y", o.t.getAttribute("data-y0") || o.y); }); eski.forEach(o => { o.t.setAttribute("x", o.x); if(o.a) o.t.setAttribute("text-anchor", o.a); else o.t.removeAttribute("text-anchor"); }); return; }
     n++;
   });
   // yön okları: şerit, yazı, SOL/SAĞ/TY üstüne binmesin
@@ -2782,11 +2787,14 @@ function itiSeritYazi9(svg){
   const grup = new Map(); S.forEach(t => { const g = t.closest("g.iti-yatay, g.iti-dikey") || svg; (grup.get(g) || grup.set(g, []).get(g)).push(t); });
   let degisti = false;
   grup.forEach(L => {
+    L.forEach(t => { if(!t.hasAttribute("data-fs0")){ t.setAttribute("data-fs0", t.getAttribute("font-size") || "8"); t.setAttribute("data-y0", t.getAttribute("y") || "0"); } });
     const ilk = L.map(t => { const fs = parseFloat(t.getAttribute("font-size")) || 8; return { t, fs, y: +t.getAttribute("y"), h: hedef ? hedef / olc(t) : fs * 2 }; });
     const kur = f => ilk.forEach(o => { const nf = Math.max(o.fs, o.h * f); o.t.setAttribute("font-size", nf); o.t.setAttribute("y", o.y + (nf - o.fs) * 0.35); });
     const temiz = () => ilk.every(o => { const r = kutu(o.t); if(!r) return true;
       if(r.left < vbR.left - 1 || r.top < vbR.top - 1) return false;
       return diger.every(q => q.width > vbR.width * 0.8 && q.height > vbR.height * 0.8 ? true : (r.right <= q.left + 0.5 || r.left >= q.right - 0.5 || r.bottom <= q.top + 0.5 || r.top >= q.bottom - 0.5)); });
+    let yatay = false; try{ const m = svg.getCTM().inverse().multiply(L[0].getCTM()); yatay = Math.abs(m.b) < 1e-3 && Math.abs(m.c) < 1e-3 && m.a > 0; }catch(_){}
+    if(yatay){ kur(1); degisti = true; return; }   // yatay yolun yazıları itiSeritYer9'da boş yere yerleşir
     for(let f = 1; f > 0.3; f -= 0.05){ kur(f); if(temiz()){ degisti = true; return; } }
     kur(0);
   });
@@ -2842,7 +2850,7 @@ function itiBaslik9(svg, j){
 function kmSira9(svg, ters){
   // her yol grubu (ana yol, kol yolları) kendi koordinatlarında ayrı ayrı sıralanır
   const gruplar = new Map();
-  svg.querySelectorAll("text.km-lab").forEach(t => { const g = t.parentNode; (gruplar.get(g) || gruplar.set(g, []).get(g)).push(t); });
+  svg.querySelectorAll("text.km-lab").forEach(t => { if(t.hasAttribute("data-sabit9")) return; const g = t.parentNode; (gruplar.get(g) || gruplar.set(g, []).get(g)).push(t); });
   gruplar.forEach((lab, kap) => kmSiraGrup9(kap, lab));
 }
 // v144: aynı yere yığılan km yazıları sadeleşir — proje başı / sonu km'si "Proje başı" yazısına katılır,
@@ -2854,10 +2862,18 @@ function kmBirlestir9(kap, lab){
     t.remove(); };
   // proje başı / sonu
   const proje = [...kap.children].filter(t => t.tagName === "text" && /^Proje\s+(başı|sonu)$/i.test(t.textContent.trim()));
-  proje.forEach(P => { try{ const sv = P.ownerSVGElement, m = sv.getCTM().inverse().multiply(P.getCTM()); if(Math.abs(m.b) <= Math.abs(m.a)) return; }catch(_){ return; }   // yalnız ekranda dik duran (yatay yolun) proje başı / sonu
+  proje.forEach(P => { let dik = true; try{ const sv = P.ownerSVGElement, m = sv.getCTM().inverse().multiply(P.getCTM()); dik = Math.abs(m.b) > Math.abs(m.a); }catch(_){ return; }
     const px = +P.getAttribute("x"); let en = null;
     lab.forEach(t => { if(!t.isConnected) return; const d = Math.abs(+t.getAttribute("x") - px); if(d <= 3 && (!en || d < en.d)) en = { t, d }; });
-    if(!en) return; P.textContent = P.textContent.trim() + " " + en.t.textContent.trim(); sil(en.t); });
+    if(!en) return; const eskiT = P.textContent; P.textContent = P.textContent.trim() + " " + en.t.textContent.trim();
+    if(!dik){ // v152: kol yolunda (ekranda yatay) — uzayan yazı şeride / başka yazıya binerse eski haline döner
+      const sv = P.ownerSVGElement, r = P.getBoundingClientRect();
+      const carp = [...sv.querySelectorAll("rect, text")].some(e => { if(e === P || e === en.t || e.closest("defs")) return false; const f = (e.getAttribute("fill") || "").trim();
+        if(e.tagName === "rect" && /^(#fff|#ffffff|white|none|transparent|#eef0f3|#f3eef8)$/i.test(f)) return false;
+        const q = e.getBoundingClientRect(); if(!q.width || (q.width > sv.getBoundingClientRect().width * .8)) return false;
+        return r.left < q.right && r.right > q.left && r.top < q.bottom && r.bottom > q.top; });
+      if(carp){ P.textContent = eskiT; return; } }
+    sil(en.t); });
   // yakın km yazıları
   const L = lab.filter(t => t.isConnected && kmDeg(t) != null).map(t => { let w = 12; try{ w = t.getBBox().height || 12; }catch(_){} return { t, x: +t.getAttribute("x"), w, v: kmDeg(t) }; }).sort((a, b) => a.x - b.x);
   // v146: zincirleme yok — yazı yalnız kümenin İLK yazısıyla gerçekten üst üste biniyorsa katılır; birleşen yazı aralığın ortasına konur,

@@ -1353,6 +1353,9 @@ html.dark .dz9k .yz{ border-color:#222d41; }
 .kf9 .sil svg{ width:16px; height:16px; }
 html.dark .kf9 label{ color:#94a3b8; }
 html.dark .kf9 input:not([type=checkbox]), html.dark .kf9 textarea, html.dark .ss9 select, html.dark .kf9 .ch button, html.dark .kf9 .seg button{ background:#0f1726; border-color:#2a3650; color:#e6ebf3; }
+/* v164: koyu modda da seçili düğme turuncu yanar (yukarıdaki koyu kural seçili rengi eziyordu) */
+html.dark .kf9 .ch button.on, html.dark .kf9 .seg button.on{ background:#ea580c; border-color:#ea580c; color:#fff; }
+html.dark .ch [data-kd="eski"].on{ background:#000!important; border-color:#94a3b8!important; }
 html.dark .kf9 .sw{ color:#e6ebf3; }
 html.dark .kf9 .sw span{ background:#334155; }
 
@@ -9542,9 +9545,9 @@ ${O.length ? `<div class="itd9not"><b>KMZ'ye göre:</b><br>${O.map(o => esc(o.m)
 <label>Yol tipi</label>${ch("yy", [["", "Kayıtlara göre"], ["BY", "BY (bölünmüş)"], ["TY", "TY (tek yol)"]], y.yolTipi || "")}
 <label>Boyalı alan kalınlığı</label>${ch("yk", [["ince", "İnce"], ["", "Normal"], ["kalin", "Kalın"]], y.kalinlik || "")}
 ${ana ? "" : `<label>Bağlantı şekli</label>${ch("ys", [["ayri", "Ayrı yerde (altta çizilir)"], ["devam", "Devam (ucundan)"], ["L", "L"], ["T", "T"], ["+", "+ (kesişim)"]], y.devam ? "devam" : (y.sekil || "ayri"))}
-<div id="ityBag">${digerler.length > 1 ? `<label>Hangi yola bağlı</label>${ch("yb", digerler.map(o => [o.q.id, o.q.adi || o.q.id]), y.bagliYolId || P.yollar[0].id)}` : ""}
+<div id="ityBag">${digerler.length > 1 ? `<label>Hangi yola bağlı</label>${ch("yb", digerler.map(o => [o.q.id, (o.q.adi && !/^\s*-?\d+\+\d{3}\s*[-–]/.test(o.q.adi)) ? o.q.adi : "Yol " + (P.yollar.indexOf(o.q) + 1)]), y.bagliYolId || P.yollar[0].id)}` : ""}
 <div class="ik2"><div><label>Bağlandığı yolda km</label>${kmIn("ityK", y.kavsakKm)}</div><div id="ityDk"><label>Bu yolda km <small class="kk9">(T / +)</small></label>${kmIn("ityD", y.dalKm)}</div></div>
-<label>Çizimde</label>${ch("yt", [["alt", "Altına"], ["ust", "Üstüne"]], y.taraf === "ust" ? "ust" : "alt")}</div>`}
+<label>Çizimde</label>${ch("yt", [["alt", "Altına (aşağı)"], ["ust", "Üstüne (yukarı)"]], y.taraf === "ust" ? "ust" : "alt")}</div>`}
 <button class="ok9" type="submit">Kaydet</button>${ana ? "" : `<button type="button" class="itd9sil" data-itysil>Yolu sil</button>`}</form>`);
     const f = s.querySelector("#ity9");
     f.addEventListener("pointerup", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
@@ -9554,7 +9557,7 @@ ${ana ? "" : `<label>Bağlantı şekli</label>${ch("ys", [["ayri", "Ayrı yerde 
       const bg = f.querySelector("#ityBag"); if(bg) bg.style.display = v === "ayri" ? "none" : "";
       const dk = f.querySelector("#ityDk"); if(dk) dk.style.visibility = v === "T" || v === "+" ? "" : "hidden";
       const kk = f.querySelector("#ityK"); if(kk) kk.parentNode.style.display = v === "devam" ? "none" : "";
-      const ct = f.querySelector("[data-yt]"); if(ct){ const g = v === "+" || v === "T"; ct.parentNode.style.display = g ? "none" : ""; const lb = ct.parentNode.previousElementSibling; if(lb && lb.tagName === "LABEL") lb.style.display = g ? "none" : ""; } };
+};
     f.addEventListener("click", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
       if(b.hasAttribute("data-ityoneri")){ O.forEach(o => { Object.entries(o.deg).forEach(([k, v]) => {
           if(k === "bas") f.querySelector("#ityB").value = mKm9(v); else if(k === "bit") f.querySelector("#ityE").value = mKm9(v);

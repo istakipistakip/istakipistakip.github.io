@@ -3400,7 +3400,8 @@ function drawItiSekilli(p, allowSearch){
         }
         var fp2=tx-K*(m2.yKmBot||sv.h)-6-acik*K; if(fp2<minLeft) minLeft=fp2;
       }
-      yerlesim.push({sk:sk, uc:ucMod, ucOk:ucOk, taraf:"alt", jkm:jkm, dkm:dkm, jx:jx, cx:(barLeft+barRight)/2, fpL:fpL, tx:tx, ty:ty, k:K, sv:sv, m2:m2, yol:pt.yol, hasLabel:hasLabel, bandH:bandHu, barLeft:barLeft, barRight:barRight});
+      /* v155: bağlantı noktası Yol 1'in dalın kenarına değdiği yer (dalın ortası değil) */
+      yerlesim.push({sk:sk, uc:ucMod, ucOk:ucOk, taraf:"alt", jkm:jkm, dkm:dkm, jx:jx, cx:(ucMod==="bas" ? barRight : barLeft), fpL:fpL, tx:tx, ty:ty, k:K, sv:sv, m2:m2, yol:pt.yol, hasLabel:hasLabel, bandH:bandHu, barLeft:barLeft, barRight:barRight});
       return;
     }
     if(sk==="+"){

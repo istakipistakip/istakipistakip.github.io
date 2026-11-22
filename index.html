@@ -9951,7 +9951,7 @@ function itiBasYer9(svg){
   // en üstteki çizimin üstüne, sonuncu satır içerikten 8 birim yukarıda
   // görünür alanın dışına taşan (kırpılan) arka plan şeritleri hesaba katılmaz
   const ustIc = Math.max(vb.y, Math.min(ic.y, vb.y + vb.height));
-  const sonY = ustIc - 14, ilkY = sonY - (satirlar.length - 1) * ara;
+  const sonY = ustIc - 34, ilkY = sonY - (satirlar.length - 1) * ara;
   satirlar.forEach((x, k) => { x.setAttribute("x", x0); x.setAttribute("y", ilkY + k * ara); });
   const ust = ilkY - fs - 4;
   if(ust < vb.y){ const ek = vb.y - ust; svg.setAttribute("viewBox", `${vb.x} ${vb.y - ek} ${vb.width} ${vb.height + ek}`); }

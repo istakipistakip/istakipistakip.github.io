@@ -2450,7 +2450,25 @@ function drawIti(p, allowSearch){
     kmTicks.push({m:m, prefer:prefer});
   }
   addKmTick(bas); addKmTick(bit);
+  /* Üstüne başka kaplama binen (görünmeyen) kaplama ucu km yazısı almaz */
+  var _kapK=segs.filter(function(s){return isKap(s.tur) && !isYapi(s.tur)});
+  segDurumKatmanHazirla(_kapK);
+  function _seritler(s){ var k=String(s.konum||"HER").toUpperCase(); if(s.sinif==="TY"||k==="TY") return ["TY"]; if(k==="SOL"||k==="SAG"||k==="SAĞ") return [k==="SOL"?"SOL":"SAG"]; return ["SOL","SAG"]; }
+  function _ortuluUc(s, m){
+    if(_kapK.indexOf(s)<0) return false;
+    var zs=s.zincir||"";
+    return _seritler(s).every(function(L){
+      return _kapK.some(function(t){
+        if(t===s || (t.zincir||"")!==zs || !(t.b < m-1 && t.e > m+1)) return false;
+        if(_seritler(t).indexOf(L)<0) return false;
+        return segCizimSirasi(s,t) < 0;
+      });
+    });
+  }
   segs.forEach(function(s){
+    if(_ortuluUc(s, s.b) && _ortuluUc(s, s.e)) return;
+    if(_ortuluUc(s, s.b)){ addKmTick(s.e, s.zincir); return; }
+    if(_ortuluUc(s, s.e)){ addKmTick(s.b, s.zincir); return; }
     addKmTick(s.b, s.zincir);
     addKmTick(s.e, s.zincir);
   });

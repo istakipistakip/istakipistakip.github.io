@@ -2440,14 +2440,14 @@ function drawIti(p, allowSearch){
 
   /* Km etiketleri: İ/G çakışmasında zincir ile fiziksel x */
   var kmTicks=[];
-  function addKmTick(m, prefer){
+  function addKmTick(m, prefer, kid){
     if(m==null||isNaN(m)) return;
     m=Math.round(m);
     prefer=prefer?String(prefer).toLowerCase():"";
     for(var _i=0;_i<kmTicks.length;_i++){
-      if(kmTicks[_i].m===m && (kmTicks[_i].prefer||"")===prefer) return;
+      if(kmTicks[_i].m===m && (kmTicks[_i].prefer||"")===prefer){ if(kid!=null && kmTicks[_i].ids.indexOf(kid)<0) kmTicks[_i].ids.push(kid); return; }
     }
-    kmTicks.push({m:m, prefer:prefer});
+    kmTicks.push({m:m, prefer:prefer, ids: kid!=null ? [kid] : []});
   }
   addKmTick(bas); addKmTick(bit);
   /* Üstüne başka kaplama binen (görünmeyen) kaplama ucu km yazısı almaz */
@@ -2471,12 +2471,12 @@ function drawIti(p, allowSearch){
       });
     });
   }
-  segs.forEach(function(s){
+  segs.forEach(function(s, si){
     if(_ortuluUc(s, s.b) && _ortuluUc(s, s.e)) return;
-    if(_ortuluUc(s, s.b)){ addKmTick(s.e, s.zincir); return; }
-    if(_ortuluUc(s, s.e)){ addKmTick(s.b, s.zincir); return; }
-    addKmTick(s.b, s.zincir);
-    addKmTick(s.e, s.zincir);
+    if(_ortuluUc(s, s.b)){ addKmTick(s.e, s.zincir, si); return; }
+    if(_ortuluUc(s, s.e)){ addKmTick(s.b, s.zincir, si); return; }
+    addKmTick(s.b, s.zincir, si);
+    addKmTick(s.e, s.zincir, si);
   });
   (p.yerlesimler||[]).forEach(function(y){addKmTick(typeof y.km==="number"?y.km:parseKm(y.km));});
   (p.ilSinirlari||[]).forEach(function(y){addKmTick(typeof y.km==="number"?y.km:parseKm(y.km));});
@@ -2574,6 +2574,7 @@ function drawIti(p, allowSearch){
   }
 
   var svg='<svg id="itiSvg" width="100%" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMinYMid meet" style="display:block;width:100%;height:auto">';
+  svg+='<defs><pattern id="itiTunelDesen" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(45)"><rect width="3" height="9" fill="#ffffff" fill-opacity="0.38"/></pattern></defs>';
   if(!window._itiCompact) svg+=ciziToplamSatiri(24); /* üst toplam özeti */
 
   /* Proje taraf yazıları */
@@ -2591,15 +2592,15 @@ function drawIti(p, allowSearch){
   var kmSameGap = kmFs + 10;   /* aynı satırda iki yazı arası en az x mesafesi */
   var kmLineGap = kmFs/2 + 5;  /* başka satırdaki yazının kılavuz çizgisine en az mesafe */
   var kmPlaceRaw = kmTicks.map(function(t){
-    return {m:t.m, xx:x(t.m, t.prefer||null), prefer:t.prefer||""};
+    return {m:t.m, xx:x(t.m, t.prefer||null), prefer:t.prefer||"", ids:t.ids||[]};
   });
   /* Aynı km + aynı x → tek etiket */
   var kmPlace=[];
   var seenPos={};
   kmPlaceRaw.forEach(function(t){
     var kmKey=t.m+"@"+Math.round(t.xx/4);
-    if(seenPos[kmKey]) return;
-    seenPos[kmKey]=1;
+    if(seenPos[kmKey]){ t.ids.forEach(function(i){ if(seenPos[kmKey].ids.indexOf(i)<0) seenPos[kmKey].ids.push(i); }); return; }
+    seenPos[kmKey]=t;
     kmPlace.push(t);
   });
   /* Satırlar arası dikey mesafe, en uzun km yazısı + boşluktan küçük olamaz → farklı satırdaki yazılar dikeyde de binmez */
@@ -2721,6 +2722,11 @@ function drawIti(p, allowSearch){
           try{ iconLayer.push(drawIconOnLane(cinsY, lx, cy, col, 26)); }catch(e){}
         } else {
           svg+='<rect x="'+x1+'" y="'+(y+1)+'" width="'+w+'" height="'+(h-2)+'" rx="3" fill="'+fillC+'" stroke="'+scol+'" stroke-width="0.25"><title>'+titleTxt+'</title></rect>';
+          if(cinsY==="tunel" || cinsY==="ackapa"){
+            /* v148: tünel / aç-kapa boyunca ayrı desen (renk yine durumu gösterir): taralı iç, iki uçta portal çizgisi */
+            svg+='<rect x="'+x1+'" y="'+(y+1)+'" width="'+w+'" height="'+(h-2)+'" rx="3" fill="url(#itiTunelDesen)" pointer-events="none"/>';
+            svg+='<rect x="'+(x1+1)+'" y="'+(y+2)+'" width="'+Math.max(w-2,1)+'" height="'+(h-4)+'" rx="3" fill="none" stroke="#ffffff" stroke-opacity="0.85" stroke-width="1.6" pointer-events="none"/>';
+          }
           var _kes=(s.sinif==="TY"?(s.tyTip||s.byTip):(s.byTip||s.tyTip))||"";
           if(!s.nokta && Math.abs((s.e||0)-(s.b||0))>0) svg+=drawLaneDividers(x1, w, y+1, h-2, laneDividerCount(s.sinif, _kes));
           if(w>14){
@@ -3106,7 +3112,7 @@ iconLayer.forEach(function(ic){ if(ic) svg+=ic; });
   });
   kmPlace.forEach(function(kp){
     var xx=kp.xx, yLab=yKmBase + kp.row*rowH;
-    svg+='<text class="km-lab" data-km="'+kp.m+'" data-zincir="'+(kp.prefer||'')+'" x="'+xx+'" y="'+yLab+'" text-anchor="middle" font-size="'+kmFs+'" fill="#111" font-weight="800" stroke="#ffffff" stroke-width="4" paint-order="stroke" transform="rotate(-90 '+xx+' '+yLab+')">'+fmtKm(kp.m)+'</text>';
+    svg+='<text class="km-lab" data-km="'+kp.m+'" data-zincir="'+(kp.prefer||'')+'" data-kayit="'+(kp.ids||[]).join(',')+'" x="'+xx+'" y="'+yLab+'" text-anchor="middle" font-size="'+kmFs+'" fill="#111" font-weight="800" stroke="#ffffff" stroke-width="4" paint-order="stroke" transform="rotate(-90 '+xx+' '+yLab+')">'+fmtKm(kp.m)+'</text>';
   });
 
   /* km kademesi + müsavat yazıları sonrası gerçek yükseklik */
@@ -3273,7 +3279,7 @@ function drawItiSekilli(p, allowSearch){
     var kmFsB=18, silinen={};
     var rot90 = !(o.taraf==="ust" && o.sk!=="+");
     var tx=o.tx, ty=o.ty, K=o.k;
-    var yeni=String(o.sv.inner).replace(/<text class="km-lab" data-km="(-?\d+)" data-zincir="([^"]*)" x="(-?[\d.]+)" y="(-?[\d.]+)"[^>]*>([^<]*)<\/text>/g, function(all, km, z, bx, by, txt){
+    var yeni=String(o.sv.inner).replace(/<text class="km-lab" data-km="(-?\d+)" data-zincir="([^"]*)"(?: data-kayit="[^"]*")? x="(-?[\d.]+)" y="(-?[\d.]+)"[^>]*>([^<]*)<\/text>/g, function(all, km, z, bx, by, txt){
       var len=txt.length*kmFsB*0.66+6;
       bx=parseFloat(bx); by=parseFloat(by);
       var X = rot90 ? (tx-K*by) : (tx+K*by);

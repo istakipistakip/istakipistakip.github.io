@@ -249,6 +249,7 @@ tr.t td{ font-weight:800; background:#fff7ed; color:#7c2d12; }
 .kmz-km-label{ background:#1f2937; color:#fff; padding:2px 6px; border-radius:4px; font-size:11px; font-weight:600; white-space:nowrap; border:none; box-shadow:0 1px 4px rgba(0,0,0,.35); }
 .kmz-km-label::before{ display:none; }
 .etiketsiz .kmz-km-label{ display:none; }
+.kmz-km-label.kmz-cakis{ visibility:hidden; }
 /* itinerer */
 .itiv{ position:fixed; inset:0; z-index:45; display:flex; flex-direction:column; background:#fff; max-width:900px; margin:0 auto; }
 .itiv .hatbar .lj{ flex:none; background:#fff7ed; color:#c2410c; border:none; border-radius:10px; padding:7px 10px; font-weight:800; font-size:12px; }
@@ -2272,8 +2273,16 @@ async function hatGoster(id, korun){
     sinir.push([n[0], n[1]]);
   });
   const el = document.getElementById("hatmap");
-  const etiketGuncelle = () => el.classList.toggle("etiketsiz", m.getZoom() < 13);   // v130: bir adım daha uzaktan açılır (çeyrek adım yakınlaştırma kaldırıldı)
-  m.on("zoomend", etiketGuncelle);
+  // v148: nokta yazıları üst üste binmez — başka bir yazıya çarpan yazı o an gizlenir, yakınlaşınca yer açıldıkça geri gelir
+  const cakisGizle = () => { try{
+    const T = [...el.querySelectorAll(".leaflet-tooltip.kmz-km-label")]; T.forEach(t => t.classList.remove("kmz-cakis"));
+    if(el.classList.contains("etiketsiz")) return;
+    const W = el.getBoundingClientRect(), tut = [];
+    T.forEach(t => { const r = t.getBoundingClientRect(); if(!r.width || r.right < W.left || r.left > W.right || r.bottom < W.top || r.top > W.bottom) return;
+      if(tut.some(q => r.left < q.right + 2 && r.right > q.left - 2 && r.top < q.bottom + 1 && r.bottom > q.top - 1)) t.classList.add("kmz-cakis"); else tut.push(r); });
+  }catch(_){} };
+  const etiketGuncelle = () => { el.classList.toggle("etiketsiz", m.getZoom() < 13); cakisGizle(); };   // v130: bir adım daha uzaktan açılır (çeyrek adım yakınlaştırma kaldırıldı)
+  m.on("zoomend", etiketGuncelle); m.on("moveend", cakisGizle);
   m.on("zoomend", () => { if(kat && kat.drone){ seritCiz(); droneNoktalar(); } });
   if(sinir.length) m.fitBounds(sinir, { padding: [30, 30], maxZoom: 16 }); else m.setView([40.7, 36.3], 8);
   etiketGuncelle();
@@ -2777,8 +2786,10 @@ function kmBirlestir9(kap, lab){
   // v146: zincirleme yok — yazı yalnız kümenin İLK yazısıyla gerçekten üst üste biniyorsa katılır; birleşen yazı aralığın ortasına konur,
   // her km'nin kendi kılavuz çizgisi yerinde kalır
   const kumeler = []; let k = [];
-  L.forEach(o => { const s = k[0]; if(s && o.x - s.x < (s.w + o.w) / 2) k.push(o); else { if(k.length) kumeler.push(k); k = [o]; } });
-  if(k.length) kumeler.push(k);
+  // v148: yalnız AYNI kaydın başı-sonu birleşir (kısa köprü, FSK); iki ayrı yapının ucu (T1 çıkışı – T2 girişi) ayrı yazı kalır, alt sıraya iner
+  const kid = t => { const a = t.getAttribute("data-kayit"); return a == null ? null : a.split(",").filter(Boolean); };
+  const ayniKayit = (a, b) => { const A = kid(a.t), B = kid(b.t); if(A == null && B == null) return true; return !!(A && B && A.some(i => B.includes(i))); };
+  L.forEach(o => { const c = kumeler.find(c => o.x - c[0].x < (c[0].w + o.w) / 2 && c.some(q => ayniKayit(q, o))); if(c) c.push(o); else kumeler.push([o]); });
   kumeler.forEach(k => { if(k.length < 2) return; k.sort((a, b) => a.v - b.v);
     const ilk = k.reduce((a, b) => a.x <= b.x ? a : b), z = ilk.t.getAttribute("data-zincir") || "";
     const xs = k.map(o => o.x), mx = (Math.min(...xs) + Math.max(...xs)) / 2, y = +ilk.t.getAttribute("y");
@@ -2797,13 +2808,16 @@ function kmSiraGrup9(kap, lab){
   const sat = [...new Set(lab.map(t => +t.getAttribute("y")))].sort((a, b) => a - b); if(sat.length < 2) return;
   // yazılar -90° döndürülmüş: yerel kutunun yüksekliği x yönündeki eni, genişliği y yönündeki boyu
   const L = lab.map(t => { const b = t.getBBox(); return { t, x: +t.getAttribute("x"), y: +t.getAttribute("y"), w: b.height, h: b.width }; }).sort((a, b) => a.x - b.x || a.y - b.y);
-  const yer = sat.map(() => []);
+  const yer = sat.map(() => []), hepsi = [];
+  // v148: başka sıradaki yazıyla da dikeyde en az 14 birim boşluk (uzun "a – b" yazısı alttaki/üstteki yazıyla bitişik okunmasın)
+  const bos = (y, o) => hepsi.every(p => Math.abs(p.x - o.x) >= (p.w + o.w) / 2 + 2 || Math.abs(p.y - y) >= (p.h + o.h) / 2 + 14);
   L.forEach(o => {
-    let r = sat.findIndex((y, i) => yer[i].every(p => Math.abs(p.x - o.x) >= (p.w + o.w) / 2 + 2));
-    if(r < 0){ // hiçbir sırada yer yok: en alttaki sıranın altına yeni sıra
-      const boy = Math.max(...L.map(q => q.h)) + 8;
-      sat.push(sat[sat.length - 1] + boy); yer.push([]); r = sat.length - 1; }
-    yer[r].push(o);
+    let r = sat.findIndex((y, i) => yer[i].every(p => Math.abs(p.x - o.x) >= (p.w + o.w) / 2 + 2) && bos(y, o));
+    if(r < 0){ // hiçbir sırada yer yok: en alttaki yazının altına yeni sıra
+      let ny = sat[sat.length - 1] + Math.max(...L.map(q => q.h)) + 8;
+      while(!bos(ny, o)) ny += 12;
+      sat.push(ny); yer.push([]); r = sat.length - 1; }
+    yer[r].push(o); hepsi.push({ ...o, y: sat[r] });
     const ny = sat[r]; if(ny === o.y) return;
     const fark = ny - o.y;
     o.t.setAttribute("y", ny); o.t.setAttribute("transform", `rotate(-90 ${o.x} ${ny})`);

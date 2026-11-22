@@ -802,6 +802,8 @@ html.dark .dn9b{ background:#2a1708; border-color:#9a3412; color:#fdba74; }
 .itd9b label{ display:block; font-size:12.5px; font-weight:700; color:#475569; margin:8px 0 4px; }
 .itd9b input, .itd9y input{ width:100%; height:42px; border:1px solid #d6dbe3; border-radius:10px; padding:0 10px; font:inherit; font-size:16px; background:#fff; color:#0f172a; }
 .itd9s > b{ display:block; font-size:14px; margin-bottom:6px; } .itd9uy{ font-style:normal; font-size:11px; font-weight:700; color:#b45309; background:#fef3c7; border-radius:6px; padding:1px 6px; margin-left:4px; } .itd9s > b small{ font-weight:600; color:#94a3b8; font-size:11.5px; }
+.kf9 .ok9{ display:block; width:100%; margin-top:16px; padding:14px; border:0; border-radius:12px; background:#ea580c; color:#fff; font:inherit; font-size:16px; font-weight:800; }
+.kf9 .ok9:active{ background:#c2410c; }
 .itd9rr{ display:flex; gap:5px; align-items:center; } .itd9rr .itd9r{ flex:1; }
 .itd9rk{ width:22px; height:22px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px #cbd5e1; padding:0; flex:0 0 22px; }
 .itd9rk.on{ box-shadow:0 0 0 2px #f97316; }
@@ -9499,6 +9501,7 @@ ${ilk && !yeni ? `<button type="button" class="itd9sil" data-itd9tumsil>Telefond
     const r = i === null ? { sinif: "BY", byTip: "2x2", tyTip: "", tur: "Köprü", altTur: "", konum: "HER", durum: "isyok", bas: P.bas, bit: P.bas, ad: "" } : { ...P.kayitlar[i] };
     const ch = (ad, liste, sec) => `<div class="ch">${liste.map(([v, t]) => `<button type="button" data-${ad}="${esc(v)}"${v === sec ? ' class="on"' : ""}>${esc(t)}</button>`).join("")}</div>`;
     const s = altSayfa(IK("iti"), i === null ? "Kayıt ekle" : "Kaydı düzenle", esc(j.ad), `<form class="kf9" id="itk9" autocomplete="off">
+${Array.isArray(P.yollar) && P.yollar.length > 1 ? `<label>Hangi yol</label>${ch("ky", P.yollar.map((q, k) => [q.id, (q.adi && !/^\s*-?\d+\+\d{3}\s*[-–]/.test(q.adi)) ? q.adi : "Yol " + (k + 1)]), r.yolId || P.yollar[0].id)}` : ""}
 <label>Sınıf</label>${ch("ks", [["BY", "BY"], ["TY", "TY"]], r.sinif)}
 <label>Tip</label><input id="itkT" value="${esc(r.sinif === "TY" ? r.tyTip || "" : r.byTip || "")}" placeholder="2x2, 2x1, Çift…">
 <label>Tür</label>${ch("kt", TURLER9.map(t => [t, t]), r.tur)}
@@ -9506,7 +9509,6 @@ ${ilk && !yeni ? `<button type="button" class="itd9sil" data-itd9tumsil>Telefond
 <label>Durum</label>${ch("kd", DURUM9, r.durum)}
 <div class="ik2"><div><label>Başlangıç km</label>${kmIn("itkB", r.bas)}</div><div><label>Bitiş km</label>${kmIn("itkE", r.bit)}</div></div>
 <label>Ad <small class="kk9">(isteğe bağlı, ör. köprü adı)</small></label><input id="itkA" value="${esc(r.ad || "")}">
-${Array.isArray(P.yollar) && P.yollar.length > 1 ? `<label>Hangi yol</label>${ch("ky", P.yollar.map((q, k) => [q.id, q.adi || "Yol " + (k + 1)]), r.yolId || P.yollar[0].id)}` : ""}
 <button class="ok9" type="submit">${i === null ? "Ekle" : "Kaydet"}</button>${i === null ? "" : `<button type="button" class="itd9sil" data-itksil>Kaydı sil</button>`}</form>`);
     const f = s.querySelector("#itk9");
     f.addEventListener("click", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
@@ -9545,7 +9547,8 @@ ${ana ? "" : `<label>Bağlantı şekli</label>${ch("ys", [["ayri", "Ayrı yerde 
     const goster = () => { const sk = (f.querySelector("[data-ys].on") || {}).dataset; const v = sk ? sk.ys : "ayri";
       const bg = f.querySelector("#ityBag"); if(bg) bg.style.display = v === "ayri" ? "none" : "";
       const dk = f.querySelector("#ityDk"); if(dk) dk.style.visibility = v === "T" || v === "+" ? "" : "hidden";
-      const kk = f.querySelector("#ityK"); if(kk) kk.parentNode.style.display = v === "devam" ? "none" : ""; };
+      const kk = f.querySelector("#ityK"); if(kk) kk.parentNode.style.display = v === "devam" ? "none" : "";
+      const ct = f.querySelector("[data-yt]"); if(ct){ const g = v === "+" || v === "T"; ct.parentNode.style.display = g ? "none" : ""; const lb = ct.parentNode.previousElementSibling; if(lb && lb.tagName === "LABEL") lb.style.display = g ? "none" : ""; } };
     f.addEventListener("click", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
       if(b.hasAttribute("data-ityoneri")){ O.forEach(o => { Object.entries(o.deg).forEach(([k, v]) => {
           if(k === "bas") f.querySelector("#ityB").value = mKm9(v); else if(k === "bit") f.querySelector("#ityE").value = mKm9(v);

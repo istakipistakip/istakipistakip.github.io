@@ -8928,6 +8928,11 @@ function ytOku9(){
 }
 async function ytYaz9(){ try{ await idbYaz9("yt9", YT9); }catch(_){ } }
 const ytProjeler9 = () => (YT9 && YT9.raw && YT9.raw.veriler) || {};
+// v147: Yol Takip'e elle "Bu yıl biten" girilmiş kayıtlar 2026 yapımıdır (Yol Takip artık kullanılmıyor);
+// 2027 ve sonrasında kendiliğinden "Önceki yıllar" sayılır, yeni yılın yapılanına katılmaz
+const YT_YIL9 = 2026;
+const ytDurum9 = r => (r && r.durum === "buyil" && !r._km9 && (+D.yil || new Date().getFullYear()) > YT_YIL9) ? "eski" : r.durum;
+const ytYil9 = r => r.durum === "buyil" ? YT_YIL9 : Math.min(YT_YIL9, (+D.yil || new Date().getFullYear())) - 1;
 function ytProje9(kod){
   if(!YT9) return null;
   if(YT9.duz && YT9.duz[kod]) return YT9.duz[kod];
@@ -8989,6 +8994,7 @@ function cizimProje9(kod){
   const p = ytProje9(kod); if(!p) return null;
   const j = ISLER.find(x => ytKodlar9(x).includes(kod));
   const q = JSON.parse(JSON.stringify(p));
+  (q.kayitlar || []).forEach(r => { r.durum = ytDurum9(r); });
   if(j){ itiUzat9(j, q, kod); q.kayitlar = (q.kayitlar || []).concat(kmKayitlar9(j, q)); }
   return q;
 }
@@ -9163,7 +9169,7 @@ function farklar9(j){
   if(koyYolu9(j)) return F;   // köy yolları KM toplamlarından çizilir, karşılaştırılacak aralık yok
   ytKodlar9(j).forEach(kod => {
     const p = ytProje9(kod); if(!p) return;
-    const el = (p.kayitlar || []).filter(r => YOLTUR9.has(r.tur) && (r.durum === "buyil" || r.durum === "eski") && !r._km9);
+    const el = (p.kayitlar || []).filter(r => YOLTUR9.has(r.tur) && (r.durum === "buyil" || r.durum === "eski") && !r._km9).map(r => ({ ...r, durum: ytDurum9(r) }));
     const km = tumKmIti9(j).filter(x => x.yil <= D.yil && !(x.e < p.bas - 1 || x.a > p.bit + 1));
     const ort = (a1, b1, a2, b2) => Math.max(0, Math.min(b1, b2) - Math.max(a1, a2));
     // itinererde biten, KM girişi yok
@@ -9545,7 +9551,7 @@ function itiKm9(j){
       if(r.yolId && ana && r.yolId !== ana) return;
       const a = +r.bas, e = +r.bit; if(!(e > a)) return;
       const yan = r.konum === "SOL" ? "sol" : r.konum === "SAG" ? "sağ" : "";
-      out.push({ a, e, yil: r.durum === "buyil" ? Y0 : Y0 - 1, k: { s: `${r.sinif === "TY" ? "TY" : "BY"}-${r.tur}`, y: yan ? 1 : 0, ac: yan, zc: r.zincir || "", _iti9: 1 } });
+      out.push({ a, e, yil: ytYil9(r), k: { s: `${r.sinif === "TY" ? "TY" : "BY"}-${r.tur}`, y: yan ? 1 : 0, ac: yan, zc: r.zincir || "", _iti9: 1 } });
     });
   });
   return out;

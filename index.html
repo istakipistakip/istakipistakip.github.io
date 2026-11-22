@@ -9206,6 +9206,18 @@ function itiKmzYol9(j, q){
         const p2 = pA.concat(pB), kum = bkKum9(p2, new Set()), Tt = kum[kum.length - 1], lo = Math.min(A.lo, B.lo), hi = Math.max(A.hi, B.hi), S = [];
         for(let i = 0; i <= 60; i++){ const c = Tt * i / 60; S.push({ c, m: lo + (hi - lo) * c / Tt }); }
         Y.splice(Math.max(a, b), 1); Y.splice(Math.min(a, b), 1, { h: { p: p2, kum, kop: new Set() }, ad: A.ad, lo, hi, ana: false, S }); birlesti = true; } } }catch(_){}
+  // v159: KMZ modelinde boşlukla (kop) zincirlenmiş uzak parçalar ayrı yol sayılır; km yazısı olmayan uzak parça atılır
+  try{ const Y2 = [];
+    Y.forEach(y => { const h = y.h, K = h.kum, n = h.p.length, kop = h.kop || new Set();
+      const kes = []; for(let i = 1; i < n; i++) if(kop.has(i) && mesafe6(h.p[i - 1], h.p[i]) > 150) kes.push(i);
+      if(!kes.length){ Y2.push(y); return; }
+      const sinir = [0].concat(kes, [n]), L = (h.L || []).map(x => x.c);
+      for(let k = 0; k < sinir.length - 1; k++){ const a = sinir[k], b = sinir[k + 1] - 1; if(b - a < 1) continue;
+        const c0 = K[a], c1 = K[b], son = k === sinir.length - 2; if(!L.some(c => c >= c0 - 0.5 && (son ? c <= c1 + 30 : c < c1 - 0.5))) continue;
+        const p2 = h.p.slice(a, b + 1), kum = bkKum9(p2, new Set()), Tt = kum[kum.length - 1], S = [];
+        for(let i = 0; i <= 40; i++){ const c = Tt * i / 40; let m = null, cc = c0 + c; for(let q = 1; q < y.S.length; q++) if(y.S[q].c >= cc){ const u = y.S[q - 1], v = y.S[q]; m = u.m + (v.m - u.m) * (cc - u.c) / ((v.c - u.c) || 1); break; } if(m == null) m = y.S[y.S.length - 1].m; S.push({ c, m }); }
+        const ms = S.map(z => z.m); Y2.push({ h: { p: p2, kum, kop: new Set(), L: (h.L || []).filter(x => x.c >= c0 - 30 && x.c <= c1 + 30).map(x => ({ ...x, c: x.c - c0 })) }, ad: y.ad, lo: Math.min(...ms), hi: Math.max(...ms), ana: y.ana && k === 0, S }); } });
+    Y = Y2; }catch(_){}
   if(Y.length < 2) return duz;
   const R10 = v => Math.round(v / 10) * 10;
   const kmAt = (y, c) => { const S = y.S; if(c <= S[0].c) return S[0].m; for(let i = 1; i < S.length; i++) if(S[i].c >= c){ const a = S[i - 1], b = S[i], t = (c - a.c) / ((b.c - a.c) || 1); return a.m + (b.m - a.m) * t; } return S[S.length - 1].m; };
@@ -9240,7 +9252,7 @@ function itiKmzYol9(j, q){
   // KMZ'deki rengi: kırmızı / siyah = bitmiş (yılı bilinmiyor → önceki yıllar, siyah), açık mavi = çalışılan, mavi = iş yok; beyaz orta çizgi → BY
   const renk = y => { const say = {}; let beyaz = 0;
     parcalar(y).forEach(([c0, c1]) => { for(let i = 0; i <= 12; i++){ const pt = kbNokta9(y.h, c0 + (c1 - c0) * i / 12);
-      (j.hat.cizgi || []).forEach(c => { if(!c.p || c.p.length < 2) return; let d = Infinity; for(let q = 0; q < c.p.length; q++){ const e = mesafe6(pt, c.p[q]); if(e < d) d = e; } if(d > 35) return;
+      (j.hat.cizgi || []).forEach(c => { if(!c.p || c.p.length < 2) return; if(!c._kum9) c._kum9 = bkKum9(c.p, null); const d = bkIz9(pt, c.p, c._kum9, null).d; if(d > 35) return;
         if(c.i){ beyaz++; return; } let hx = String(c.r || "").trim().replace(/^#/, ""); if(/^[0-9a-f]{3}$/i.test(hx)) hx = hx.split("").map(z => z + z).join(""); const m = /^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(hx); if(!m) return; const [r, g, b] = [1, 2, 3].map(k => parseInt(m[k], 16));
         const tur = (r > 150 && g < 110 && b < 110) || (r < 70 && g < 70 && b < 70) ? "eski" : (b > 150 && g > 140 && r < 160) ? "calisan" : (b > 120 && r < 110) ? "isyok" : null;
         if(tur) say[tur] = (say[tur] || 0) + 1; }); } });
@@ -9268,6 +9280,9 @@ function itiKmzYol9(j, q){
     const ad = I.map((x, k) => k).filter(k => k !== i && es[k] && (!I[k]._kmz9 || T(es[k]) > T(es[i]))).map(k => ({ k, d: yakin(es[i], es[k]).d })).filter(o => o.d < 120).sort((a, b) => a.d - b.d);
     if(ad.length) bag(i, ad[0].k); });
   if(duz.length){ if(tek){ I[0].adi = ""; } q.yollar = I; }
+  // teşhis (yalnız Karşılaştır ekranında görünür): programın KMZ'de gördüğü yollar — konum yok, sadece km / uzunluk / yazılar
+  try{ q._kmzTeshis9 = Y.map((y, k) => { const ix = es.indexOf(y); const L = (y.h.L || []).map(x => mKm9(Math.round(x.v * 1000))).join(", ");
+    return `KMZ yolu ${k + 1}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))} · ${f2(T(y) / 1000)} km · ${parcalar(y).length} parça · km yazıları: ${L || "yok"} → ${ix >= 0 ? "itinererde " + (I[ix].adi && !/^\s*-?\d+\+\d{3}\s*[-–]/.test(I[ix].adi) ? I[ix].adi : "Yol " + (ix + 1)) : "kullanılmadı"}`; }); }catch(_){}
   return duz;
 }
 // çizilecek proje: Yol Takip kaydı + KM girişleri (KM'ler her zaman üstte çizilir)
@@ -9472,7 +9487,8 @@ function farklar9(j){
       if(ust.every(r => r.durum !== dz)) F.push({ tip: "yil", kod, x, m: `${ad} · itinererde ${ust[0].durum === "buyil" ? "Bu yıl biten" : "Önceki yıllar"}` });
     });
   });
-  try{ ytKodlar9(j).forEach(kod => { const q = cizimProje9(kod); ((q && q._kmzDuz9) || []).forEach(t => F.push({ tip: "kmz", kod, m: t + " (itinerer çiziminde düzeltildi)" })); }); }catch(_){}
+  try{ ytKodlar9(j).forEach(kod => { const q = cizimProje9(kod); ((q && q._kmzDuz9) || []).forEach(t => F.push({ tip: "kmz", kod, m: t + " (itinerer çiziminde düzeltildi)" }));
+    ((q && q._kmzDuz9 && q._kmzDuz9.length && q._kmzTeshis9) || []).forEach(t => F.push({ tip: "kmz", kod, m: t })); }); }catch(_){}
   return F;
 }
 const FARKAD9 = { kmz: "KMZ'ye göre düzeltilen yol", yol: "Yol bağlantısı KMZ'den farklı", kmyok: "İtinererde biten, KM girişi yok", itiyok: "KM girişi var, Yol Takip'te çizili değil", std: "Standart farkı", taraf: "Taraf farkı", taraf0: "Yarısı · taraf belirtilmemiş", yil: "Yıl farkı" };

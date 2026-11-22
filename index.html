@@ -802,6 +802,11 @@ html.dark .dn9b{ background:#2a1708; border-color:#9a3412; color:#fdba74; }
 .itd9b label{ display:block; font-size:12.5px; font-weight:700; color:#475569; margin:8px 0 4px; }
 .itd9b input, .itd9y input{ width:100%; height:42px; border:1px solid #d6dbe3; border-radius:10px; padding:0 10px; font:inherit; font-size:16px; background:#fff; color:#0f172a; }
 .itd9s > b{ display:block; font-size:14px; margin-bottom:6px; } .itd9uy{ font-style:normal; font-size:11px; font-weight:700; color:#b45309; background:#fef3c7; border-radius:6px; padding:1px 6px; margin-left:4px; } .itd9s > b small{ font-weight:600; color:#94a3b8; font-size:11.5px; }
+.itd9rr{ display:flex; gap:5px; align-items:center; } .itd9rr .itd9r{ flex:1; }
+.itd9rk{ width:22px; height:22px; border-radius:50%; border:2px solid #fff; box-shadow:0 0 0 1px #cbd5e1; padding:0; flex:0 0 22px; }
+.itd9rk.on{ box-shadow:0 0 0 2px #f97316; }
+.ch [data-kd="eski"].on{ background:#1a1a1a!important; color:#fff!important; } .ch [data-kd="buyil"].on{ background:#c41e3a!important; color:#fff!important; }
+.ch [data-kd="isyok"].on{ background:#2980b9!important; color:#fff!important; } .ch [data-kd="calisan"].on{ background:#e67e22!important; color:#fff!important; } .ch [data-kd="hedef"].on{ background:#27ae60!important; color:#fff!important; }
 .itd9r{ display:flex; width:100%; align-items:center; gap:8px; text-align:left; background:none; border:0; border-top:1px solid #f1f5f9; padding:9px 2px; font:inherit; color:inherit; }
 .itd9r span{ flex:1; min-width:0; } .itd9r b{ display:block; font-size:13.5px; } .itd9r small{ display:block; font-size:12px; color:#64748b; }
 .itd9ok{ font-style:normal; font-size:20px; color:#94a3b8; }
@@ -9330,9 +9335,9 @@ async function itiMenu9(){
   const t = YT9 ? `${esc(YT9.ad || "yol_veri.json")}${YT9.tarih ? " · " + esc(String(YT9.tarih).slice(0, 10).split("-").reverse().join(".")) : ""}` : "Henüz yüklenmedi";
   const ov = altSayfa(IK("iti"), "İtinerer", "Yol Takip verisi yalnız bu telefonda saklanır", `<div class="exm9">
 <button data-it9="yukle"><b>Yol Takip Verisi Yükle</b><small>${t}</small></button>
-<button data-it9="kars"${YT9 ? "" : " disabled"}><b>İtinerer – KM Karşılaştır</b><small>KM girişleriyle itinerer arasındaki farklar, iş iş</small></button></div>
+</div>
 <p class="not" style="margin:10px 2px 0;font-size:12.5px;color:#64748b">Biten kesimler KM girişlerinden boyanır. İtinereri oluşturmak / düzenlemek için işin İtinerer düğmesini kullanın. Diğer telefonlar güncel çizimleri Veri Aktar → "Diğer telefonlar için" dosyasıyla alır.</p>`);
-  ov.addEventListener("click", e => { const b = e.target.closest("[data-it9]"); if(!b || b.disabled) return; kapatAlt(); b.dataset.it9 === "yukle" ? ytYukle9() : karsilastir9(); });
+  ov.addEventListener("click", e => { const b = e.target.closest("[data-it9]"); if(!b || b.disabled) return; kapatAlt(); if(b.dataset.it9 === "yukle") ytYukle9(); });
 }
 document.addEventListener("click", e => { if(e.target.closest("[data-dz9iti]")){ e.stopPropagation(); hazir9.then(itiMenu9); } }, true);
 
@@ -9468,6 +9473,12 @@ async function itiDuzenle9(j, kod){
       const host = $("#itd9oi"); if(!host.shadowRoot) host.attachShadow({ mode: "open" });
       host.shadowRoot.innerHTML = `<style>${String(s.css || "").replace(/:root/g, ":host")} :host{display:block}.iti-wrap{border:none!important;margin:0!important;padding:0!important;overflow:visible!important}.iti-wrap svg{display:block;max-width:none!important;height:200px!important;width:auto!important}</style>${o && !o.hata ? o.html : `<p style="padding:12px;color:#b91c1c">${esc(o ? o.hata : "çizilemedi")}</p>`}`;
       try{ itiDuzelt9(host.shadowRoot, j); }catch(_){}
+      if(!host._tik9){ host._tik9 = 1; host.shadowRoot.addEventListener("click", ev => { // çizimde bir parçaya / yapıya dokununca o kayıt açılır
+        let el = ev.target, tt = null; for(let k = 0; k < 4 && el && !tt; k++, el = el.parentNode){ const t = el.querySelector && el.querySelector(":scope > title"); if(t) tt = t.textContent; }
+        if(!tt) return; const m = /(-?\d+\+\d{3})\s*[–-]\s*(-?\d+\+\d{3})/.exec(tt); if(!m) return;
+        const a = kmM9(m[1]), e2 = kmM9(m[2]), ad = tt.split("·")[0].trim();
+        const i = P.kayitlar.findIndex(r => Math.abs(+r.bas - a) <= 1 && Math.abs(+r.bit - e2) <= 1 && (ad.startsWith(r.ad || "\u0000") || ad.startsWith(r.tur)));
+        if(i >= 0) kayitForm(i); else bildir("Bu parça KM girişinden geliyor — KM girişlerinden değiştirin"); }); }
     }catch(e){ $("#itd9oi").textContent = e.message || "Önizleme yok"; }
   }, 350); };
   const kmIn = (id, v) => `<input id="${id}" inputmode="numeric" value="${esc(v === null || v === undefined || v === "" ? "" : mKm9(v))}" placeholder="12+500">`;
@@ -9476,9 +9487,9 @@ async function itiDuzenle9(j, kod){
 <div class="ik2"><div><label>Başlangıç km</label>${kmIn("itpB", P.bas)}</div><div><label>Bitiş km</label>${kmIn("itpE", P.bit)}</div></div>
 <div class="ik2"><div><label>Başlangıç istikameti</label><input id="itpIB" value="${esc(P.istikametBas || "")}" placeholder="ör. batı"></div><div><label>Bitiş istikameti</label><input id="itpIE" value="${esc(P.istikametBit || "")}" placeholder="ör. doğu"></div></div></div>
 ${oneri ? `<div class="itd9not">KMZ'den önerildi: başlangıç / bitiş, km eşitlikleri ve adı yapı olan noktalar. Yapıların km'leri yaklaşıktır (en yakın KM etiketlerinden); kontrol edin, istemediğinizi silin.</div>` : ""}
-${Array.isArray(P.yollar) && P.yollar.length > 1 ? (() => { const O = yolOn(); return `<div class="itd9s"><b>Yollar <small>(birleşik itinerer)</small></b>${O.length ? `<div class="itd9not">KMZ'ye göre ${O.length} farklılık var. Yola dokunup "KMZ'ye göre doldur" diyebilirsiniz.</div>` : ""}${P.yollar.map((y, i) => { const o = O.filter(x => x.i === i);
-  return `<button type="button" class="itd9r" data-itd9yol="${i}"><span><b>${esc(y.adi || y.id || "Yol " + (i + 1))}${i ? " · " + esc(SEKIL9[y.sekil] || "Ayrı") : " · Ana yol"}${o.length ? ' <em class="itd9uy">KMZ farkı</em>' : ""}</b><small>${mKm9(y.bas)} – ${mKm9(y.bit)}${i && y.sekil && y.sekil !== "ayri" ? ` · ${esc(yolAd9(P, y.bagliYolId))} ${mKm9(y.kavsakKm)}${(y.sekil === "T" || y.sekil === "+") ? " × bu yol " + (y.dalKm == null ? "–" : mKm9(y.dalKm)) : ""}` : ""}</small></span><i class="itd9ok">›</i></button>`; }).join("")}</div>`; })() : ""}
-<div class="itd9s"><b>Kayıtlar <small>(biten yol kesimleri KM girişlerinden gelir)</small></b>${P.kayitlar.map((r, i) => `<button type="button" class="itd9r" data-itd9r="${i}"><span><b>${esc(r.sinif)} · ${esc(r.tur)}${r.ad ? " · " + esc(r.ad) : ""}</b><small>${mKm9(r.bas)} – ${mKm9(r.bit)} · ${esc((KONUM9.find(x => x[0] === r.konum) || [0, r.konum])[1])} · ${esc((DURUM9.find(x => x[0] === r.durum) || [0, r.durum])[1])}</small></span><i class="itd9ok">›</i></button>`).join("") || '<p class="gbos">Kayıt yok</p>'}
+${(() => { const O = Array.isArray(P.yollar) && P.yollar.length > 1 ? yolOn() : []; const YL = Array.isArray(P.yollar) && P.yollar.length ? P.yollar : [{ id: "Y1", adi: P.adi ? "" : "", bas: P.bas, bit: P.bit, sekil: "ana" }]; return `<div class="itd9s"><b>Yollar</b>${O.length ? `<div class="itd9not">KMZ'ye göre ${O.length} farklılık var. Yola dokunup "KMZ'ye göre doldur" diyebilirsiniz.</div>` : ""}${YL.map((y, i) => { const o = O.filter(x => x.i === i);
+  return `<button type="button" class="itd9r" data-itd9yol="${i}"><span><b>${esc(y.adi || y.id || "Yol " + (i + 1))}${i ? " · " + esc(SEKIL9[y.sekil] || "Ayrı") : " · Ana yol"}${o.length ? ' <em class="itd9uy">KMZ farkı</em>' : ""}</b><small>${mKm9(y.bas)} – ${mKm9(y.bit)}${i && y.sekil && y.sekil !== "ayri" ? ` · ${esc(yolAd9(P, y.bagliYolId))} ${mKm9(y.kavsakKm)}${(y.sekil === "T" || y.sekil === "+") ? " → bu yol " + (y.dalKm == null ? "–" : mKm9(y.dalKm)) : ""}` : ""}${y.yolTipi ? " · " + esc(y.yolTipi) : ""}${y.kalinlik ? " · " + ({ ince: "ince", kalin: "kalın" })[y.kalinlik] : ""}</small></span><i class="itd9ok">›</i></button>`; }).join("")}<button type="button" class="btn ikinci" data-itd9yolekle>＋ Yol ekle</button></div>`; })()}
+<div class="itd9s"><b>Kayıtlar <small>(renge dokunarak değiştirin; çizimde bir parçaya dokununca da açılır)</small></b>${P.kayitlar.map((r, i) => `<div class="itd9rr"><button type="button" class="itd9r" data-itd9r="${i}"><span><b>${esc(r.sinif)} · ${esc(r.tur)}${r.ad ? " · " + esc(r.ad) : ""}</b><small>${mKm9(r.bas)} – ${mKm9(r.bit)} · ${esc((KONUM9.find(x => x[0] === r.konum) || [0, r.konum])[1])} · ${esc((DURUM9.find(x => x[0] === r.durum) || [0, r.durum])[1])}${Array.isArray(P.yollar) && P.yollar.length > 1 ? " · " + esc(yolAd9(P, r.yolId || P.yollar[0].id)) : ""}</small></span></button>${[["eski", "#1a1a1a"], ["buyil", "#c41e3a"], ["isyok", "#2980b9"]].map(([d, c]) => `<button type="button" class="itd9rk${r.durum === d ? " on" : ""}" data-itd9renk="${i}:${d}" style="background:${c}" aria-label="${esc((DURUM9.find(x => x[0] === d) || [0, d])[1])}"></button>`).join("")}</div>`).join("") || '<p class="gbos">Kayıt yok</p>'}
 <button type="button" class="btn ikinci" data-itd9ekle>＋ Kayıt ekle</button></div>
 <div class="itd9s"><b>Km eşitlikleri <small>(İleri = Geri)</small></b>${(P.musavat || []).map((m, i) => `<div class="itd9y"><input data-itd9m="${i}:ileri" inputmode="numeric" value="${esc(m.ileri || "")}" placeholder="İleri"><input data-itd9m="${i}:geri" inputmode="numeric" value="${esc(m.geri || "")}" placeholder="Geri"><button type="button" data-itd9msil="${i}" aria-label="Sil">✕</button></div>`).join("")}<button type="button" class="btn ikinci" data-itd9mekle>＋ Ekle</button></div>
 ${["yerlesimler:Yerleşimler", "ilSinirlari:İl sınırları"].map(x => { const [k, ad] = x.split(":"); return `<div class="itd9s"><b>${ad}</b>${(P[k] || []).map((y, i) => `<div class="itd9y"><input data-itd9y="${k}:${i}:ad" value="${esc(y.ad || "")}" placeholder="Ad"><input data-itd9y="${k}:${i}:km" inputmode="numeric" value="${esc(y.km === undefined ? "" : mKm9(y.km))}" placeholder="km"><button type="button" data-itd9ysil="${k}:${i}" aria-label="Sil">✕</button></div>`).join("")}<button type="button" class="btn ikinci" data-itd9yekle="${k}">＋ Ekle</button></div>`; }).join("")}
@@ -9495,11 +9506,12 @@ ${ilk && !yeni ? `<button type="button" class="itd9sil" data-itd9tumsil>Telefond
 <label>Durum</label>${ch("kd", DURUM9, r.durum)}
 <div class="ik2"><div><label>Başlangıç km</label>${kmIn("itkB", r.bas)}</div><div><label>Bitiş km</label>${kmIn("itkE", r.bit)}</div></div>
 <label>Ad <small class="kk9">(isteğe bağlı, ör. köprü adı)</small></label><input id="itkA" value="${esc(r.ad || "")}">
+${Array.isArray(P.yollar) && P.yollar.length > 1 ? `<label>Hangi yol</label>${ch("ky", P.yollar.map((q, k) => [q.id, q.adi || "Yol " + (k + 1)]), r.yolId || P.yollar[0].id)}` : ""}
 <button class="ok9" type="submit">${i === null ? "Ekle" : "Kaydet"}</button>${i === null ? "" : `<button type="button" class="itd9sil" data-itksil>Kaydı sil</button>`}</form>`);
     const f = s.querySelector("#itk9");
     f.addEventListener("click", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
       if(b.hasAttribute("data-itksil")){ P.kayitlar.splice(i, 1); degisti = true; kapatAlt(); ciz(); onizle(); return; }
-      ["ks", "kt", "kk", "kd"].forEach(a => { if(b.dataset[a] !== undefined){ b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); } }); });
+      ["ks", "kt", "kk", "kd", "ky"].forEach(a => { if(b.dataset[a] !== undefined){ b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); } }); });
     ["#itkB", "#itkE"].forEach(q => f.querySelector(q).addEventListener("input", e => kmBicim9(e.target)));
     f.addEventListener("submit", e => { e.preventDefault();
       const sec = a => (f.querySelector(`[data-${a}].on`) || {}).dataset;
@@ -9507,34 +9519,47 @@ ${ilk && !yeni ? `<button type="button" class="itd9sil" data-itd9tumsil>Telefond
       if(b === null){ bildir("Başlangıç km'sini yazın"); return; }
       const tip = f.querySelector("#itkT").value.trim();
       const yeniR = { ...r, sinif, byTip: sinif === "BY" ? tip : "", tyTip: sinif === "TY" ? tip : "", tur: sec("kt").kt, konum: sec("kk").kk, durum: sec("kd").kd, bas: Math.min(b, en === null ? b : en), bit: Math.max(b, en === null ? b : en), ad: f.querySelector("#itkA").value.trim() };
+      { const ky = sec("ky"); if(ky && ky.ky) yeniR.yolId = ky.ky; }
       if(i === null) P.kayitlar.push(yeniR); else P.kayitlar[i] = yeniR;
       P.kayitlar.sort((x, y) => x.bas - y.bas);
       degisti = true; kapatAlt(); ciz(); onizle(); });
   };
+  const yolHazir = () => { if(!Array.isArray(P.yollar) || !P.yollar.length) P.yollar = [{ id: "Y1", adi: "Yol 1", bas: P.bas, bit: P.bit, sekil: "ana" }]; };
   const yolForm = i => {
-    const y = { ...P.yollar[i] }, ana = i === 0, O = yolOn().filter(x => x.i === i);
+    yolHazir();
+    const y = { ...P.yollar[i] }, ana = i === 0, O = P.yollar.length > 1 ? yolOn().filter(x => x.i === i) : [];
     const ch = (ad, liste, sec) => `<div class="ch">${liste.map(([v, t]) => `<button type="button" data-${ad}="${esc(v)}"${v === sec ? ' class="on"' : ""}>${esc(t)}</button>`).join("")}</div>`;
     const digerler = P.yollar.map((q, k) => ({ q, k })).filter(o => o.k !== i);
     const s = altSayfa(IK("iti"), esc(y.adi || y.id || "Yol"), esc(j.ad), `<form class="kf9" id="ity9" autocomplete="off">
 ${O.length ? `<div class="itd9not"><b>KMZ'ye göre:</b><br>${O.map(o => esc(o.m)).join("<br>")}<button type="button" class="btn ikinci" data-ityoneri style="margin-top:8px;width:100%">KMZ'ye göre doldur</button></div>` : ""}
 <label>Yol adı</label><input id="ityA" value="${esc(y.adi || "")}">
 <div class="ik2"><div><label>Başlangıç km</label>${kmIn("ityB", y.bas)}</div><div><label>Bitiş km</label>${kmIn("ityE", y.bit)}</div></div>
-${ana ? "" : `<label>Bağlantı şekli</label>${ch("ys", [["ayri", "Ayrı"], ["L", "L"], ["T", "T"], ["+", "+ (kesişim)"]], y.sekil || "ayri")}
+<label>Yol tipi</label>${ch("yy", [["", "Kayıtlara göre"], ["BY", "BY (bölünmüş)"], ["TY", "TY (tek yol)"]], y.yolTipi || "")}
+<label>Boyalı alan kalınlığı</label>${ch("yk", [["ince", "İnce"], ["", "Normal"], ["kalin", "Kalın"]], y.kalinlik || "")}
+${ana ? "" : `<label>Bağlantı şekli</label>${ch("ys", [["ayri", "Ayrı yerde (altta çizilir)"], ["devam", "Devam (ucundan)"], ["L", "L"], ["T", "T"], ["+", "+ (kesişim)"]], y.devam ? "devam" : (y.sekil || "ayri"))}
 <div id="ityBag">${digerler.length > 1 ? `<label>Hangi yola bağlı</label>${ch("yb", digerler.map(o => [o.q.id, o.q.adi || o.q.id]), y.bagliYolId || P.yollar[0].id)}` : ""}
 <div class="ik2"><div><label>Bağlandığı yolda km</label>${kmIn("ityK", y.kavsakKm)}</div><div id="ityDk"><label>Bu yolda km <small class="kk9">(T / +)</small></label>${kmIn("ityD", y.dalKm)}</div></div>
 <label>Çizimde</label>${ch("yt", [["alt", "Altına"], ["ust", "Üstüne"]], y.taraf === "ust" ? "ust" : "alt")}</div>`}
-<button class="ok9" type="submit">Kaydet</button></form>`);
+<button class="ok9" type="submit">Kaydet</button>${ana ? "" : `<button type="button" class="itd9sil" data-itysil>Yolu sil</button>`}</form>`);
     const f = s.querySelector("#ity9");
     const goster = () => { const sk = (f.querySelector("[data-ys].on") || {}).dataset; const v = sk ? sk.ys : "ayri";
       const bg = f.querySelector("#ityBag"); if(bg) bg.style.display = v === "ayri" ? "none" : "";
-      const dk = f.querySelector("#ityDk"); if(dk) dk.style.visibility = v === "T" || v === "+" ? "" : "hidden"; };
+      const dk = f.querySelector("#ityDk"); if(dk) dk.style.visibility = v === "T" || v === "+" ? "" : "hidden";
+      const kk = f.querySelector("#ityK"); if(kk) kk.parentNode.style.display = v === "devam" ? "none" : ""; };
     f.addEventListener("click", e => { const b = e.target.closest("button[type=button]"); if(!b) return;
       if(b.hasAttribute("data-ityoneri")){ O.forEach(o => { Object.entries(o.deg).forEach(([k, v]) => {
           if(k === "bas") f.querySelector("#ityB").value = mKm9(v); else if(k === "bit") f.querySelector("#ityE").value = mKm9(v);
           else if(k === "kavsakKm") f.querySelector("#ityK").value = mKm9(v); else if(k === "dalKm"){ f.querySelector("#ityD").value = v == null ? "" : mKm9(v); }
           else if(k === "sekil") f.querySelectorAll("[data-ys]").forEach(x => x.classList.toggle("on", x.dataset.ys === v)); }); });
         goster(); bildir("KMZ değerleri yazıldı — kontrol edip kaydedin"); return; }
-      ["ys", "yb", "yt"].forEach(a => { if(b.dataset[a] !== undefined) b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); });
+      if(b.hasAttribute("data-itysil")){ (async () => {
+          const n = P.kayitlar.filter(r => r.yolId === y.id).length, bagli = P.yollar.filter(q => q.bagliYolId === y.id && q.sekil !== "ayri");
+          const ok = await onay9("Yol silinsin mi?", `${esc(y.adi || y.id)}${n ? ` · bu yoldaki ${n} kayıt da silinir` : ""}${bagli.length ? ` · ${bagli.length} yol buna bağlıydı, ayrı yerde kalır` : ""}`, [{ t: "Vazgeç", v: false }, { t: "Sil", v: true, ana: 1, tehlike: 1 }]); if(!ok) return;
+          P.kayitlar = P.kayitlar.filter(r => r.yolId !== y.id); bagli.forEach(q => { q.sekil = "ayri"; q.kavsakKm = null; q.dalKm = null; q.bagliYolId = null; });
+          P.yollar.splice(i, 1); if(P.yollar.length === 1){ P.yollar[0].sekil = "ana"; }
+          P.bas = Math.min(...P.yollar.map(q => +q.bas)); P.bit = Math.max(...P.yollar.map(q => +q.bit));
+          degisti = true; kapatAlt(); ciz(); onizle(); })(); return; }
+      ["ys", "yb", "yt", "yy", "yk"].forEach(a => { if(b.dataset[a] !== undefined) b.parentNode.querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b)); });
       goster(); });
     f.querySelectorAll("#ityB,#ityE,#ityK,#ityD").forEach(x => x.addEventListener("input", e => kmBicim9(e.target)));
     goster();
@@ -9542,12 +9567,16 @@ ${ana ? "" : `<label>Bağlantı şekli</label>${ch("ys", [["ayri", "Ayrı"], ["L
       const b0 = kmM9(f.querySelector("#ityB").value), e0 = kmM9(f.querySelector("#ityE").value);
       if(b0 === null || e0 === null || !(e0 > b0)){ bildir("Başlangıç ve bitiş km'sini doğru yazın"); return; }
       const n = { ...y, adi: f.querySelector("#ityA").value.trim() || y.adi, bas: b0, bit: e0 };
+      { const sec = a => (f.querySelector(`[data-${a}].on`) || {}).dataset || {}; n.yolTipi = sec("yy").yy || null; n.kalinlik = sec("yk").yk || null; if(!n.yolTipi) delete n.yolTipi; if(!n.kalinlik) delete n.kalinlik; }
       if(!ana){
         const sec = a => (f.querySelector(`[data-${a}].on`) || {}).dataset || {};
         n.sekil = sec("ys").ys || "ayri";
-        if(n.sekil === "ayri"){ n.kavsakKm = null; n.dalKm = null; }
+        if(n.sekil === "devam"){ // seçilen yolun ucundan devam: o yolun bitişinden L olarak çıkar
+          n.bagliYolId = sec("yb").yb || y.bagliYolId || P.yollar[0].id; const hed = P.yollar.find(q => q.id === n.bagliYolId) || P.yollar[0];
+          n.sekil = "L"; n.kavsakKm = +hed.bit; n.dalKm = null; n.taraf = sec("yt").yt === "ust" ? "ust" : "alt"; n.devam = 1; }
+        else if(n.sekil === "ayri"){ n.kavsakKm = null; n.dalKm = null; n.bagliYolId = null; delete n.devam; }
         else {
-          n.bagliYolId = sec("yb").yb || y.bagliYolId || P.yollar[0].id;
+          delete n.devam; n.bagliYolId = sec("yb").yb || y.bagliYolId || P.yollar[0].id;
           const hed = P.yollar.find(q => q.id === n.bagliYolId) || P.yollar[0];
           const k = kmM9(f.querySelector("#ityK").value);
           if(k === null){ bildir("Bağlandığı yoldaki km'yi yazın"); return; }
@@ -9584,6 +9613,9 @@ ${ana ? "" : `<label>Bağlantı şekli</label>${ch("ys", [["ayri", "Ayrı"], ["L
     if(b.hasAttribute("data-itd9kapat")){ kapat(); return; }
     if(b.dataset.itd9r !== undefined){ kayitForm(+b.dataset.itd9r); return; }
     if(b.dataset.itd9yol !== undefined){ yolForm(+b.dataset.itd9yol); return; }
+    if(b.hasAttribute("data-itd9yolekle")){ yolHazir(); let k = P.yollar.length + 1; while(P.yollar.some(q => q.id === "Y" + k)) k++;
+      P.yollar.push({ id: "Y" + k, adi: "Yol " + (P.yollar.length + 1), bas: 0, bit: 1000, sekil: "ayri" }); degisti = true; ciz(); yolForm(P.yollar.length - 1); return; }
+    if(b.dataset.itd9renk){ const [i, d] = b.dataset.itd9renk.split(":"); P.kayitlar[+i].durum = d; degisti = true; ciz(); onizle(); return; }
     if(b.hasAttribute("data-itd9ekle")){ kayitForm(null); return; }
     if(b.hasAttribute("data-itd9mekle")){ P.musavat.push({ ileri: "", geri: "", aciklama: "" }); degisti = true; ciz(); return; }
     if(b.dataset.itd9msil){ P.musavat.splice(+b.dataset.itd9msil, 1); degisti = true; ciz(); onizle(); return; }
@@ -10009,7 +10041,9 @@ function itiBag9(svg){
       if(tg === "circle"){ dai = o; break; }
     }
     if(!dai) return;
-    const cx = +dai.getAttribute("cx"), cy = +dai.getAttribute("cy");
+    // daire bir grubun içindeyse (alt alta yol grupları) merkez kök koordinata çevrilir — kök svg'ye taşınınca yerinde kalır
+    let cx = +dai.getAttribute("cx"), cy = +dai.getAttribute("cy");
+    try{ const m = ki.multiply(dai.getCTM()), q = new DOMPoint(cx, cy).matrixTransform(m); if(dai.parentNode !== svg){ cx = q.x; cy = q.y; dai.setAttribute("cx", cx.toFixed(1)); dai.setAttribute("cy", cy.toFixed(1)); dai.removeAttribute("transform"); } }catch(_){}
     t.removeAttribute("transform");
     const b0 = t.getBBox(), w = b0.width, h = b0.height, asc = (+t.getAttribute("y")) - b0.y;
     // aday yerler: dikeyde r, yatayda dx uzaklık; yakından uzağa
@@ -10165,7 +10199,7 @@ function itiOne9(svg){
 }
 
 // ---------- v107: itinerer yolları (birleşik itinerer) — KMZ'ye göre öneri ----------
-const SEKIL9 = { ayri: "Ayrı", L: "L bağlantı", T: "T bağlantı", "+": "+ kesişim", ana: "Ana yol" };
+const SEKIL9 = { ayri: "Ayrı yerde", L: "L bağlantı", T: "T bağlantı", "+": "+ kesişim", ana: "Ana yol" };
 function yolAd9(P, id){ const y = (P.yollar || []).find(q => q.id === id) || (P.yollar || [])[0]; return y ? (y.adi || y.id) : "1. yol"; }
 function kbNokta9(h, c){
   const K = h.kum, P = h.p, n = K.length; if(c <= 0) return P[0]; if(c >= K[n - 1]) return P[n - 1];

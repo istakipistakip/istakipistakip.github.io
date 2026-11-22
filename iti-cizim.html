@@ -3253,9 +3253,7 @@ function drawItiSekilli(p, allowSearch){
   window._itiCompact=true;
   try{
     dallar.forEach(function(d){
-      /* dalın bağlantı km'si yalnız ana yolun ucundan geçen dalda kendi şeridinde yazılır (kesişmede ana yolun üstüne düşer) */
-      var _ic=(d.dalKm!=null && d.dalKm>(d.bas||0)+1 && d.dalKm<(d.bit||0)-1), _anaUc=(d.kavsakKm!=null && (Math.abs(d.kavsakKm-ana.bas)<=1 || Math.abs(d.kavsakKm-ana.bit)<=1));
-      window._itiEkKm = (d.sekil==="T" && _ic && _anaUc) ? [d.dalKm] : [];
+      window._itiEkKm = (d.dalKm!=null && d.sekil!=="L") ? [d.dalKm] : [];
       /* v156: dal başından ana yola değiyorsa başındaki "Proje başı" ve km yazısı ana yoldan biraz uzakta */
       window._itiDalUcOff = (d.sekil==="L" || (d.sekil==="T" && !(d.dalKm!=null && d.dalKm>(d.bas||0)+1 && d.dalKm<(d.bit||0)-1))) ? 22 : 0;
       var hh;
@@ -3470,7 +3468,7 @@ function drawItiSekilli(p, allowSearch){
     var _bl=(barLeft!=null)?barLeft:(tx-bandH0*K), _br=(barRight!=null)?barRight:(tx+bandH0*K);
     if(_bl<minLeft) minLeft=_bl;
     if(_br>maxRight) maxRight=_br;
-    if(sk==="+" || kesMod || taraf!=="ust"){ var bot=ty + sv.w*K + 12; if(bot>botMax) botMax=bot; }
+    if(sk!=="+" && taraf!=="ust"){ var bot=ty + sv.w*K + 12; if(bot>botMax) botMax=bot; }
   });
 
   /* ---- Yakın dalları ayır: çubuklar üst üste binmesin ---- */
@@ -3642,48 +3640,7 @@ function drawItiSekilli(p, allowSearch){
   return '<div class="iti-wrap" id="itiWrapMain" title="Tıklayınca tam ekran (büyüt)">'+svg+sMain.leg+'</div>';
 }
 
-/* v157: birbirine bağlı olmayan yol grupları (her grup: bir ana yol + ona bağlı kol yolları) alt alta;
-   ör. İskilip-Laçin bağlantı yolu + Çorum girişindeki FSK kesimi */
-function yolBilesenleri(p){
-  var ys=getYollar(p); if(!ys || ys.length<2) return null;
-  var kok={}; ys.forEach(function(y){ kok[y.id]=y; });
-  var bul=function(y){ var g=0; while(y && (y.sekil==="L"||y.sekil==="T"||y.sekil==="+") && kok[y.bagliYolId] && kok[y.bagliYolId]!==y && g++<20) y=kok[y.bagliYolId]; return y; };
-  var B=[], idx={};
-  ys.forEach(function(y){ var r=bul(y); if(idx[r.id]==null){ idx[r.id]=B.length; B.push({kok:r, dal:[]}); } if(y!==r) B[idx[r.id]].dal.push(y); });
-  return B;
-}
-function drawItiBilesen(p, allowSearch){
-  var B=yolBilesenleri(p); if(!B || B.length<2 || !B.some(function(b){ return b.dal.length; })) return null;
-  var ys=getYollar(p), ana0=ys[0].id;
-  var kay=(p.kayitlar||[]).map(function(k){ return k.yolId ? k : Object.assign({}, k, {yolId: ana0}); });
-  var parts=[], _prevC=window._itiCompact;
-  window._itiCompact=true;
-  try{
-    B.forEach(function(b){
-      var yl=[Object.assign({}, b.kok, {sekil:"ana"})].concat(b.dal.map(function(d){ return Object.assign({}, d, {bagliYolId: b.kok.id}); }));
-      var p2=Object.assign({}, p, {yollar: yl, kayitlar: kay, bas: b.kok.bas, bit: b.kok.bit, _kok: p._kok||p});
-      var hh = b.dal.length ? drawItiSekilli(p2, false) : drawIti(yolPseudoProje(p2, getYollar(p2)[0]), false);
-      var sv=_itiSvgAyir(hh); if(sv) parts.push({b:b, sv:sv});
-    });
-  }finally{ window._itiCompact=_prevC; }
-  if(parts.length<2) return null;
-  var gap=24, labelH=0, maxW=0, totalH=0; /* gruplar arasında ince çizgi; her grubun başı/sonu kendi Proje başı/sonu yazısında */
-  parts.forEach(function(pt){ maxW=Math.max(maxW, pt.sv.w||400); totalH+=labelH+(pt.sv.h||300); });
-  totalH+=gap*(parts.length-1)+4;
-  var svg='<svg id="itiSvg" width="100%" viewBox="0 0 '+maxW+' '+totalH+'" preserveAspectRatio="xMinYMin meet" style="display:block;width:100%;height:auto">', yOff=0;
-  parts.forEach(function(pt, i){
-    if(i>0) svg+='<line x1="0" y1="'+(yOff-gap/2)+'" x2="'+maxW+'" y2="'+(yOff-gap/2)+'" stroke="#c5d0dc" stroke-width="1"/>';
-    svg+='<g class="iti-grup" transform="translate(0,'+(yOff+labelH)+')">'+pt.sv.inner+'</g>';
-    yOff+=labelH+(pt.sv.h||300)+gap;
-  });
-  svg+='</svg>';
-  return '<div class="iti-wrap" id="itiWrapMain" title="Tıklayınca tam ekran (büyüt)">'+svg+(parts[0].sv.leg||"")+'</div>';
-}
 function drawItiAkilli(p, allowSearch){
-  try{
-    var hb=drawItiBilesen(p, allowSearch);
-    if(hb) return hb;
-  }catch(e){}
   try{
     if(p && Array.isArray(p.yollar) && p.yollar.length>1 && yolSekilliDallar(p).length){
       var h=drawItiSekilli(p, allowSearch);

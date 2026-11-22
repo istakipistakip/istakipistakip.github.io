@@ -8825,17 +8825,9 @@ function bkModel9(j){
   belirsiz.forEach(({ n, yak }) => {
     let sec = null, en = 1e9;
     yak.forEach(x => { const t = icAra(x.h.L, x.c); if(t !== null && Math.abs(t - n.v) < en){ en = Math.abs(t - n.v); sec = x; } });
-    if(!sec || en > 0.3){ // v157: km'si bir hattın sırasına hiç uymuyorsa (ör. 0+200, 173+400'lü devlet yolunda) o hat elenir
-      const uy = yak.filter(x => { const t = icAra(x.h.L, x.c); return t === null || Math.abs(t - n.v) <= 0.3; });
-      sec = (uy.length === 1 ? uy[0] : null) || yak.find(x => x.h.yol) || yak[0]; }
+    if(!sec || en > 0.3) sec = yak.find(x => x.h.yol) || yak[0];
     sec.h.L.push({ c: sec.c, v: n.v, pb: PBBAS.test(n.q[2] || "") }); sec.h.et.push(n.q);
   });
-  // v157: bir hattın km sırasına hiç uymayan yazı (ör. kesişen kolun 0+200'ü, 173+400'lü devlet yolunda) 60 m içindeki başka hatta geçer
-  hatlar.forEach(h => { if(h.L.length < 3) return;
-    h.L.slice().forEach(x => { const dig = h.L.filter(y => y !== x), t = icAra(dig, x.c); if(t === null || Math.abs(t - x.v) <= 1) return;
-      const i = h.L.indexOf(x), q = h.et[i], n = kmN.find(z => z.q === q); if(!n) return;
-      const al = hatlar.filter(g => g !== h).map(g => { const r = izd(g, n.p); return { g, d: r.d, c: cBul(g, r) }; }).filter(o => o.d < 60).sort((a, b) => a.d - b.d)[0];
-      if(!al) return; h.L.splice(i, 1); h.et.splice(i, 1); al.g.L.push({ c: al.c, v: x.v, pb: x.pb }); al.g.et.push(q); }); });
   esN.filter(e => !PBRX.test(e.q[2] || "")).forEach(e => { const ds = hatlar.map(h => { const r = izd(h, e.p); return { h, d: r.d, c: cBul(h, r) }; }).sort((a, b) => a.d - b.d);
     if(ds.length && ds[0].d < 300) ds[0].h.E.push({ c: ds[0].c, g: e.g, i: e.i }); });
   // ---- yön: küçük km'den büyüğe (eşitlikler hesaba katılarak); kolda KM yoksa kavşaktan başlar
@@ -9170,128 +9162,13 @@ function kmKayitlar9(j, p){
   });
   return out;
 }
-// v157: KMZ ↔ itinerer karşılıklı kontrol (yalnız yol geometrisi): KMZ'de olup itinererde olmayan yol eklenir, yanlış bağlantı
-// (şekil / km) KMZ'ye göre düzeltilir. Kayıtların rengi / km'si, KM girişleri ve toplamlar DEĞİŞMEZ. Kayıtlı veri değişmez — çizimde uygulanır.
-function itiKmzYol9(j, q){
-  const duz = [];
-  if(!j || !j.hat || !q) return duz;
-  let Y = []; try{ Y = kbYollar9(j).filter(y => y.h && y.h.kum && y.S && y.S.length > 1); }catch(_){ return duz; }
-  // tek km yazılı kol: km o yazıdan uzunlukla ilerler (model kolu km artacak yönde çevirmiştir)
-  try{ const M = bkModel9(j); if(M) [M.ana].concat(M.kollar).forEach(h => { if(!h || h.kmF || !h.L || h.L.length !== 1 || !h.p || h.p.length < 2 || Y.some(y => y.h === h)) return;
-    if(!h.kum) h.kum = bkKum9(h.p, h.kop); const Tt = h.kum[h.kum.length - 1], x = h.L[0], S = [];
-    for(let i = 0; i <= 40; i++){ const c = Tt * i / 40; S.push({ c, m: x.v * 1000 + (c - x.c) }); }
-    const ms = S.map(z => z.m); Y.push({ h, ad: h.ad || "Yol", lo: Math.min(...ms), hi: Math.max(...ms), ana: false, S }); }); }catch(_){}
-  // km yazısı olmayan kısa kol, km'li bir kolun ucundan devam ediyorsa (kesişmenin öbür yarısı) o kolu uzatır: km uçtan uzunlukla devam eder
-  try{ const M = bkModel9(j); if(M) M.kollar.forEach(h => { if(!h || (h.L && h.L.length) || !h.p || h.p.length < 2) return;
-      if(!h.kum) h.kum = bkKum9(h.p, h.kop); const Th = h.kum[h.kum.length - 1]; if(Th < 20) return;
-      let en = null;
-      Y.forEach(y => { if(y.ana) return; const yp = y.h.p, ilk = yp[0], son = yp[yp.length - 1], artan = y.S[y.S.length - 1].m >= y.S[0].m;
-        [[h.p[0], 0], [h.p[h.p.length - 1], 1]].forEach(([u, ui]) => [[ilk, 0], [son, 1]].forEach(([v, vi]) => { const d = mesafe6(u, v); if(d < 90 && (!en || d < en.d)) en = { d, y, ui, vi, artan }; })); });
-      if(!en) return;
-      const y = en.y, dusukUc = (en.vi === 0) === en.artan;          // dokunulan uç yolun küçük km'li ucu mu?
-      const hp = en.ui === 0 ? h.p.slice().reverse() : h.p.slice();   // kolun dokunan ucu sonda
-      const yp = y.h.p.slice(), p2 = en.vi === 0 ? hp.concat(yp) : yp.concat(hp.slice().reverse());
-      const lo = dusukUc ? Math.max(0, y.lo - Th - en.d) : y.lo, hi = dusukUc ? y.hi : y.hi + Th + en.d;
-      const kum = bkKum9(p2, new Set()), Tt = kum[kum.length - 1], ilkKm = (en.vi === 0) ? (dusukUc ? lo : hi) : (dusukUc ? hi : lo), sonKm = (en.vi === 0) ? (dusukUc ? hi : lo) : (dusukUc ? lo : hi), S = [];
-      for(let i = 0; i <= 60; i++){ const c = Tt * i / 60; S.push({ c, m: ilkKm + (sonKm - ilkKm) * c / Tt }); }
-      Y[Y.indexOf(y)] = { h: { p: p2, kum, kop: new Set(), L: y.h.L }, ad: y.ad, lo, hi, ana: false, S }; }); }catch(_){}
-  // bir yolu kesen kolun iki yarısı (kesişmenin iki yanı) km'leri ardışıksa tek yol sayılır
-  try{ let birlesti = true;
-    while(birlesti){ birlesti = false;
-      for(let a = 0; a < Y.length && !birlesti; a++) for(let b = 0; b < Y.length && !birlesti; b++){ if(a === b || Y[a].ana || Y[b].ana) continue;
-        const A = Y[a], B = Y[b]; if(Math.abs(A.hi - B.lo) > 130) continue;
-        const ucA = A.S[A.S.length - 1].m >= A.S[0].m ? A.h.p[A.h.p.length - 1] : A.h.p[0], basB = B.S[0].m <= B.S[B.S.length - 1].m ? B.h.p[0] : B.h.p[B.h.p.length - 1];
-        if(mesafe6(ucA, basB) > 90) continue;
-        const pA = A.S[A.S.length - 1].m >= A.S[0].m ? A.h.p : A.h.p.slice().reverse(), pB = B.S[0].m <= B.S[B.S.length - 1].m ? B.h.p : B.h.p.slice().reverse();
-        const p2 = pA.concat(pB), kum = bkKum9(p2, new Set()), Tt = kum[kum.length - 1], lo = Math.min(A.lo, B.lo), hi = Math.max(A.hi, B.hi), S = [];
-        for(let i = 0; i <= 60; i++){ const c = Tt * i / 60; S.push({ c, m: lo + (hi - lo) * c / Tt }); }
-        Y.splice(Math.max(a, b), 1); Y.splice(Math.min(a, b), 1, { h: { p: p2, kum, kop: new Set() }, ad: A.ad, lo, hi, ana: false, S }); birlesti = true; } } }catch(_){}
-  // v159: KMZ modelinde boşlukla (kop) zincirlenmiş uzak parçalar ayrı yol sayılır; km yazısı olmayan uzak parça atılır
-  try{ const Y2 = [];
-    Y.forEach(y => { const h = y.h, K = h.kum, n = h.p.length, kop = h.kop || new Set();
-      const kes = []; for(let i = 1; i < n; i++) if(kop.has(i) && mesafe6(h.p[i - 1], h.p[i]) > 150) kes.push(i);
-      if(!kes.length){ Y2.push(y); return; }
-      const sinir = [0].concat(kes, [n]), L = (h.L || []).map(x => x.c);
-      for(let k = 0; k < sinir.length - 1; k++){ const a = sinir[k], b = sinir[k + 1] - 1; if(b - a < 1) continue;
-        const c0 = K[a], c1 = K[b], son = k === sinir.length - 2; if(!L.some(c => c >= c0 - 0.5 && (son ? c <= c1 + 30 : c < c1 - 0.5))) continue;
-        const p2 = h.p.slice(a, b + 1), kum = bkKum9(p2, new Set()), Tt = kum[kum.length - 1], S = [];
-        for(let i = 0; i <= 40; i++){ const c = Tt * i / 40; let m = null, cc = c0 + c; for(let q = 1; q < y.S.length; q++) if(y.S[q].c >= cc){ const u = y.S[q - 1], v = y.S[q]; m = u.m + (v.m - u.m) * (cc - u.c) / ((v.c - u.c) || 1); break; } if(m == null) m = y.S[y.S.length - 1].m; S.push({ c, m }); }
-        const ms = S.map(z => z.m); Y2.push({ h: { p: p2, kum, kop: new Set(), L: (h.L || []).filter(x => x.c >= c0 - 30 && x.c <= c1 + 30).map(x => ({ ...x, c: x.c - c0 })) }, ad: y.ad, lo: Math.min(...ms), hi: Math.max(...ms), ana: y.ana && k === 0, S }); } });
-    Y = Y2; }catch(_){}
-  if(Y.length < 2) return duz;
-  const R10 = v => Math.round(v / 10) * 10;
-  const kmAt = (y, c) => { const S = y.S; if(c <= S[0].c) return S[0].m; for(let i = 1; i < S.length; i++) if(S[i].c >= c){ const a = S[i - 1], b = S[i], t = (c - a.c) / ((b.c - a.c) || 1); return a.m + (b.m - a.m) * t; } return S[S.length - 1].m; };
-  const T = y => y.h.kum[y.h.kum.length - 1];
-  const iz = (y, pt) => bkIz9(pt, y.h.p, y.h.kum, y.h.kop);
-  // v158: yolun gerçek parçaları — boşlukla (kop) zincirlenmiş, üstünde km yazısı olmayan uzak parçalar bağlantı aramasında sayılmaz
-  const parcalar = y => { if(y._pr) return y._pr; const h = y.h, K = h.kum, n = h.p.length, kop = h.kop || new Set(), P = []; let a = 0;
-    for(let i = 1; i <= n; i++){ if(i === n || kop.has(i)){ if(i - 1 > a) P.push([K[a], K[i - 1]]); a = i; } }
-    const L = (h.L || []).map(x => x.c), dolu = P.filter(([c0, c1]) => !L.length || L.some(c => c >= c0 - 30 && c <= c1 + 30));
-    return (y._pr = dolu.length ? dolu : P); };
-  const icPar = (y, c) => parcalar(y).some(([c0, c1]) => c >= c0 - 1 && c <= c1 + 1);
-  const yakin = (a, b) => { let en = { d: Infinity }; parcalar(a).forEach(([c0, c1]) => { const n = Math.max(8, Math.ceil((c1 - c0) / 25));
-    for(let i = 0; i <= n; i++){ const c = c0 + (c1 - c0) * i / n, pt = kbNokta9(a.h, c), r = iz(b, pt); if(r.c < -1 || r.c > T(b) + 1 || !icPar(b, r.c)) continue; if(r.d < en.d) en = { d: r.d, ca: c, cb: r.c }; } }); return en; };
-  const icinde = (a, b) => { const n = 20, Ta = T(a); let k = 0; for(let i = 0; i <= n; i++) if(iz(b, kbNokta9(a.h, Ta * i / n)).d < 40) k++; return k / (n + 1); };
-  const ort = (a, lo, hi) => Math.max(0, Math.min(a.bit, hi) - Math.max(a.bas, lo)) / Math.max(1, Math.min(a.bit - a.bas, hi - lo));
-  const tek = !(Array.isArray(q.yollar) && q.yollar.length);
-  const I = tek ? [{ id: "Y1", adi: "", bas: +q.bas, bit: +q.bit, sekil: "ana" }] : q.yollar.map(y => ({ ...y }));
-  const es = new Array(I.length).fill(null), kul = new Set();
-  // 1) eşleştirme: ana yol en çok örtüşen KMZ yolu; diğerleri km'si örtüşen ve bağlı olduğu yola en yakın KMZ yolu
-  { let en = null; Y.forEach(y => { const o = ort(I[0], y.lo, y.hi) + (y.ana ? .01 : 0); if(o >= .5 && (!en || o > en.o)) en = { y, o }; }); if(en){ es[0] = en.y; kul.add(en.y); } }
-  I.forEach((r, i) => { if(i === 0) return;
-    const pi = Math.max(0, I.findIndex(x => x.id === (r.bagliYolId || I[0].id))), py = es[pi];
-    const ad = Y.filter(y => !kul.has(y) && ort(r, y.lo, y.hi) >= .5);
-    if(!ad.length) return;
-    const sec = py ? ad.map(y => ({ y, d: yakin(y, py).d })).sort((a, b) => a.d - b.d)[0].y : ad.sort((a, b) => ort(r, b.lo, b.hi) - ort(r, a.lo, a.hi))[0];
-    es[i] = sec; kul.add(sec); });
-  if(!es[0]) return duz;
-  // 2) KMZ'de olup itinererde olmayan yollar (ana yolun üstünde kalan tekrar parçaları hariç)
-  const yeni = Y.filter(y => !kul.has(y) && (y.hi - y.lo) >= 100 && T(y) >= 120 && ![...kul].some(u => icinde(y, u) >= .7)).sort((a, b) => T(b) - T(a));
-  const genel = /^(ana yol|kol|yol)\b/i;
-  yeni.forEach(y => { if(Math.abs(y.lo) < 25) y.lo = 0; });
-  // KMZ'deki rengi: kırmızı / siyah = bitmiş (yılı bilinmiyor → önceki yıllar, siyah), açık mavi = çalışılan, mavi = iş yok; beyaz orta çizgi → BY
-  const renk = y => { const say = {}; let beyaz = 0;
-    parcalar(y).forEach(([c0, c1]) => { for(let i = 0; i <= 12; i++){ const pt = kbNokta9(y.h, c0 + (c1 - c0) * i / 12);
-      (j.hat.cizgi || []).forEach(c => { if(!c.p || c.p.length < 2) return; if(!c._kum9) c._kum9 = bkKum9(c.p, null); const d = bkIz9(pt, c.p, c._kum9, null).d; if(d > 35) return;
-        if(c.i){ beyaz++; return; } let hx = String(c.r || "").trim().replace(/^#/, ""); if(/^[0-9a-f]{3}$/i.test(hx)) hx = hx.split("").map(z => z + z).join(""); const m = /^([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(hx); if(!m) return; const [r, g, b] = [1, 2, 3].map(k => parseInt(m[k], 16));
-        const tur = (r > 150 && g < 110 && b < 110) || (r < 70 && g < 70 && b < 70) ? "eski" : (b > 150 && g > 140 && r < 160) ? "calisan" : (b > 120 && r < 110) ? "isyok" : null;
-        if(tur) say[tur] = (say[tur] || 0) + 1; }); } });
-    const dz = Object.keys(say).sort((a, b) => say[b] - say[a])[0] || "isyok"; return { dz, by: beyaz > 3 }; };
-  yeni.forEach((y, n) => { const id = "K" + (n + 1), ad = (y.ad && !genel.test(y.ad)) ? y.ad : "";
-    I.push({ id, adi: ad, bas: Math.round(y.lo), bit: Math.round(y.hi), sekil: "ayri", _kmz9: 1 }); es.push(y); kul.add(y);
-    const rk = renk(y); (q.kayitlar = q.kayitlar || []).push(rk.by
-      ? { sinif: "BY", byTip: "2x2", tyTip: "", tur: "BSK", altTur: "", konum: "HER", durum: rk.dz, bas: Math.round(y.lo), bit: Math.round(y.hi), ad: "", yolId: id, _kmz9: 1 }
-      : { sinif: "TY", byTip: "", tyTip: "2x1", tur: "BSK", altTur: "", konum: "TY", durum: rk.dz, bas: Math.round(y.lo), bit: Math.round(y.hi), ad: "", yolId: id, _kmz9: 1 });
-    duz.push(`KMZ'de olan yol eklendi: ${ad || "Yol " + I.length} ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))}`); });
-  // 3) bağlantılar: her kol / yeni yol, değdiği (≤120 m) yola KMZ'deki yerinden bağlanır
-  const bag = (i, pi) => { const D = es[i], P = es[pi]; if(!D || !P) return false; const k = yakin(D, P); if(!(k.d < 120)) return false;
-    const r = I[i], kD = kmAt(D, k.ca), kP = kmAt(P, k.cb), lo = Math.min(r.bas, r.bit), hi = Math.max(r.bas, r.bit), p0 = I[pi];
-    const dalUc = Math.abs(kD - lo) < 50 || Math.abs(kD - hi) < 50, kavUc = Math.abs(kP - p0.bas) < 50 || Math.abs(kP - p0.bit) < 50;
-    const sk = dalUc ? "L" : (kavUc ? "T" : "+");
-    const kav = kavUc ? (Math.abs(kP - p0.bas) < 50 ? +p0.bas : +p0.bit) : R10(kP), dal = dalUc ? null : R10(kD);
-    const eski = `${r.sekil || "ayri"}|${r.kavsakKm ?? ""}|${r.dalKm ?? ""}|${r.bagliYolId || ""}`;
-    r.sekil = sk; r.kavsakKm = kav; r.dalKm = dal; r.bagliYolId = p0.id;
-    const adY = (x, k) => (x.adi && !/^\s*-?\d+\+\d{3}\s*[-–]\s*-?\d+\+\d{3}\s*$/.test(x.adi)) ? x.adi : "Yol " + (k + 1);
-    if(!r._kmz9 && eski !== `${sk}|${kav}|${dal ?? ""}|${p0.id}`) duz.push(`${adY(r, i)} bağlantısı KMZ'ye göre: ${adY(p0, pi)} ${mKm9(kav)}${dal != null ? " ↔ " + mKm9(dal) : ""} (${sk === "+" ? "kesişme" : sk})`);
-    return true; };
-  I.forEach((r, i) => { if(i === 0 || !es[i]) return;
-    if(!r._kmz9){ const pi = Math.max(0, I.findIndex(x => x.id === (r.bagliYolId || I[0].id))); bag(i, pi); return; }
-    // yeni yol: önce itinererdeki yollara, sonra kendinden uzun yeni yollara
-    const ad = I.map((x, k) => k).filter(k => k !== i && es[k] && (!I[k]._kmz9 || T(es[k]) > T(es[i]))).map(k => ({ k, d: yakin(es[i], es[k]).d })).filter(o => o.d < 120).sort((a, b) => a.d - b.d);
-    if(ad.length) bag(i, ad[0].k); });
-  if(duz.length){ if(tek){ I[0].adi = ""; } q.yollar = I; }
-  // teşhis (yalnız Karşılaştır ekranında görünür): programın KMZ'de gördüğü yollar — konum yok, sadece km / uzunluk / yazılar
-  try{ q._kmzTeshis9 = Y.map((y, k) => { const ix = es.indexOf(y); const L = (y.h.L || []).map(x => mKm9(Math.round(x.v * 1000))).join(", ");
-    return `KMZ yolu ${k + 1}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))} · ${f2(T(y) / 1000)} km · ${parcalar(y).length} parça · km yazıları: ${L || "yok"} → ${ix >= 0 ? "itinererde " + (I[ix].adi && !/^\s*-?\d+\+\d{3}\s*[-–]/.test(I[ix].adi) ? I[ix].adi : "Yol " + (ix + 1)) : "kullanılmadı"}`; }); }catch(_){}
-  return duz;
-}
 // çizilecek proje: Yol Takip kaydı + KM girişleri (KM'ler her zaman üstte çizilir)
 function cizimProje9(kod){
   const p = ytProje9(kod); if(!p) return null;
   const j = ISLER.find(x => ytKodlar9(x).includes(kod));
   const q = JSON.parse(JSON.stringify(p));
   (q.kayitlar || []).forEach(r => { r.durum = ytDurum9(r); });
-  if(j){ itiUzat9(j, q, kod); try{ q._kmzDuz9 = itiKmzYol9(j, q); }catch(_){} q.kayitlar = (q.kayitlar || []).concat(kmKayitlar9(j, q)); }
+  if(j){ itiUzat9(j, q, kod); q.kayitlar = (q.kayitlar || []).concat(kmKayitlar9(j, q)); }
   return q;
 }
 // Yol Takip'te olmayan (telefonda oluşturulan) itinererler: KMZ'de proje başı / sonu yoksa
@@ -9487,11 +9364,11 @@ function farklar9(j){
       if(ust.every(r => r.durum !== dz)) F.push({ tip: "yil", kod, x, m: `${ad} · itinererde ${ust[0].durum === "buyil" ? "Bu yıl biten" : "Önceki yıllar"}` });
     });
   });
-  try{ ytKodlar9(j).forEach(kod => { const q = cizimProje9(kod); ((q && q._kmzDuz9) || []).forEach(t => F.push({ tip: "kmz", kod, m: t + " (itinerer çiziminde düzeltildi)" }));
-    ((q && q._kmzDuz9 && q._kmzDuz9.length && q._kmzTeshis9) || []).forEach(t => F.push({ tip: "kmz", kod, m: t })); }); }catch(_){}
+  try{ ytKodlar9(j).forEach(kod => { const p = ytProje9(kod); if(!p || !Array.isArray(p.yollar) || p.yollar.length < 2) return;
+    kmzYolOneri9(j, p).forEach(o => o.satir.forEach(t => F.push({ tip: "yol", kod, m: t }))); }); }catch(_){}
   return F;
 }
-const FARKAD9 = { kmz: "KMZ'ye göre düzeltilen yol", yol: "Yol bağlantısı KMZ'den farklı", kmyok: "İtinererde biten, KM girişi yok", itiyok: "KM girişi var, Yol Takip'te çizili değil", std: "Standart farkı", taraf: "Taraf farkı", taraf0: "Yarısı · taraf belirtilmemiş", yil: "Yıl farkı" };
+const FARKAD9 = { yol: "Yol bağlantısı KMZ'den farklı", kmyok: "İtinererde biten, KM girişi yok", itiyok: "KM girişi var, Yol Takip'te çizili değil", std: "Standart farkı", taraf: "Taraf farkı", taraf0: "Yarısı · taraf belirtilmemiş", yil: "Yıl farkı" };
 async function karsilastir9(){
   await ytOku9(); if(!YT9){ bildir("Önce Yol Takip verisini yükleyin"); return; }
   try{ await agirHazir(); }catch(_){}
@@ -10132,9 +10009,7 @@ function itiBag9(svg){
       if(tg === "circle"){ dai = o; break; }
     }
     if(!dai) return;
-    // v158: daire bir grubun içindeyse (alt alta yol grupları) merkez kök koordinata çevrilir — kök svg'ye taşınınca yerinde kalır
-    let cx = +dai.getAttribute("cx"), cy = +dai.getAttribute("cy");
-    try{ const m = ki.multiply(dai.getCTM()), q = new DOMPoint(cx, cy).matrixTransform(m); if(dai.parentNode !== svg){ cx = q.x; cy = q.y; dai.setAttribute("cx", cx.toFixed(1)); dai.setAttribute("cy", cy.toFixed(1)); dai.removeAttribute("transform"); } }catch(_){}
+    const cx = +dai.getAttribute("cx"), cy = +dai.getAttribute("cy");
     t.removeAttribute("transform");
     const b0 = t.getBBox(), w = b0.width, h = b0.height, asc = (+t.getAttribute("y")) - b0.y;
     // aday yerler: dikeyde r, yatayda dx uzaklık; yakından uzağa

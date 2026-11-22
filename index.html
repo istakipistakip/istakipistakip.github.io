@@ -2759,7 +2759,32 @@ function kmSira9(svg, ters){
   svg.querySelectorAll("text.km-lab").forEach(t => { const g = t.parentNode; (gruplar.get(g) || gruplar.set(g, []).get(g)).push(t); });
   gruplar.forEach((lab, kap) => kmSiraGrup9(kap, lab));
 }
+// v144: aynı yere yığılan km yazıları sadeleşir — proje başı / sonu km'si "Proje başı" yazısına katılır,
+// birbirine değecek kadar yakın km yazıları (kısa yapı başı-sonu, KM girişi sınırı) tek "a – b" yazısı olur
+function kmBirlestir9(kap, lab){
+  const kmDeg = t => { const m = /^(\d+)\+(\d{3})$/.exec(t.textContent.trim()); return m ? +m[1] * 1000 + +m[2] : null; };
+  const sil = t => { const km = t.getAttribute("data-km"), z = t.getAttribute("data-zincir") || "";
+    if(km != null) kap.querySelectorAll(`line.km-ld[data-km="${km}"]`).forEach(l => { if((l.getAttribute("data-zincir") || "") === z) l.remove(); });
+    t.remove(); };
+  // proje başı / sonu
+  const proje = [...kap.children].filter(t => t.tagName === "text" && /^Proje\s+(başı|sonu)$/i.test(t.textContent.trim()));
+  proje.forEach(P => { try{ const sv = P.ownerSVGElement, m = sv.getCTM().inverse().multiply(P.getCTM()); if(Math.abs(m.b) <= Math.abs(m.a)) return; }catch(_){ return; }   // yalnız ekranda dik duran (yatay yolun) proje başı / sonu
+    const px = +P.getAttribute("x"); let en = null;
+    lab.forEach(t => { if(!t.isConnected) return; const d = Math.abs(+t.getAttribute("x") - px); if(d <= 3 && (!en || d < en.d)) en = { t, d }; });
+    if(!en) return; P.textContent = P.textContent.trim() + " " + en.t.textContent.trim(); sil(en.t); });
+  // yakın km yazıları
+  const L = lab.filter(t => t.isConnected && kmDeg(t) != null).map(t => { let w = 12; try{ w = t.getBBox().height || 12; }catch(_){} return { t, x: +t.getAttribute("x"), w, v: kmDeg(t) }; }).sort((a, b) => a.x - b.x);
+  const kumeler = []; let k = [];
+  L.forEach(o => { const s = k[k.length - 1]; if(s && o.x - s.x < (s.w + o.w) / 2 + 2) k.push(o); else { if(k.length) kumeler.push(k); k = [o]; } });
+  if(k.length) kumeler.push(k);
+  kumeler.forEach(k => { if(k.length < 2) return; k.sort((a, b) => a.v - b.v);
+    const ilk = k.reduce((a, b) => a.x <= b.x ? a : b);
+    ilk.t.textContent = `${k[0].t.textContent.trim()} – ${k[k.length - 1].t.textContent.trim()}`;
+    k.forEach(o => { if(o !== ilk) sil(o.t); }); });
+  return lab.filter(t => t.isConnected);
+}
 function kmSiraGrup9(kap, lab){
+  try{ lab = kmBirlestir9(kap, lab); }catch(_){}
   if(lab.length < 2) return;
   const sat = [...new Set(lab.map(t => +t.getAttribute("y")))].sort((a, b) => a - b); if(sat.length < 2) return;
   // yazılar -90° döndürülmüş: yerel kutunun yüksekliği x yönündeki eni, genişliği y yönündeki boyu
@@ -2794,7 +2819,7 @@ function itiSvgDuzelt9(svg){
   const T = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && !t.closest("[display=none]") && !t.hasAttribute("data-yolbas9") && !t.closest("[data-bas9]") && t.textContent.trim()).map(t => {
     const b = kutu(t); if(!b) return null; const s = t.textContent.trim();
     const sabit = /^-?\d+\+\d{3}$/.test(s) || /^(SOL|SAĞ|BY|TY|HER)$/i.test(s) || b.y2 < vb.y + 34 || !!t.closest("[data-bas9]") || t.hasAttribute("data-bag9") || t.hasAttribute("data-serit9");
-    const agirlik = /bağlantı/i.test(s) ? 3 : /^proje (başı|sonu)$/i.test(s) ? 2 : 1;
+    const agirlik = /bağlantı/i.test(s) ? 3 : /^proje (başı|sonu)( \d+\+\d{3})?$/i.test(s) ? 2 : 1;
     return { t, s, b, o: { ...b }, dx: 0, dy: 0, sabit, agirlik, dik: (b.y2 - b.y1) > (b.x2 - b.x1) * 1.4 };
   }).filter(Boolean);
   const yolY = [...svg.querySelectorAll("rect")].map(r => kutu(r)).filter(b => b && (b.x2 - b.x1) > vb.width * .4);
@@ -2819,7 +2844,8 @@ function itiSvgDuzelt9(svg){
       else { m = (a.b.x1 + a.b.x2) >= (c.b.x1 + c.b.x2) ? a : c; o = m === a ? c : a; }
       // yolun üstündeki yazı yukarı, altındaki aşağı kayar (kat kat dizilir)
       const dx = 0, yukari = (m.b.y1 + m.b.y2) / 2 < orta;
-      let dy = yukari ? -(m.b.y2 - o.b.y1 + 3) : (o.b.y2 - m.b.y1 + 3);
+      const ara = m.dik && o.dik ? 9 : 3;   // v144: dik yazılar arka arkaya gelince tek yazı gibi okunmasın
+      let dy = yukari ? -(m.b.y2 - o.b.y1 + ara) : (o.b.y2 - m.b.y1 + ara);
       if(Math.abs(m.dy + dy) > 420){ dy = yukari ? (o.b.y2 - m.b.y1 + 3) : -(m.b.y2 - o.b.y1 + 3); if(Math.abs(m.dy + dy) > 420) continue; }
       m.dx += dx; m.dy += dy; m.b.x1 += dx; m.b.x2 += dx; m.b.y1 += dy; m.b.y2 += dy; oldu = true;
     }
@@ -9861,7 +9887,7 @@ function itiProje9(svg){
     return { x1, y1, x2, y2 }; };
   const T = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && t.textContent.trim());
   let n = 0;
-  T.filter(t => /^(\d+\+\d{3}\s+)?Proje (başı|sonu)$/i.test(t.textContent.trim())).forEach(t => {
+  T.filter(t => /^(\d+\+\d{3}\s+)?Proje (başı|sonu)( \d+\+\d{3})?$/i.test(t.textContent.trim())).forEach(t => {
     const b = kutu(t), w = b.x2 - b.x1, h = b.y2 - b.y1; if(h < w) return;           // yalnız dik yazılar
     const yapisik = T.some(o => { if(o === t) return false; const c = kutu(o);
       return c.x1 < b.x2 - 1 && c.x2 > b.x1 + 1 && c.y1 < b.y2 + 8 && c.y2 > b.y1 - 8; });
@@ -10135,7 +10161,7 @@ function itiBoyut9(svg){
   // dik yazılar: Proje başı / sonu ve yapı yazıları
   T.forEach(t => {
     if(t.classList.contains("km-lab") || !/rotate\(\s*-?90/.test(t.getAttribute("transform") || "")) return;
-    const yapi = !!t.closest("g.yapi-etiket"), proje = /^(\d+\+\d{3}\s+)?Proje (başı|sonu)$/i.test(t.textContent.trim());
+    const yapi = !!t.closest("g.yapi-etiket"), proje = /^(\d+\+\d{3}\s+)?Proje (başı|sonu)( \d+\+\d{3})?$/i.test(t.textContent.trim());
     if(!yapi && !proje) return;
     const eski = +t.getAttribute("font-size") || 11, yeni = fsOf(t); if(!(yeni > eski + .5)) return;
     t.setAttribute("font-size", yeni);

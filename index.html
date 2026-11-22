@@ -2794,6 +2794,18 @@ function itiKolUc9(svg){
     const bL = Math.min(...bar.map(b => b.x1)), bR = Math.max(...bar.map(b => b.x2)), bM = (bL + bR) / 2;
     const P = [...g.querySelectorAll("text")].filter(t => /^Proje\s+(başı|sonu)/i.test(t.textContent.trim())).map(t => ({ t, b: kutu(t) })).filter(o => (o.b.x2 - o.b.x1) > (o.b.y2 - o.b.y1));
     if(!P.length) return;
+    // v175: ters dönen (yukarı giden) kolda "Proje başı / sonu" yolun bir yanında, km'si öbür yanında kalıyordu —
+    // aynı hizadaki km yazısı yazıya katılır ("Proje sonu 0+230") ve yazı km'nin yanına (yolun sağına) geçer
+    let birSag = null;
+    { const KL = [...g.querySelectorAll("text.km-lab")].filter(t => t.getAttribute("display") !== "none" && t.textContent.trim()).map(t => ({ t, b: kutu(t) })).filter(q => (q.b.x2 - q.b.x1) > (q.b.y2 - q.b.y1));
+      P.forEach(o => { if(/\d+\+\d{3}/.test(o.t.textContent)) return; const cy = (o.b.y1 + o.b.y2) / 2, oSag = (o.b.x1 + o.b.x2) / 2 > bM;
+        const k = KL.find(q => q.t.isConnected && Math.abs((q.b.y1 + q.b.y2) / 2 - cy) < 12 && (((q.b.x1 + q.b.x2) / 2 > bM) !== oSag)); if(!k) return;
+        const kSag = (k.b.x1 + k.b.x2) / 2 > bM, km = k.t.getAttribute("data-km"), z = k.t.getAttribute("data-zincir") || "";
+        o.t.textContent = o.t.textContent.trim() + " " + k.t.textContent.trim();
+        if(km != null) g.querySelectorAll(`line.km-ld[data-km="${km}"]`).forEach(l => { if((l.getAttribute("data-zincir") || "") === z) l.remove(); });
+        k.t.remove(); o.b = kutu(o.t);
+        const dx = kSag ? (bR + 8 - o.b.x1) : (bL - 8 - o.b.x2); kay(o.t, dx, (k.b.y1 + k.b.y2) / 2 - cy); o.b = kutu(o.t); birSag = kSag; n++; }); }
+    if(birSag !== null) P.forEach(o => { const oSag = (o.b.x1 + o.b.x2) / 2 > bM; if(oSag !== birSag){ const dx = birSag ? (bR + 8 - o.b.x1) : (bL - 8 - o.b.x2); kay(o.t, dx); o.b = kutu(o.t); n++; } });
     const sag = P.every(o => (o.b.x1 + o.b.x2) / 2 > bM);
     if(!sag && !P.every(o => (o.b.x1 + o.b.x2) / 2 < bM)) return;
     P.forEach(o => { const dx = sag ? (bR + 8 - o.b.x1) : (bL - 8 - o.b.x2); if(Math.abs(dx) > 0.5){ kay(o.t, dx); o.b = { x1: o.b.x1 + dx, x2: o.b.x2 + dx, y1: o.b.y1, y2: o.b.y2 }; n++; } });

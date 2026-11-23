@@ -3022,24 +3022,37 @@ function drawIcon(cins, cx, cy, col, w){
       var txt=raw+" "+kmT;
       et.push({cx:cx, col:col, txt:txt, w:txt.length*fsY*0.6+10});
     });
-    et.sort(function(a,b){ return b.cx-a.cx; }); /* sağdan sola: yazı sağa uzadığı için çizgi kesişmesi en az */
+    /* v180: düzenli sıralama — yolun ilk yarısındaki yazılar sola, ikinci yarısındakiler sağa uzar; bir yazının üstünden
+       geçecek her çizgi o yazıdan alt satırda kalır (çizgiler yazıları kesmez). Başta ve sonda alçak, ortaya doğru yükselir. */
+    et.sort(function(a,b){ return a.cx-b.cx; });
+    var orta=(x(bas)+x(bit))/2;
+    var yon=function(o, sag){ o.sag=sag; o.A= sag ? [o.cx-4, o.cx+8+o.w] : [o.cx-8-o.w, o.cx+4]; };
+    var sigSol=function(o){ return o.cx-8-o.w>=2; }, sigSag=function(o){ return o.cx+8+o.w<=W-2; };
+    et.forEach(function(o){ var sol=o.cx<orta; if(sol && !sigSol(o)) sol=false; else if(!sol && !sigSag(o) && sigSol(o)) sol=true; yon(o, !sol); });
+    /* karşılıklı örtüşme (biri sağa uzanıp öbürünün çizgisini, öbürü sola uzanıp bunun çizgisini kapsıyorsa) çözülemez —
+       kenarda yön değiştirmek zorunda kalan yazının komşusu da aynı yöne çevrilir */
+    for(var tur=0; tur<et.length*2; tur++){ var dg=false;
+      for(var i=0;i<et.length;i++) for(var j=i+1;j<et.length;j++){ var a=et[i], c=et[j];
+        if(a.sag && !c.sag && c.cx<a.A[1]+2 && a.cx>c.A[0]-2){
+          if(c.cx<orta || !sigSol(a)){ if(sigSag(c)){ yon(c, true); dg=true; } }
+          else if(sigSol(a)){ yon(a, false); dg=true; } } }
+      if(!dg) break; }
+    /* alt[i]: i'nin yazısının altından geçen çizgilerin sahipleri — onlar i'den alt satırda olmalı */
+    var N=et.length, alt=et.map(function(){ return []; }), ust=et.map(function(){ return 0; });
+    et.forEach(function(o,i){ et.forEach(function(q,j){ if(i!==j && q.cx>o.A[0]-2 && q.cx<o.A[1]+2){ alt[i].push(j); ust[j]++; } }); });
+    /* sıralama: önce altta kalması gerekenler (Kahn); döngü kalırsa soldan sağa */
+    var kal=et.map(function(o,i){ return alt[i].length; }), sira=[], yapildi=et.map(function(){ return false; });
+    var hazir=function(){ var r=[]; et.forEach(function(o,i){ if(!yapildi[i] && alt[i].every(function(j){ return yapildi[j]; })) r.push(i); }); return r; };
+    while(sira.length<N){ var h=hazir(); if(!h.length){ for(var z=0;z<N;z++) if(!yapildi[z]){ h=[z]; break; } } h.forEach(function(i){ yapildi[i]=true; sira.push(i); }); }
+    sira.forEach(function(i){ var o=et[i], r=0;
+      alt[i].forEach(function(j){ if(et[j].r!=null) r=Math.max(r, et[j].r+1); });
+      /* aynı satırda yazı yazıya binmesin */
+      var cak=function(rr){ return et.some(function(q,k){ if(k===i || q.r==null) return false;
+        return q.r===rr && !(o.A[1]+6<q.A[0] || o.A[0]-6>q.A[1]); }); };
+      var g=0; while(cak(r) && g++<60) r++;
+      o.r=r; });
     et.forEach(function(o){
-      /* her satırda önce sağa, olmazsa sola yazmayı dener; en alttaki uygun satır seçilir:
-         aynı satırda yazı yazıya binmez; kendi çizgisi alttaki satırların yazısından geçmez; üst satırların çizgileri bu yazıdan geçmez */
-      var aralik=function(sg){ return sg ? [o.cx-4, o.cx+8+o.w] : [o.cx-o.w-4, o.cx+4]; };
-      /* puan: yazı yazıya binerse geçersiz; her çizgi kesişmesi büyük ceza; sonra alttaki satır, sonra sağa yazma tercih edilir */
-      var puan=function(r, x0, x1, sg){
-        if(x0<2 || x1>W-2) return Infinity;
-        if(sat[r] && sat[r].some(function(q){ return !(x1+6<q[0] || x0-6>q[1]); })) return Infinity;
-        var c=0;
-        for(var k=0;k<r;k++) if(sat[k]) sat[k].forEach(function(q){ if(o.cx>q[0]-4 && o.cx<q[1]+4) c++; });
-        for(var k2=r+1;k2<sat.length;k2++) if(sat[k2]) sat[k2].forEach(function(q){ if(q[2]>x0-4 && q[2]<x1+4) c++; });
-        return c*1000 + r*10 + (sg?0:200); };
-      var en=Infinity, r=0, sag=true, x0, x1;
-      var rMax=Math.max(4, Math.floor((ySol-90)/satirH));
-      for(var rr=0; rr<rMax; rr++) for(var t=0;t<2;t++){ var sg=(t===0), A=aralik(sg), pu=puan(rr, A[0], A[1], sg); if(pu<en){ en=pu; r=rr; sag=sg; x0=A[0]; x1=A[1]; } }
-      if(en===Infinity){ var A2=aralik(true); x0=A2[0]; x1=A2[1]; sag=true; r=0; while(sat[r] && sat[r].some(function(q){ return !(x1+6<q[0] || x0-6>q[1]); })) r++; }
-      (sat[r]||(sat[r]=[])).push([x0,x1,o.cx]); o.r=r;
+      var r=o.r, sag=o.sag;
       var yDot=ySol-40-r*satirH;
       svg+='<g class="yapi-etiket">';
       svg+='<line x1="'+o.cx+'" y1="'+yDot+'" x2="'+o.cx+'" y2="'+ySol+'" stroke="'+o.col+'" stroke-width="1.5" stroke-dasharray="3,2"/>';

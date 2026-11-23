@@ -2739,7 +2739,7 @@ function drawIti(p, allowSearch){
     list.slice().sort(function(a,b){return a.b-b.b}).forEach(function(s){
       if(!isYapi(s.tur) && !s.nokta){
         for(var i=_bir.length-1;i>=0;i--){ var o=_bir[i];
-          if(!isYapi(o.tur) && !o.nokta && o.tur===s.tur && o.durum===s.durum && o.konum===s.konum && o.sinif===s.sinif && (o.zincir||"")===(s.zincir||"") && (o.byTip||"")===(s.byTip||"") && (o.tyTip||"")===(s.tyTip||"") && (o.altTur||"")===(s.altTur||"") && (o.ad||"")===(s.ad||"") && Math.abs(o.e-s.b)<=1){
+          if(!isYapi(o.tur) && !o.nokta && o.tur===s.tur && o.durum===s.durum && o.konum===s.konum && o.sinif===s.sinif && (o.zincir||"")===(s.zincir||"") && s.b<=o.e+1){ /* v182: üst üste binen ya da değen, rengi ve türü aynı parçalar (kaynağı / adı farklı olsa da) tek parça */
             _bir[i]=Object.assign({},o,{e:Math.max(o.e,s.e),u:+((Math.max(o.e,s.e)-o.b)/1000).toFixed(3)}); return; }
         }
       }

@@ -1529,7 +1529,7 @@ html.dark .exm9 button{ background:#141c2b; border-color:#2a3650; }
 .ihf9{ display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; } .ihf9::-webkit-scrollbar{ display:none; }
 .ihf9 button{ flex:none; border:1px solid #cbd5e1; background:#fff; color:#334155; border-radius:999px; padding:6px 12px; font-size:12.5px; font-weight:800; }
 .ihf9 button.on{ background:#ea580c; border-color:#ea580c; color:#fff; }
-.ihj9{ display:flex; align-items:stretch; gap:6px; background:#fff; border:1px solid #e5e7eb; border-left-width:4px; border-radius:12px; overflow:hidden; }
+.ihj9{ display:flex; align-items:stretch; gap:0; background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
 .ihj9.ok{ border-left-color:#16a34a; } .ihj9.th{ border-left-color:#f59e0b; background:#fffbeb; } .ihj9.bs{ border-left-color:#dc2626; } .ihj9.yk{ border-left-color:#94a3b8; opacity:.7; }
 .ihjb9{ flex:1; min-width:0; text-align:left; background:none; border:none; padding:9px 10px; display:flex; flex-direction:column; gap:3px; color:inherit; font:inherit; }
 .ihjb9 b{ font-size:13.5px; } .ihjb9 small{ font-size:12px; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .ihjb9 small.fk9{ white-space:normal; color:#c2410c; }
@@ -1538,7 +1538,12 @@ html.dark .exm9 button{ background:#141c2b; border-color:#2a3650; }
 .ihd9{ display:flex; flex-direction:column; gap:6px; margin-top:8px; padding-top:10px; border-top:2px dashed #e2e8f0; } .ihd9 > small{ font-size:12px; color:#64748b; }
 .ihx9{ text-align:left; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:8px 10px; display:flex; flex-direction:column; gap:2px; font:inherit; color:inherit; } .ihx9 small{ font-size:12px; color:#64748b; } .ihx9.atl{ opacity:.55; }
 .ihsr9{ display:flex; flex-direction:column; gap:2px; width:100%; text-align:left; background:#fff7ed; border:1px solid #fdba74; color:#9a3412; border-radius:12px; padding:10px 12px; margin-bottom:10px; font:inherit; }
-.ihsr9 b{ font-size:14px; } .ihef9{ display:flex; gap:8px; } .ihef9 button{ flex:1; } .ihsr9 small{ font-size:12px; color:#c2410c; }
+.ihsr9 b{ font-size:14px; }
+.ihbas9{ display:grid; grid-template-columns:14px 1fr 1fr; gap:8px; padding:0 10px; font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#64748b; } .ihbas9 span:first-child{ grid-column:2; }
+.ihjb9{ display:grid !important; grid-template-columns:14px 1fr 1fr; gap:8px; align-items:center; }
+.ihp9{ font-size:13px; font-weight:700; line-height:1.3; } .ihe9{ font-size:13px; line-height:1.3; color:#334155; } .ihe9 em{ font-style:normal; font-weight:700; color:#b91c1c; } .ihj9.yk .ihe9 em{ color:#64748b; }
+.ihn9{ display:inline-block; width:10px; height:10px; border-radius:50%; background:#94a3b8; } .ihj9.ok .ihn9, .ihn9.ok{ background:#16a34a; } .ihj9.th .ihn9, .ihn9.th{ background:#f59e0b; } .ihj9.bs .ihn9, .ihn9.bs{ background:#dc2626; } .ihn9.yk{ background:#94a3b8; }
+.ihnot9{ font-size:11.5px; color:#64748b; line-height:1.6; } html.dark .ihe9{ color:#cbd5e1; } .exr9 .ef.ihef9{ display:flex; flex-direction:row; gap:8px; } .exr9 .ef.ihef9 button{ flex:1; width:auto; margin:0; } .ihsr9 small{ font-size:12px; color:#c2410c; }
 html.dark .ihf9 button{ background:#0f1726; border-color:#334155; color:#cbd5e1; } html.dark .ihf9 button.on{ background:#ea580c; border-color:#ea580c; color:#fff; }
 html.dark .ihj9, html.dark .ihx9{ background:#141c2b; border-color:#222d41; } html.dark .ihj9.th{ background:#2a2210; } html.dark .ihsr9{ background:#2a1a0e; border-color:#9a3412; color:#fdba74; } html.dark .ihsr9 small{ color:#fdba74; }
 .ihu9{ background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:9px 11px; font-size:12.5px; line-height:1.45; color:#334155; }
@@ -8035,28 +8040,27 @@ function ihaleCiz9(){
   const D9 = ISLER.map(j => ({ j, d: durum(j), i: satir[j.id] }));
   const say = { tahmin: 0, bos: 0, deg: 0 }; D9.forEach(o => { if(o.d === "tahmin") say.tahmin++; if(o.d === "bos") say.bos++; if(o.i != null && S.G[o.i].fark.length && o.d === "ok") say.deg++; });
   const f = S.filtre || "tum", q = S.ara ? fold(S.ara).trim().split(/\s+/).filter(Boolean) : [];
-  const gor = o => (f === "tum" || (f === "deg" ? (o.d === "ok" && S.G[o.i].fark.length) : o.d === f)) && (!q.length || q.every(w => fold(o.j.ad + " " + (o.i != null ? S.G[o.i].ad : "")).includes(w)));
-  const sira = { tahmin: 0, bos: 1, ok: 2, yok: 3 };
-  const L = D9.filter(gor).sort((a, b) => sira[a.d] - sira[b.d] || a.j.ad.localeCompare(b.j.ad, "tr"));
+  // v184: işler programdaki sırasıyla; süzgeç yalnız eşleşmeyenler / tahminler
+  const gor = o => (f === "tum" || o.d === f) && (!q.length || q.every(w => fold(o.j.ad + " " + (o.i != null ? S.G[o.i].ad : "")).includes(w)));
+  const L = D9.filter(gor);
   const etk = { ok: ["Kayıtlı", "ok"], tahmin: ["Tahmin — kontrol edin", "th"], bos: ["Excel'de bulunamadı", "bs"], yok: ["Excel'de yok", "yk"] };
   const kaynak = g => ({ kayitli: "bu telefonda kaydedildi", program: "masaüstünde eşleştirildi", secildi: "şimdi seçildi", tahmin: "program tahmini" })[g.tur] || "";
-  const disari = S.G.map((g, i) => ({ g, i })).filter(o => !o.g.sec || o.g.sec === "-");
-  const yeniDis = disari.filter(o => o.g.yeni && !o.g.sec);
+  const yeniDis = S.G.filter(g => g.yeni && !g.sec);
   const uyari = [
-    yeniDis.length ? `<div class="ihu9 y"><b>Excel'de ${yeniDis.length} yeni iş var:</b> ${yeniDis.slice(0, 5).map(o => esc(o.g.ad)).join(" · ")}${yeniDis.length > 5 ? ` ve ${yeniDis.length - 5} iş daha` : ""}<small>Listenin altında, "Excel'de var, programda yok" bölümünde.</small></div>` : "",
+    yeniDis.length ? `<div class="ihu9 y"><b>Excel'de ${yeniDis.length} yeni iş var:</b> ${yeniDis.slice(0, 8).map(g => esc(g.ad)).join(" · ")}${yeniDis.length > 8 ? ` ve ${yeniDis.length - 8} iş daha` : ""}<small>Programdaki bir işe aitse o işe dokunup bu satırı seçin.</small></div>` : "",
     S.silinen.length ? `<div class="ihu9 s"><b>${S.silinen.length} iş bu Excel'de artık yok</b> (geçen yüklemede vardı): ${S.silinen.slice(0, 6).map(esc).join(" · ")}${S.silinen.length > 6 ? ` ve ${S.silinen.length - 6} iş daha` : ""}<small>Uygulamadaki değerleri korunur.</small></div>` : "",
     S.kayip.length ? `<div class="ihu9"><b>Bu Excel'de bulunamayan sütunlar:</b> ${S.kayip.map(esc).join(" · ")}<small>Bu sütunların uygulamadaki değerleri korunur.</small></div>` : ""
   ].join("");
   const chip = (k, t) => `<button data-ih9f="${k}"${f === k ? ' class="on"' : ""}>${t}</button>`;
   const isSat = o => { const g = o.i != null ? S.G[o.i] : null, [et, c] = etk[o.d];
-    return `<div class="ihj9 ${c}"><button class="ihjb9" data-ih9is="${esc(o.j.id)}"><b>${esc(o.j.ad)}</b><small><em>${et}</em>${g ? ` · Satır ${g.no}: ${esc(g.ad)}${kaynak(g) ? " · " + kaynak(g) : ""}` : o.d === "bos" ? " · dokunup Excel satırını seçin" : ""}</small>${g && g.fark.length ? `<small class="fk9">${g.fark.slice(0, 2).map(esc).join("<br>")}${g.fark.length > 2 ? `<br>+${g.fark.length - 2} değişiklik daha` : ""}</small>` : ""}</button>${o.d === "tahmin" ? `<button class="ihok9" data-ih9onay1="${o.i}" aria-label="Doğru">✓ Doğru</button>` : ""}</div>`; };
+    return `<div class="ihj9 ${c}"><button class="ihjb9" data-ih9is="${esc(o.j.id)}" title="${esc(et + (g && kaynak(g) ? " · " + kaynak(g) : ""))}"><i class="ihn9"></i><span class="ihp9">${esc(o.j.ad)}</span><span class="ihe9">${g ? esc(g.ad) : `<em>${o.d === "yok" ? "Excel'de yok" : "Bulunamadı"}</em>`}</span></button>${o.d === "tahmin" ? `<button class="ihok9" data-ih9onay1="${o.i}" aria-label="Doğru">✓</button>` : ""}</div>`; };
   ov.innerHTML = `<div class="eh"><button data-ih9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>İhale Bilgileri</b><small>${esc(S.dosya)} · ${ISLER.length} iş · ${bagli.length} kayıtlı · ${say.tahmin} tahmin · ${say.bos} boş</small></div></div>
 <div class="eb" id="ih9b">${uyari}
-<div class="ihf9">${chip("tum", "Tümü")}${chip("tahmin", `Tahmin (${say.tahmin})`)}${chip("bos", `Boş (${say.bos})`)}${chip("deg", `Değişecek (${say.deg})`)}</div>
+<div class="ihf9">${chip("tum", `Tümü (${ISLER.length})`)}${chip("bos", `Eşleşmeyen (${say.bos})`)}${say.tahmin ? chip("tahmin", `Tahmin (${say.tahmin})`) : ""}</div>
 <input class="iha9" type="search" placeholder="İşlerde ara…" value="${esc(S.ara || "")}" data-ih9ara autocomplete="off">
+<div class="ihbas9"><span>Programdaki iş</span><span>Excel'deki iş</span></div>
 ${L.map(isSat).join("") || '<p class="gbos">Bu süzgeçte iş yok</p>'}
-${disari.length ? `<div class="ihd9"><b>Excel'de var, programda yok <small>(${disari.length})</small></b><small>Programa henüz eklenmemiş işler. Satıra dokunup bir işe bağlayabilir ya da "Programda yok" diyebilirsiniz.</small>
-${disari.sort((a, b) => (b.g.yeni ? 1 : 0) - (a.g.yeni ? 1 : 0) || (a.g.sec === "-" ? 1 : 0) - (b.g.sec === "-" ? 1 : 0)).map(o => `<button class="ihx9${o.g.sec === "-" ? " atl" : ""}" data-ih9sec="${o.i}"><b>${o.g.yeni && !o.g.sec ? '<em class="yn9">Yeni</em>' : ""}${esc(o.g.ad)}</b><small>Satır ${o.g.no}${o.g.sec === "-" ? " · Programda yok" : ""}</small></button>`).join("")}</div>` : ""}
+<p class="ihnot9"><i class="ihn9 ok"></i> kayıtlı · <i class="ihn9 th"></i> tahmin (✓ ile onaylayın) · <i class="ihn9 bs"></i> bulunamadı · <i class="ihn9 yk"></i> Excel'de yok — değiştirmek için işe dokunun</p>
 </div>
 <div class="ef ihef9">${say.tahmin ? `<button data-ih9onaytum>Tahminleri onayla (${say.tahmin})</button>` : ""}<button class="ana" data-ih9kaydet${S.degisen || S.bagDeg ? "" : " disabled"}>${S.degisen ? `Önizle ve kaydet (${S.degisen} iş)` : "Eşleşmeleri kaydet"}</button></div>`;
 }
@@ -8150,9 +8154,7 @@ async function ihaleBagKaydet9(){
   lsYaz9(IH_AD9, Object.fromEntries(S.G.map(g => [nAd9(g.ad), g.ad])));
   const ad = nb9(S.hs[S.ad]); lsYaz9(IH_SUT9, { ad, basliklar: 1 });
   // üstteki "Excel'de yeni iş" şeridi: bakılmamış (bağlanmamış, "programda yok" denmemiş) yeni satırlar kalır
-  const eski = lsOku9(IH_YENI9, {}), kalan = {};
-  S.G.forEach(g => { const k = nAd9(g.ad); if((g.yeni || eski[k]) && !g.sec) kalan[k] = g.ad; });
-  lsYaz9(IH_YENI9, kalan);
+  lsYaz9(IH_YENI9, {});   // v184: kaydedince yeni işlere bakılmış sayılır
 }
 // kaydetmeden çıkılsa da yeni / silinen karşılaştırması bir sonraki yüklemeye kalsın diye
 // görülen adlar yalnız kaydedince güncellenir (masaüstündeki gibi)

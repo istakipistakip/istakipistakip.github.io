@@ -2768,7 +2768,8 @@ function itiPbUc9(svg){
     if(!D.length) return;
     const mt = ki.multiply(t.getCTM()), fs = (parseFloat(t.getAttribute("font-size")) || 12) * Math.sqrt(Math.abs(mt.a * mt.d - mt.b * mt.c));
     const kenar = bit ? Math.max(P.x, ...D.map(b => b.x2)) + 8 : Math.min(P.x, ...D.map(b => b.x1)) - 8;
-    const eng = [...svg.querySelectorAll("text, rect, circle")].filter(e => e !== t && !e.closest("defs") && !(e.tagName === "rect" && zemin(e)) && !e.classList.contains("uc9"))
+    // v178: bağlantı yazıları engel sayılmaz — yazı yerleşince onlar yeniden dizilir
+    const eng = [...svg.querySelectorAll("text, rect, circle")].filter(e => e !== t && !e.closest("defs") && !(e.tagName === "rect" && zemin(e)) && !e.classList.contains("uc9") && !(e.tagName === "text" && /bağlantı/i.test(e.textContent)))
       .map(e => { try{ return kutu(e); }catch(_){ return null; } }).filter(q => q && (q.x2 > q.x1 || q.y2 > q.y1) && !((q.x2 - q.x1) > vb.width * .8 && (q.y2 - q.y1) > vb.height * .8));
     const eski = { p: t.parentNode, s: t.nextSibling, tr: t.getAttribute("transform"), x: t.getAttribute("x"), y: t.getAttribute("y"), a: t.getAttribute("text-anchor"), f: t.getAttribute("font-size") };
     svg.appendChild(t); t.removeAttribute("transform"); t.setAttribute("font-size", fs.toFixed(1)); t.setAttribute("text-anchor", bit ? "start" : "end"); t.setAttribute("x", kenar.toFixed(1));
@@ -2778,6 +2779,7 @@ function itiPbUc9(svg){
     if(!ok){ eski.p.insertBefore(t, eski.s); if(eski.tr) t.setAttribute("transform", eski.tr); t.setAttribute("x", eski.x); t.setAttribute("y", eski.y); if(eski.a) t.setAttribute("text-anchor", eski.a); t.setAttribute("font-size", eski.f); return; }
     n++;
   });
+  if(n) try{ itiBag9(svg); }catch(_){}
   return n > 0;
 }
 // v173: kol yolunun (ekranda dikey) okunun istikamet adı yatay yazılır ve okun hemen yanına konur (sağı doluysa soluna)

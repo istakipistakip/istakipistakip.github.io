@@ -2360,6 +2360,11 @@ function drawIti(p, allowSearch){
     return aramaNorm(s.tur).indexOf(q)>=0 || aramaNorm(s.ad).indexOf(q)>=0;
   }) : allSegs;
   var bas=p.bas||0, bit=p.bit||10000;
+  /* v181: hiçbir kayıt yolun başlangıç–bitiş km'sinin dışına çizilmez (km eşitliği olan yolda zincirli kayıtlara dokunulmaz) */
+  if(!(p.musavat||[]).length){
+    segs=segs.map(function(s){ if(s.zincir) return s; var b=Math.max(bas, s.b), e=Math.min(bit, s.e);
+      if(e<b || (e===b && s.e>s.b)) return null; return (b===s.b && e===s.e) ? s : Object.assign({}, s, {b:b, e:e}); }).filter(Boolean);
+  }
   var musR=musFizikiAraliklar(p,bas,bit);
   var span=musR.total;
   var full = !!(window._itiFull);

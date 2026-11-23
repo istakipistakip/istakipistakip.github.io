@@ -2746,8 +2746,20 @@ function itiDuzelt9(kok, j){
     try{ if(itiSeritYer9(svg)) degisti = true; }catch(_){}
     try{ if(itiKolUc9(svg)) degisti = true; }catch(_){}
     try{ if(itiOkAd9(svg)) degisti = true; }catch(_){}
-    try{ if(itiPbUc9(svg)) degisti = true; }catch(_){} });
+    try{ if(itiPbUc9(svg)) degisti = true; }catch(_){}
+    try{ if(itiSigdir9(svg)) degisti = true; }catch(_){} });
   return degisti;
+}
+// v179: son adım — kenardan taşan yazı kalırsa çizim alanı o kadar genişler
+function itiSigdir9(svg){
+  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse(), vb = svg.viewBox.baseVal; if(!vb || !vb.width) return false;
+  let x1 = vb.x, y1 = vb.y, x2 = vb.x + vb.width, y2 = vb.y + vb.height, d = false;
+  svg.querySelectorAll("text").forEach(t => { if(t.closest("defs") || t.getAttribute("display") === "none" || !t.textContent.trim()) return;
+    let b; try{ b = t.getBBox(); }catch(_){ return; } if(!b.width) return; const m = ki.multiply(t.getCTM());
+    [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m);
+      if(q.x < x1){ x1 = q.x - 6; d = true; } if(q.x > x2){ x2 = q.x + 6; d = true; } if(q.y < y1){ y1 = q.y - 4; d = true; } if(q.y > y2){ y2 = q.y + 4; d = true; } }); });
+  if(d) svg.setAttribute("viewBox", `${x1.toFixed(1)} ${y1.toFixed(1)} ${(x2 - x1).toFixed(1)} ${(y2 - y1).toFixed(1)}`);
+  return d;
 }
 // v176: kol yolu ana yolun ucunu kaplıyorsa ana yolun "Proje başı / sonu" yazısı ucun hemen yanına (kolların dışına), yolun ortası hizasında yatay yazılır
 function itiPbUc9(svg){

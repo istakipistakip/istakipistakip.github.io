@@ -1261,7 +1261,9 @@ function yolPseudoProje(p, yol){
   return Object.assign({}, p, {
     istikametBas: _ib, istikametBit: _ie,
     bas: y.bas, bit: y.bit,
-    yolTipi: (_yo.yolTipi==="BY"||_yo.yolTipi==="TY") ? _yo.yolTipi : p.yolTipi,
+    yolTipi: (_yo.yolTipi==="BY"||_yo.yolTipi==="TY") ? _yo.yolTipi : (_yi>0 ? null : p.yolTipi),
+    /* v179: ana yolun tek yol / bölünmüş yol km aralıkları yalnız ana yolda — başka yol kendi kayıtlarından */
+    yolTipAraliklari: _yi>0 ? [] : p.yolTipAraliklari,
     _kalinlik: _yo.kalinlik || p._kalinlik || null,
     _kalinlikK: _yo.kalinlikK || null, _uzunluk: _yo.uzunluk || null,
     kayitlar: yolKayitlari(p, y.id),
@@ -2432,6 +2434,8 @@ function drawIti(p, allowSearch){
     }
   });
   tyRanges.sort(function(a,b){ return a[0]-b[0]; });
+  /* v179: hiçbir şerit yolun bittiği km'den öteye taşmaz */
+  tyRanges=tyRanges.map(function(r){ return [Math.max(bas, r[0]), Math.min(bit, r[1])]; }).filter(function(r){ return r[1]>r[0]; });
   /* Saf TY proje: tüm güzergâh TY şeridi (kayıt olmasa bile) */
   if(yolTip==="TY" && !tyRanges.length){
     tyRanges=[[bas, bit]];
@@ -2705,15 +2709,7 @@ function drawIti(p, allowSearch){
   /* v151: TY'den BY'ye geçen (karışık) yolda SOL/SAĞ parçalarının içine şerit ayırıcı çizilmez */
   var _karisik = hasTY && !onlyTY;
   function paintLane(list, y, isTY, laneKind){
-    if(isTY){
-      tyRanges.forEach(function(tr){
-        svg+='<rect x="'+x(tr[0])+'" y="'+y+'" width="'+Math.max(x(tr[1])-x(tr[0]),1)+'" height="'+h+'" rx="2" fill="#f3eef8"/>';
-      });
-    } else {
-      clipOutTY(bas,bit).forEach(function(sl){
-        svg+='<rect x="'+x(sl[0])+'" y="'+y+'" width="'+Math.max(x(sl[1])-x(sl[0]),1)+'" height="'+h+'" rx="2" fill="#eef0f3"/>';
-      });
-    }
+    /* v179: kaydı olmayan şerit için açık gri / açık mor zemin çizilmez */
     if(!isTY){
       var cov=list.map(function(s){return [s.b,s.e]}).sort(function(a,b){return a[0]-b[0]});
       var gg=[],c=bas;
@@ -2723,6 +2719,13 @@ function drawIti(p, allowSearch){
         clipOutTY(ab[0],ab[1]).forEach(function(sl){
           svg+='<rect x="'+x(sl[0])+'" y="'+y+'" width="'+Math.max(x(sl[1])-x(sl[0]),1)+'" height="'+h+'" fill="'+RENK.bos+'"/>';
         });
+      });
+    } else {
+      /* v179: TY aralığında kaydı olmayan kısım da BY'deki gibi "çalışma yok" rengi (yol kopuk görünmesin) */
+      var cvT=list.map(function(s){return [s.b,s.e]}).sort(function(a,b){return a[0]-b[0]});
+      tyRanges.forEach(function(tr){ var c2=tr[0];
+        cvT.forEach(function(ab){ if(ab[1]<=c2 || ab[0]>=tr[1]) return; if(ab[0]>c2+1) svg+='<rect x="'+x(c2)+'" y="'+y+'" width="'+Math.max(x(Math.min(ab[0],tr[1]))-x(c2),1)+'" height="'+h+'" fill="'+RENK.bos+'"/>'; c2=Math.max(c2,ab[1]); });
+        if(c2<tr[1]-1) svg+='<rect x="'+x(c2)+'" y="'+y+'" width="'+Math.max(x(tr[1])-x(c2),1)+'" height="'+h+'" fill="'+RENK.bos+'"/>';
       });
     }
     /* Katman sırası: alt→üst (BSK ve bu yıl biten en üstte) */
@@ -3821,6 +3824,7 @@ function drawItiBilesen(p, allowSearch){
         musavat: (p.musavat||[]).filter(function(m){ return _ilk ? (!m.yolId || _ids[m.yolId]) : (m.yolId && _ids[m.yolId]); }),
         istikametBas: (_ilk || _sk.istikametBas===undefined) ? p.istikametBas : (_sk.istikametBas||""), istikametBit: (_ilk || _sk.istikametBas===undefined) ? p.istikametBit : (_sk.istikametBit||""),
         bas: b.kok.bas, bit: b.kok.bit, _kok: p._kok||p});
+      if(!_ilk){ p2.yolTipAraliklari=[]; p2.yolTipi=(_sk.yolTipi==="BY"||_sk.yolTipi==="TY") ? _sk.yolTipi : null; } /* v179 */
       var hh = b.dal.length ? drawItiSekilli(p2, false) : drawIti(yolPseudoProje(p2, getYollar(p2)[0]), false);
       /* v167: tek yollu bölümde istikamet okları şeridin 175 üstünde — üstteki bölüme taşmasın diye o kadar boşluk */
       var _m=window._itiLastMap, _ek=(parts.length && !b.dal.length && _m && _m.yTop!=null) ? Math.max(0, 205-_m.yTop) : 0;

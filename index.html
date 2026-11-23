@@ -1544,7 +1544,7 @@ html.dark #ihr9 .ihf9 button{ background:#0f1726; border-color:#334155; color:#c
 html.dark #ihr9 .ef.ihef9 button:not(.ana){ background:#0f1726; border-color:#334155; color:#e6ebf3; }   /* v185: uzun listede satırlar ezilmesin */
 .ihbas9{ display:grid; grid-template-columns:14px 1fr 1fr; gap:8px; padding:0 10px; font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#64748b; } .ihbas9 span:first-child{ grid-column:2; }
 .ihjb9{ display:grid !important; grid-template-columns:14px 1fr 1fr; gap:8px; align-items:center; }
-.ihp9{ font-size:13px; font-weight:700; line-height:1.3; } .ihe9{ font-size:13px; line-height:1.3; color:#334155; } .ihe9 em{ font-style:normal; font-weight:700; color:#b91c1c; } .ihj9.yk .ihe9 em{ color:#64748b; }
+.ihp9{ font-size:13px; font-weight:700; line-height:1.3; } .ihe9 small{ display:block; font-size:11.5px; color:#64748b; margin-top:2px; } .ihe9{ font-size:13px; line-height:1.3; color:#334155; } .ihe9 em{ font-style:normal; font-weight:700; color:#b91c1c; } .ihj9.yk .ihe9 em{ color:#64748b; }
 .ihn9{ display:inline-block; width:10px; height:10px; border-radius:50%; background:#94a3b8; } .ihj9.ok .ihn9, .ihn9.ok{ background:#16a34a; } .ihj9.th .ihn9, .ihn9.th{ background:#f59e0b; } .ihj9.bs .ihn9, .ihn9.bs{ background:#dc2626; } .ihn9.yk{ background:#94a3b8; }
 .ihnot9{ font-size:11.5px; color:#64748b; line-height:1.6; } html.dark .ihe9{ color:#cbd5e1; } .exr9 .ef.ihef9{ display:flex; flex-direction:row; gap:8px; } .exr9 .ef.ihef9 button{ flex:1; width:auto; margin:0; } .ihsr9 small{ font-size:12px; color:#c2410c; }
 html.dark .ihf9 button{ background:#0f1726; border-color:#334155; color:#cbd5e1; } html.dark .ihf9 button.on{ background:#ea580c; border-color:#ea580c; color:#fff; }
@@ -7886,18 +7886,31 @@ document.addEventListener("click", async e => { if(!e.target.closest("[data-ih9s
 function ihaleSatirlar9(S){
   // Aynı iş adıyla art arda gelen satırlar bir grup: ilk satır Toplam, sonrakiler il dağılımı
   const G = [];
+  // v185: ad hücresi boşsa (birleştirilmiş hücre) önceki satırın adı alınır; il sütunu olan dosyada aynı adla gelen
+  // satır yalnız il yazılıysa il dağılımı sayılır, değilse ayrı iş
+  const dolu9 = r => [S.ihale, S.proje, S.uz, ...S.sec].some(i => i >= 0 && String(r[i] ?? "").trim());
   S.rows.slice(S.bas + 1).forEach((r, n) => {
-    const ham = S.raws[S.bas + 1 + n] || [], ad = r[S.ad] || "";
+    const ham = S.raws[S.bas + 1 + n] || [], ad0 = r[S.ad] || "", son = G[G.length - 1];
+    const ad = ad0 || (son ? son.ad : ""), ilV = S.il >= 0 ? String(r[S.il] ?? "").trim() : "";
     if(!ad) return;
-    const son = G[G.length - 1];
-    if(son && nAd9(ad) === nAd9(son.ad)){ son.iller.push({ r, ham, ilYazi: S.il >= 0 ? r[S.il] : "", sec: "" }); return; }
+    if(!ad0 && !ilV && !dolu9(r)) return;
+    if(son && nAd9(ad) === nAd9(son.ad) && (S.il < 0 || ilV)){ son.iller.push({ r, ham, ilYazi: ilV, sec: "" }); return; }
     G.push({ no: S.bas + 2 + n, ad, r, ham, iller: [] });
   });
+  // bitiş tarihi: adında "bitiş / bitim" geçen sütunlardaki en son tarih (süre uzatımlı bitiş dahil)
+  S.bitis = S.hs.map((h, i) => /bitis|bitim/.test(fold(h)) ? i : -1).filter(i => i >= 0);
+  const tarih9 = v => { if(v === "" || v == null) return null;
+    if(typeof v === "number" && v > 20000 && v < 80000) return new Date(Math.round((v - 25569) * 864e5));
+    const m = String(v).trim().match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})/); if(m){ const y = +m[3] < 100 ? 2000 + +m[3] : +m[3]; return new Date(Date.UTC(y, +m[2] - 1, +m[1])); }
+    const d = new Date(v); return isNaN(d) ? null : d; };
+  G.forEach(g => { let en = null; S.bitis.forEach(i => { const d = tarih9(g.ham[i] !== undefined && g.ham[i] !== "" ? g.ham[i] : g.r[i]); if(d && (!en || d > en)) en = d; });
+    g.bitis = en ? `${p2(en.getUTCDate())}.${p2(en.getUTCMonth() + 1)}.${en.getUTCFullYear()}` : ""; });
   const bag = lsOku9(IH_BAG9, {}), es = eslestirici9(), kullanilan = new Set();
   const PB = programBag9(S, G);
   const degYaz = (r, i) => paraYaz9(S.hs[i], hucreYaz9(r[i]));
+  const anah9 = {};
   G.forEach(g => {
-    g.key = "ad:" + nAd9(g.ad);
+    g.key = "ad:" + nAd9(g.ad); if(anah9[g.key]){ anah9[g.key]++; g.key += "#" + anah9[g.key]; } else anah9[g.key] = 1;   // aynı adlı ayrı işler
     g.oneri = es(g.ad + " " + g.r.join(" ").slice(0, 300)).slice(0, 8);
     g.sec = ""; g.tur = "";
     // 1) bu telefonda kaydedilmiş bağlantı
@@ -8056,13 +8069,15 @@ function ihaleCiz9(){
   ].join("");
   const chip = (k, t) => `<button data-ih9f="${k}"${f === k ? ' class="on"' : ""}>${t}</button>`;
   const isSat = o => { const g = o.i != null ? S.G[o.i] : null, [et, c] = etk[o.d];
-    return `<div class="ihj9 ${c}"><button class="ihjb9" data-ih9is="${esc(o.j.id)}" title="${esc(et + (g && kaynak(g) ? " · " + kaynak(g) : ""))}"><i class="ihn9"></i><span class="ihp9">${esc(o.j.ad)}</span><span class="ihe9">${g ? esc(g.ad) : `<em>${o.d === "yok" ? "Excel'de yok" : "Bulunamadı"}</em>`}</span></button>${o.d === "tahmin" ? `<button class="ihok9" data-ih9onay1="${o.i}" aria-label="Doğru">✓</button>` : ""}</div>`; };
+    return `<div class="ihj9 ${c}"><button class="ihjb9" data-ih9is="${esc(o.j.id)}" title="${esc(et + (g && kaynak(g) ? " · " + kaynak(g) : ""))}"><i class="ihn9"></i><span class="ihp9">${esc(o.j.ad)}</span><span class="ihe9">${g ? esc(g.ad) + (g.bitis ? `<small>Bitiş: ${g.bitis}</small>` : "") : `<em>${o.d === "yok" ? "Excel'de yok" : "Bulunamadı"}</em>`}</span></button>${o.d === "tahmin" ? `<button class="ihok9" data-ih9onay1="${o.i}" aria-label="Doğru">✓</button>` : ""}</div>`; };
   ov.innerHTML = `<div class="eh"><button data-ih9kapat aria-label="Kapat">${IK("geri")}</button><div class="et"><b>İhale Bilgileri</b><small>${esc(S.dosya)} · ${ISLER.length} iş · ${bagli.length} kayıtlı · ${say.tahmin} tahmin · ${say.bos} boş</small></div></div>
 <div class="eb" id="ih9b">${uyari}
 <div class="ihf9">${chip("tum", `Tümü (${ISLER.length})`)}${chip("bos", `Eşleşmeyen (${say.bos})`)}${say.tahmin ? chip("tahmin", `Tahmin (${say.tahmin})`) : ""}</div>
 <input class="iha9" type="search" placeholder="İşlerde ara…" value="${esc(S.ara || "")}" data-ih9ara autocomplete="off">
 <div class="ihbas9"><span>Programdaki iş</span><span>Excel'deki iş</span></div>
 ${L.map(isSat).join("") || '<p class="gbos">Bu süzgeçte iş yok</p>'}
+${q.length ? (() => { const R = S.G.map((g, i) => ({ g, i })).filter(o => (!o.g.sec || o.g.sec === "-") && q.every(w => fold(o.g.ad).includes(w)));
+  return R.length ? `<div class="ihd9"><b>Excel'de bağlanmamış <small>(${R.length})</small></b><small>Bir işe bağlamak için dokunun.</small>${R.map(o => `<button class="ihx9${o.g.sec === "-" ? " atl" : ""}" data-ih9sec="${o.i}"><b>${esc(o.g.ad)}</b><small>Satır ${o.g.no}${o.g.bitis ? " · Bitiş: " + o.g.bitis : ""}${o.g.sec === "-" ? " · atlanmış" : ""}</small></button>`).join("")}</div>` : ""; })() : ""}
 <p class="ihnot9"><i class="ihn9 ok"></i> kayıtlı · <i class="ihn9 th"></i> tahmin (✓ ile onaylayın) · <i class="ihn9 bs"></i> bulunamadı · <i class="ihn9 yk"></i> Excel'de yok — değiştirmek için işe dokunun</p>
 </div>
 <div class="ef ihef9">${say.tahmin ? `<button data-ih9onaytum>Tahminleri onayla (${say.tahmin})</button>` : ""}<button class="ana" data-ih9kaydet${S.degisen || S.bagDeg ? "" : " disabled"}>${S.degisen ? `Önizle ve kaydet (${S.degisen} iş)` : "Eşleşmeleri kaydet"}</button></div>`;
@@ -8073,9 +8088,9 @@ function ihaleSatirSec9(id){
   const kel = t => new Set(kelimeler9(t)), A = kel([j.ad, j.firma].filter(Boolean).join(" "));
   const puan = g => { const B = kel(g.ad); let o = 0; A.forEach(w => { if(B.has(w)) o++; }); return A.size ? o / Math.max(A.size, B.size || 1) : 0; };
   const cur = S.G.findIndex(g => g.sec === id);
-  const L = S.G.map((g, i) => ({ id: "r" + i, ad: g.ad, sef: "Satır " + g.no + (g.sec && g.sec !== "-" && g.sec !== id ? " · şu an: " + ((ISLER.find(x => x.id === g.sec) || {}).ad || "") : ""), firma: "", il: [], p: puan(g) }))
+  const L = S.G.map((g, i) => ({ id: "r" + i, ad: g.ad, sef: "Satır " + g.no + (g.bitis ? " · Bitiş: " + g.bitis : "") + (g.sec && g.sec !== "-" && g.sec !== id ? " · şu an: " + ((ISLER.find(x => x.id === g.sec) || {}).ad || "") : ""), firma: "", il: [], p: puan(g) }))
     .sort((a, b) => b.p - a.p || a.ad.localeCompare(b.ad, "tr"));
-  secici9(j.ad, "Excel satırı seçin · benzer adlar üstte", L, cur >= 0 ? "r" + cur : "", v => {
+  secici9(j.ad, `Excel'de ${S.G.length} iş · benzer adlar üstte`, L, cur >= 0 ? "r" + cur : "", v => {
     const yok = lsOku9(IH_YOK9, {});
     S.G.forEach(g => { if(g.sec === id){ g.sec = ""; g.tur = ""; } });
     if(v === "-"){ yok[id] = 1; }

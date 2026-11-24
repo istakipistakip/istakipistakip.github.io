@@ -750,6 +750,11 @@ html.dark .olckart{ background:#141c2b; color:#e6ebf3; }
 /* itinerer genel bakış şeridi */
 .itiozet{ flex:none; padding:6px 12px 6px; border-top:1px solid #e5e7eb; background:#fafafa; }
 .itiozet .lb{ display:flex; justify-content:space-between; font-size:10px; color:#64748b; font-weight:800; letter-spacing:.04em; margin-bottom:4px; }
+.itiozet .lb{ align-items:center; } .itiozet .lb #itiozad{ flex:1; }
+.itiozet .lb .iz{ display:flex; gap:6px; } .itiozet .lb .iz button{ width:34px; height:28px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; font-size:17px; font-weight:700; color:#374151; letter-spacing:0; }
+.itiozet.son9{ padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+/* v204: harita + / − sağ altta; iş kartı açıksa kartın üstünde */
+.mapwrap .zoom{ top:auto; bottom:14px; transition:bottom .2s ease; }
 .itiserit{ position:relative; height:30px; border-radius:6px; overflow:hidden; background:#fff; border:1px solid #e2e8f0; touch-action:none; }
 .itiserit .ic{ position:absolute; inset:2px; }
 .itiserit .fr{ position:absolute; top:0; bottom:0; border:2px solid #ea580c; border-radius:4px; background:rgba(234,88,12,.1); pointer-events:none; }
@@ -3392,7 +3397,7 @@ async function itinererGoster(j){
   v.innerHTML = `<div class="hatbar"><button class="x" data-itikapat>${IK("x")}Kapat</button><div class="ad" id="itiAd"></div>${j && j.hat ? `<button class="lj" data-itikmz aria-label="KMZ">${IK("kmz")}KMZ</button>` : ""}<button class="lj" data-lejant>${IK("lejant")}Lejant</button></div>
 ${kodlar.length > 1 ? `<div class="itisek">${kodlar.map((k, i) => `<button data-itisek="${i}"${i ? "" : ' class="on"'}>${esc(kisaAd(D.iti.projeler[k].ad))}</button>`).join("")}</div>` : ""}
 <div class="itialan" id="itialan"><div class="itihost" id="itihost"></div></div>
-<div class="itialt"><span>Kaydırın · iki parmakla büyütün</span><span class="iz"><button data-itizoom="0.8" aria-label="Uzaklaştır">−</button><button data-itizoom="1.25" aria-label="Yakınlaştır">+</button></span></div>`;
+<div class="itialt"><span></span><span class="iz"><button data-itizoom="0.8" aria-label="Uzaklaştır">−</button><button data-itizoom="1.25" aria-label="Yakınlaştır">+</button></span></div>`;
   document.body.appendChild(v);
   history.pushState({ iti: 1 }, "");
   itiDurum = { kodlar, i: 0, z: 1, j };
@@ -4697,6 +4702,9 @@ function itiSerit(){
   if(!s){
     a.insertAdjacentHTML("afterend", `<div class="itiozet"><div class="lb"><span>GENEL BAKIŞ</span><span id="itiozad"></span></div><div class="itiserit" id="itiserit"><div class="ic" id="itimini"></div><div class="fr" id="itifr"></div></div></div>`);
     s = document.getElementById("itiserit");
+    // v204: − / + düğmeleri GENEL BAKIŞ satırının sağına; alttaki satır kalkar
+    { const oz = s.parentNode, alt = oz.parentNode && oz.parentNode.querySelector(".itialt"), iz = alt && alt.querySelector(".iz"), lb = oz.querySelector(".lb");
+      if(iz && lb){ lb.appendChild(iz); alt.style.display = "none"; oz.classList.add("son9"); } }
     const atla = x => { const r = s.getBoundingClientRect(), k = (x - r.left) / r.width; a.scrollLeft = k * a.scrollWidth - a.clientWidth / 2; };
     s.addEventListener("click", e => atla(e.clientX));
     s.addEventListener("touchmove", e => { atla(e.touches[0].clientX); e.preventDefault(); }, { passive: false });
@@ -4715,7 +4723,7 @@ function itiSerit(){
     mini.shadowRoot.appendChild(k);
   }
   const k0 = itiDurum.kodlar[itiDurum.i], pr = D.iti.projeler[k0];
-  const az = document.getElementById("itiozad"); if(az) az.textContent = (pr.html.match(/\d+\+\d{3}/g) || []).slice(-1).length ? "kaydırmak için dokunun" : "";
+  const az = document.getElementById("itiozad"); if(az) az.textContent = "";
   itiCerceve();
 }
 function itiCerceve(){
@@ -6681,7 +6689,9 @@ function hustKucult9(){
   h.classList.toggle("ara9", mod === "ara"); h.classList.toggle("filt9", mod === "filtre");
 }
 const _mapUygula37 = mapUygula;
-mapUygula = function(){ const r = _mapUygula37.apply(this, arguments); hustKucult9(); return r; };
+mapUygula = function(){ const r = _mapUygula37.apply(this, arguments); hustKucult9(); zoomYer9(); return r; };
+function zoomYer9(){ const w = document.getElementById("mapwrap"); if(!w) return; const z = w.querySelector(".zoom"); if(!z) return;
+  const s = w.querySelector(".sheet, .kd9bar"); z.style.bottom = s ? (s.offsetHeight + 20) + "px" : ""; }
 document.addEventListener("click", e => {
   if(!e.target.closest || !e.target.closest("[data-hfd9]")) return;
   e.stopPropagation(); e.preventDefault(); hustAcik9 = true; hustMod9 = "filtre"; hustKucult9(); ketOlcek();

@@ -1215,6 +1215,16 @@ html.dark .durb{ background:#1a2335 !important; border-color:#2a3650 !important;
 .hust .hara input{ display:block !important; }
 #mapin.ucus9{ transition:transform .55s cubic-bezier(.22,.8,.24,1); }
 #mapin.ucus9 .kutu{ transition:border-width .55s; }
+.kutu.kd9{ border-style:dashed !important; border-color:#2563eb !important; background:rgba(37,99,235,.16) !important; box-shadow:none !important; z-index:2; touch-action:none; }
+.kh9{ position:absolute; width:22px; height:22px; margin:-11px 0 0 -11px; border-radius:50%; background:#fff; border:3px solid #2563eb; box-shadow:0 1px 4px rgba(0,0,0,.35); transform:scale(var(--kz,1)); pointer-events:none; }
+.kh9.nw{ left:0; top:0; } .kh9.ne{ left:100%; top:0; } .kh9.sw{ left:0; top:100%; } .kh9.se{ left:100%; top:100%; }
+.kc9{ position:absolute; border:2px dashed #2563eb; background:rgba(37,99,235,.18); border-radius:3px; pointer-events:none; border-width:calc(2px * var(--kz,1)); }
+.kd9bar{ position:absolute; left:10px; right:10px; bottom:10px; background:#fff; border-radius:18px; padding:12px 14px; box-shadow:0 -6px 24px rgba(0,0,0,.28); z-index:4; }
+.kd9t{ font-weight:800; font-size:15px; color:#111827; } .kd9a{ font-size:12px; color:#6b7280; margin:2px 0 10px; }
+.kd9d{ display:flex; gap:8px; } .kd9d .eb{ flex:1; margin:0; } .kd9d .eb.ana{ background:#2563eb; color:#fff; border-color:#2563eb; } .kd9d .eb.ana:disabled{ opacity:.45; } .kd9d .eb.sil{ color:#dc2626; }
+.zoom .kyeni9{ font-size:15px; position:relative; } .zoom .kyeni9 b{ position:absolute; right:5px; top:2px; font-size:11px; color:#2563eb; }
+html.dark .kd9bar{ background:#1f2937; } html.dark .kd9t{ color:#f3f4f6; } html.dark .kd9a{ color:#9ca3af; }
+
 .hust .hara{ position:relative; z-index:6; }
 .hust .honer{ z-index:7; }
 .hust .honer button{ height:auto; min-height:0; width:100%; color:inherit; }
@@ -2195,13 +2205,14 @@ function harita(){
     return '<div class="empty" style="padding-top:80px">Harita yükleniyor…</div>';
   }
   if(!D.harita) return '<div class="empty" style="padding-top:80px">Bu dosyada harita yok.</div>';
+  kd9Gecerli();
   const j = secKutu ? byId(secKutu) : null;
   const kutular = [];
   ISLER.forEach(x => x.kutular.forEach((k, ki) => kutular.push([x.id, k, ki])));
   return `<div class="mapwrap" id="mapwrap"><div class="mapin" id="mapin"><img src="${D.harita}" id="mapimg" alt="">
-${kutular.map(([id, k, ki]) => `<button class="kutu${secKutu === id ? " on" : ""}" data-kutu="${esc(id)}" data-ki="${ki}" style="left:${k[0]}%;top:${k[1]}%;width:${k[2]}%;height:${k[3]}%" aria-label="${esc(byId(id).ad)}"></button>`).join("")}</div>
-${haritaUst()}<div class="zoom"><button data-zoom="1.5">+</button><button data-zoom="0.667">−</button></div>
-${j ? `<div class="sheet"><div class="handle"></div><button class="x" data-kutukapat aria-label="Kapat">${IK("x")}</button><button class="nm nmac" data-is="${esc(j.id)}">${esc(j.ad)}<span>›</span></button><div class="mt" style="margin-bottom:0">${esc([j.il.join(" · "), j.firma].filter(Boolean).join(" · "))}</div>
+${kutular.map(([id, k, ki]) => { const ed = kd9Bu(id, ki); if(ed) k = KD9.k; return `<button class="kutu${secKutu === id ? " on" : ""}${ed ? " kd9" : ""}" data-kutu="${esc(id)}" data-ki="${ki}" style="left:${k[0]}%;top:${k[1]}%;width:${k[2]}%;height:${k[3]}%" aria-label="${esc(byId(id).ad)}">${ed ? ["nw", "ne", "sw", "se"].map(c => `<i class="kh9 ${c}" data-kh="${c}"></i>`).join("") : ""}</button>`; }).join("")}${KD9 && KD9.ciz && KD9.k ? `<div class="kc9" id="kc9" style="left:${KD9.k[0]}%;top:${KD9.k[1]}%;width:${KD9.k[2]}%;height:${KD9.k[3]}%"></div>` : ""}</div>
+${haritaUst()}<div class="zoom"><button data-zoom="1.5">+</button><button data-zoom="0.667">−</button>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && !KD9 ? `<button class="kyeni9" data-kd9yeni aria-label="Yeni kutu">▭<b>+</b></button>` : ""}</div>
+${KD9 ? kd9Cubuk() : ""}${j && !KD9 ? `<div class="sheet"><div class="handle"></div><button class="x" data-kutukapat aria-label="Kapat">${IK("x")}</button><button class="nm nmac" data-is="${esc(j.id)}">${esc(j.ad)}<span>›</span></button><div class="mt" style="margin-bottom:0">${esc([j.il.join(" · "), j.firma].filter(Boolean).join(" · "))}</div>
 ${stdSatirlari(j, true)}
 <div class="hdalt">${daDugmeler(j)}</div></div>` : ""}
 </div>`;
@@ -2217,6 +2228,7 @@ function mapUygula(){
   inn.style.transform = `translate(${mz.x}px,${mz.y}px) scale(${mz.s})`;
   const bw = (2 / mz.s) + "px";
   inn.querySelectorAll(".kutu").forEach(k => { k.style.borderWidth = bw; });
+  inn.style.setProperty("--kz", 1 / mz.s);
 }
 function mapZoom(f, cx, cy){
   const w = document.getElementById("mapwrap"); if(!w) return;
@@ -2234,24 +2246,27 @@ function mapKur(){
   resimHazir(mapUygula);
   let t0 = null, d0 = 0, s0 = 1, m0 = null, last = 0;
   w.addEventListener("touchstart", e => {
-    if(e.target.closest(".sheet, .zoom, .hust")) return;
+    if(e.target.closest(".sheet, .zoom, .hust, .kd9bar")) return;
+    if(e.touches.length === 1 && kd9Bas(e.touches[0].clientX, e.touches[0].clientY, e.target)){ t0 = null; return; }
+    kd9Bit(true);
     if(e.touches.length === 2){ const [a, b] = e.touches; d0 = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); s0 = mz.s; m0 = { x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 }; t0 = null; }
     else if(e.touches.length === 1){ t0 = { x: e.touches[0].clientX - mz.x, y: e.touches[0].clientY - mz.y };
       const now = Date.now(); if(false && now - last < 300){ const r = w.getBoundingClientRect(); mapZoom(2, e.touches[0].clientX - r.left, e.touches[0].clientY - r.top); } last = now; }
   }, { passive: true });
   w.addEventListener("touchmove", e => {
-    if(e.target.closest(".sheet, .hust")) return;
+    if(e.target.closest(".sheet, .hust, .kd9bar")) return;
     e.preventDefault();
+    if(kd9S){ if(e.touches.length === 1) kd9Git(e.touches[0].clientX, e.touches[0].clientY); return; }
     const r = w.getBoundingClientRect();
     if(e.touches.length === 2 && d0){ const [a, b] = e.touches; const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); mapZoom((s0 * d / d0) / mz.s, m0.x - r.left, m0.y - r.top); }
     else if(e.touches.length === 1 && t0){ mz.x = e.touches[0].clientX - t0.x; mz.y = e.touches[0].clientY - t0.y; mapUygula(); }
   }, { passive: false });
-  w.addEventListener("touchend", e => { if(e.touches.length === 0){ d0 = 0; t0 = null; } else if(e.touches.length === 1){ t0 = { x: e.touches[0].clientX - mz.x, y: e.touches[0].clientY - mz.y }; d0 = 0; } });
+  w.addEventListener("touchend", e => { if(kd9S && e.touches.length === 0){ kd9Bit(); return; } if(e.touches.length === 0){ d0 = 0; t0 = null; } else if(e.touches.length === 1){ t0 = { x: e.touches[0].clientX - mz.x, y: e.touches[0].clientY - mz.y }; d0 = 0; } });
   // fare (bilgisayarda açılırsa)
   let md = null, surukle = false;
-  w.addEventListener("mousedown", e => { if(e.target.closest(".sheet, .zoom, .hust")) return; md = { x: e.clientX - mz.x, y: e.clientY - mz.y, ox: e.clientX, oy: e.clientY }; surukle = false; });
-  window.onmousemove = e => { if(md){ if(Math.abs(e.clientX - md.ox) + Math.abs(e.clientY - md.oy) > 4) surukle = true; mz.x = e.clientX - md.x; mz.y = e.clientY - md.y; mapUygula(); } };
-  window.onmouseup = () => { md = null; setTimeout(() => { surukle = false; }, 0); };
+  w.addEventListener("mousedown", e => { if(e.target.closest(".sheet, .zoom, .hust, .kd9bar")) return; if(kd9Bas(e.clientX, e.clientY, e.target)){ md = null; return; } md = { x: e.clientX - mz.x, y: e.clientY - mz.y, ox: e.clientX, oy: e.clientY }; surukle = false; });
+  window.onmousemove = e => { if(kd9S){ kd9Git(e.clientX, e.clientY); return; } if(md){ if(Math.abs(e.clientX - md.ox) + Math.abs(e.clientY - md.oy) > 4) surukle = true; mz.x = e.clientX - md.x; mz.y = e.clientY - md.y; mapUygula(); } };
+  window.onmouseup = () => { if(kd9S) kd9Bit(); md = null; setTimeout(() => { surukle = false; }, 0); };
   w.addEventListener("click", e => { if(surukle){ e.stopPropagation(); e.preventDefault(); } }, true);
   w.addEventListener("wheel", e => { e.preventDefault(); const r = w.getBoundingClientRect(); mapZoom(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
 }
@@ -4584,7 +4599,7 @@ document.addEventListener("click", e => {
   const yz = e.target.closest("[data-yazi]"); if(yz && detay){ yaziPenceresi(byId(detay.id), yz.dataset.yazi); return; }
   const h = e.target.closest("[data-hat]"); if(h){ hatGoster(h.dataset.hat); return; }
   const hm = e.target.closest("[data-haritada]"); if(hm){ kapatAlt(); secKutu = hm.dataset.haritada; detay = null; tab = "map"; ciz(); kutuyaGit(secKutu); return; }
-  const kt = e.target.closest("[data-kutu]"); if(kt && kutuTut9.oldu){ kutuTut9.oldu = false; return; } if(kt){ secKutu = kt.dataset.kutu; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); return; }
+  const kt = e.target.closest("[data-kutu]"); if(kt && kutuTut9.oldu){ kutuTut9.oldu = false; return; } if(kt && kd9Tik(kt)) return; if(kt){ secKutu = kt.dataset.kutu; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); return; }
   if(e.target.closest("[data-kutukapat]")){ secKutu = null; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); return; }
   const z = e.target.closest("[data-zoom]"); if(z){ mapZoom(Number(z.dataset.zoom)); return; }
   if(e.target.closest("[data-aratemizle]")){ isAra = ""; const i = document.getElementById("isAra"); if(i){ i.value = ""; i.focus(); } document.getElementById("isListe").innerHTML = isListesi(aramaSonuc()); return; }
@@ -6053,7 +6068,7 @@ boyKesit = async function(j){
 // v188: düzenleme modunda harita kutusuna basılı tutunca kutunun işi değiştirilir (onay sorulur)
 const kutuTut9 = { z: null, oldu: false, x: 0, y: 0 };
 document.addEventListener("pointerdown", e => {
-  const kt = e.target.closest && e.target.closest(".kutu[data-kutu]"); if(!kt || typeof DUZ9 === "undefined" || !DUZ9 || !YON9) return;
+  const kt = e.target.closest && e.target.closest(".kutu[data-kutu]"); if(!kt || typeof DUZ9 === "undefined" || !DUZ9 || !YON9 || KD9) return;
   clearTimeout(kutuTut9.z); kutuTut9.oldu = false; kutuTut9.x = e.clientX; kutuTut9.y = e.clientY;
   kutuTut9.z = setTimeout(() => { kutuTut9.z = null; kutuTut9.oldu = true; kt.classList.add("basili"); try{ navigator.vibrate && navigator.vibrate(15); }catch(_){}
     setTimeout(() => kt.classList.remove("basili"), 300); kutuIsDegistir9(kt.dataset.kutu, +kt.dataset.ki); }, 550);
@@ -6071,6 +6086,117 @@ function kutuIsDegistir9(id, ki){
     catch(err){ bildir(err.message || "Değiştirilemedi"); }
   }, []);
 }
+// v189: düzenleme modunda kutunun alanı: dokun → köşelerden boyutlandır, ortadan sürükleyip taşı; yeni kutu çiz; sil
+var KD9 = null, kd9S = null;
+function kd9Bu(id, ki){ return !!(KD9 && !KD9.ciz && KD9.id === id && KD9.ki === ki); }
+function kd9Yuv(k){ return k.map(v => Math.round(v * 100) / 100); }
+function kd9Degisti(){ return !!(KD9 && !KD9.ciz && !kutuEsit9(KD9.k, KD9.k0)); }
+function kd9Gecerli(){
+  if(!KD9) return;
+  if(typeof DUZ9 === "undefined" || !DUZ9 || !YON9 || tab !== "map" || detay){ KD9 = null; kd9S = null; return; }
+  if(!KD9.ciz){ const j = byId(KD9.id); if(!j || !j.kutular[KD9.ki] || !kutuEsit9(j.kutular[KD9.ki], KD9.k0)){ KD9 = null; kd9S = null; } }
+}
+function kd9Yenile(){ const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); }
+function kd9Cubuk(){
+  if(KD9.ciz){
+    return `<div class="kd9bar"><div class="kd9t">${KD9.k ? "Kutu çizildi" : "Yeni kutu"}</div><div class="kd9a">${KD9.k ? "Kutunun ait olduğu işi seç. Beğenmediysen yeniden çizebilirsin." : "Haritada parmağınla sürükleyerek kutuyu çiz."}</div>
+<div class="kd9d"><button class="eb" data-kd9="iptal">İptal</button>${KD9.k ? `<button class="eb" data-kd9="yeniden">Yeniden çiz</button><button class="eb ana" data-kd9="is">İşini seç</button>` : ""}</div></div>`;
+  }
+  const j = byId(KD9.id);
+  return `<div class="kd9bar"><div class="kd9t">${esc(j ? j.ad : "")}</div><div class="kd9a">Ortasından sürükle: taşı · Köşesinden sürükle: boyutlandır</div>
+<div class="kd9d"><button class="eb sil" data-kd9="sil">Sil</button><button class="eb" data-kd9="iptal">İptal</button><button class="eb ana" data-kd9="tamam"${kd9Degisti() ? "" : " disabled"}>Tamam</button></div></div>`;
+}
+function kd9Tik(kt){
+  if(typeof DUZ9 === "undefined" || !DUZ9 || !YON9) return false;
+  if(kd9S || (KD9 && KD9.surdu)){ if(KD9) KD9.surdu = false; return true; }
+  if(KD9 && KD9.ciz) return true;
+  const id = kt.dataset.kutu, ki = +kt.dataset.ki; if(kd9Bu(id, ki)) return true;
+  if(kd9Degisti()){ bildir("Önce bu kutuda Tamam ya da İptal'e bas"); return true; }
+  const j = byId(id), k = j && j.kutular[ki]; if(!k) return true;
+  KD9 = { id, ki, k: k.slice(0, 4).map(Number), k0: k.slice(0, 4) }; secKutu = id; kd9Yenile(); return true;
+}
+function kd9Yuzde(x, y){ const inn = document.getElementById("mapin"), img = document.getElementById("mapimg"); if(!inn || !img) return null; const r = img.getBoundingClientRect(); if(!r.width || !r.height) return null; return [(x - r.left) / r.width * 100, (y - r.top) / r.height * 100]; }
+function kd9Bas(x, y, t){
+  if(!KD9) return false;
+  const p = kd9Yuzde(x, y); if(!p) return false;
+  if(KD9.ciz){ if(KD9.k) return false; kd9S = { m: "ciz", p0: p }; return true; }
+  // köşe mi orta mı: ekrandaki geometriye göre (küçük kutuda tutamaçlar ortayı kapatmasın)
+  const el = document.querySelector("#mapin .kutu.kd9"); if(!el) return false;
+  const r = el.getBoundingClientRect(), ic = x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+  const orta = ic && x >= r.left + r.width * .25 && x <= r.right - r.width * .25 && y >= r.top + r.height * .25 && y <= r.bottom - r.height * .25;
+  let m = null;
+  if(!orta){ let en = 28; [["nw", r.left, r.top], ["ne", r.right, r.top], ["sw", r.left, r.bottom], ["se", r.right, r.bottom]].forEach(([c, cx, cy]) => { const d = Math.hypot(x - cx, y - cy); if(d < en){ en = d; m = c; } }); }
+  if(!m && ic) m = "tasi";
+  if(!m) return false;
+  kd9S = { m, p0: p, k0: KD9.k.slice(), oy: false };
+  return true;
+}
+function kd9Git(x, y){
+  if(!kd9S || !KD9) return; const p = kd9Yuzde(x, y); if(!p) return;
+  const dx = p[0] - kd9S.p0[0], dy = p[1] - kd9S.p0[1];
+  const img = document.getElementById("mapimg"), r = img.getBoundingClientRect();
+  if(!kd9S.oy && Math.hypot(dx * r.width / 100, dy * r.height / 100) < 4) return; kd9S.oy = true;
+  const C = (v, a, b) => Math.min(b, Math.max(a, v)), MIN = .3;
+  let k;
+  if(kd9S.m === "ciz"){
+    const a = [C(kd9S.p0[0], 0, 100), C(kd9S.p0[1], 0, 100)], b = [C(p[0], 0, 100), C(p[1], 0, 100)];
+    k = [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])];
+    let el = document.getElementById("kc9"); if(!el){ el = document.createElement("div"); el.className = "kc9"; el.id = "kc9"; document.getElementById("mapin").appendChild(el); }
+    Object.assign(el.style, { left: k[0] + "%", top: k[1] + "%", width: k[2] + "%", height: k[3] + "%" }); kd9S.k = k; return;
+  }
+  let [x0, y0, w, h] = kd9S.k0, x1 = x0 + w, y1 = y0 + h;
+  if(kd9S.m === "tasi"){ const nx = C(x0 + dx, 0, 100 - w), ny = C(y0 + dy, 0, 100 - h); k = [nx, ny, w, h]; }
+  else {
+    if(kd9S.m.includes("w")) x0 = C(x0 + dx, 0, x1 - MIN); else x1 = C(x1 + dx, x0 + MIN, 100);
+    if(kd9S.m.includes("n")) y0 = C(y0 + dy, 0, y1 - MIN); else y1 = C(y1 + dy, y0 + MIN, 100);
+    k = [x0, y0, x1 - x0, y1 - y0];
+  }
+  KD9.k = kd9Yuv(k);
+  const el = document.querySelector("#mapin .kutu.kd9");
+  if(el) Object.assign(el.style, { left: KD9.k[0] + "%", top: KD9.k[1] + "%", width: KD9.k[2] + "%", height: KD9.k[3] + "%" });
+  const t = document.querySelector('.kd9bar [data-kd9="tamam"]'); if(t) t.disabled = !kd9Degisti();
+}
+function kd9Bit(iptal){
+  const S = kd9S; kd9S = null; if(!S || !KD9) return;
+  if(S.oy) KD9.surdu = true;
+  if(S.m === "ciz"){
+    if(iptal || !S.k){ document.getElementById("kc9")?.remove(); return; }
+    const img = document.getElementById("mapimg"), r = img.getBoundingClientRect();
+    if(S.k[2] * r.width / 100 < 8 || S.k[3] * r.height / 100 < 8){ document.getElementById("kc9")?.remove(); bildir("Kutu çok küçük, biraz daha büyük çiz"); return; }
+    KD9.k = kd9Yuv(S.k); kd9Yenile(); kd9IsSec(); return;
+  }
+  setTimeout(() => { if(KD9) KD9.surdu = false; }, 400);
+}
+function kd9IsSec(){
+  const L = ISLER.map(x => ({ id: x.id, ad: x.ad, sef: x.sef || "", firma: x.firma || "", il: x.il || [] })).sort((a, b) => a.ad.localeCompare(b.ad, "tr"));
+  secici9("Yeni kutu hangi işin?", "Kutuyu haritaya ekleyeceğim işi seç", L, "", async v => {
+    if(!v || v === "-" || !KD9 || !KD9.ciz || !KD9.k) return; const h = byId(v); if(!h) return;
+    const kutu = KD9.k.slice();
+    try{ await degistir9({ tip: "kutuekle", is: v, kutu, ad: h.ad }); KD9 = null; secKutu = v; kd9Yenile(); bildir(`${h.ad} işine kutu eklendi`); }
+    catch(err){ bildir(err.message || "Eklenemedi"); }
+  }, []);
+}
+document.addEventListener("click", async e => {
+  if(e.target.closest("[data-kd9yeni]")){ e.stopPropagation(); KD9 = { ciz: true, k: null }; secKutu = null; kd9Yenile(); return; }
+  const b = e.target.closest("[data-kd9]"); if(!b || !KD9) return; e.stopPropagation();
+  const a = b.dataset.kd9;
+  if(a === "iptal"){ KD9 = null; kd9Yenile(); return; }
+  if(a === "yeniden"){ KD9.k = null; kd9Yenile(); return; }
+  if(a === "is"){ kd9IsSec(); return; }
+  const j = byId(KD9.id); if(!j) { KD9 = null; kd9Yenile(); return; }
+  if(a === "tamam"){
+    if(!kd9Degisti()){ KD9 = null; kd9Yenile(); return; }
+    const e9 = { tip: "kutualan", is: KD9.id, eski: KD9.k0.slice(0, 4), yeni: KD9.k.slice(), ad: j.ad };
+    try{ KD9 = null; await degistir9(e9); kd9Yenile(); bildir("Kutu düzeltildi"); }catch(err){ bildir(err.message || "Kaydedilemedi"); kd9Yenile(); }
+    return;
+  }
+  if(a === "sil"){
+    const ok = await onay9("Kutu silinsin mi?", `<b>${esc(j.ad)}</b> işinin bu harita kutusu silinecek.${j.kutular.length < 2 ? "<br>Bu işin haritada başka kutusu yok." : ""}`, [{ t: "Vazgeç", v: false }, { t: "Sil", v: true, ana: 1 }]);
+    if(!ok || !KD9) return;
+    const e9 = { tip: "kutusil", is: KD9.id, kutu: KD9.k0.slice(0, 4), ad: j.ad };
+    try{ KD9 = null; secKutu = null; await degistir9(e9); kd9Yenile(); bildir("Kutu silindi"); }catch(err){ bildir(err.message || "Silinemedi"); kd9Yenile(); }
+  }
+}, true);
 // v29: haritada yazarken filtreleme — eşleşen kutular parlar, diğerleri solar; tek eşleşme kalınca haritaya uçar
 let hAraSet = null, hAraTek = null, hAraZam = 0;
 const hAraEsles = () => { const q = fold(hAra || "").trim(); if(!q) return null;
@@ -6890,8 +7016,18 @@ function kutuTasi9(R, e, ters){
   const [k, h] = ters ? [e.hedef, e.is] : [e.is, e.hedef], A = isBul9(R, k), B = isBul9(R, h); if(!A || !B) return false;
   const LA = kutuNorm9(A), i = LA.findIndex(x => kutuEsit9(x, e.kutu)); if(i < 0) return false;
   LA.splice(i, 1); if(!LA.length) delete A.pin; kutuNorm9(B).push(e.kutu.slice(0, 4)); return true; }
+// v189: harita kutusunun yeri/boyu düzeltilir, yeni kutu eklenir, kutu silinir
+function kutuAl9(R, id, k){ const j = isBul9(R, id); if(!j) return -1; return kutuNorm9(j).findIndex(x => kutuEsit9(x, k)); }
+function kutuAlan9(R, e, ters){
+  const j = isBul9(R, e.is); if(!j) return false; const L = kutuNorm9(j);
+  if(e.tip === "kutualan"){ const [a, b] = ters ? [e.yeni, e.eski] : [e.eski, e.yeni]; const i = L.findIndex(x => kutuEsit9(x, a)); if(i < 0) return false; L[i] = b.slice(0, 4); delete j.pin; return true; }
+  const ekle = (e.tip === "kutuekle") !== !!ters;
+  if(ekle){ L.push(e.kutu.slice(0, 4)); return true; }
+  const i = L.findIndex(x => kutuEsit9(x, e.kutu)); if(i < 0) return false; L.splice(i, 1); if(!L.length) delete j.pin; return true;
+}
 function uygula9(R, e, ters){
   if(e.tip === "kutu") return kutuTasi9(R, e, ters);
+  if(e.tip === "kutualan" || e.tip === "kutuekle" || e.tip === "kutusil") return kutuAlan9(R, e, ters);
   if(e.tip === "ekle") return ters ? kmSil9(R, e.is, e.km) : kmEkle9(R, e.is, e.km);
   if(e.tip === "sil") return ters ? kmEkle9(R, e.is, e.km) : kmSil9(R, e.is, e.km);
   if(e.tip === "duz"){ const [a, b] = ters ? [e.yeni, e.eski] : [e.eski, e.yeni]; if(!kmSil9(R, e.is, a)) return false; return kmEkle9(R, e.is, b); }
@@ -6917,6 +7053,9 @@ function dnTekrar9(R, e){
   return var_;
 }
 function tekrar9(R, e){
+  if(e.tip === "kutualan"){ if(kutuAl9(R, e.is, e.yeni) >= 0 || kutuAl9(R, e.is, e.eski) < 0) return false; return kutuAlan9(R, e, false); }
+  if(e.tip === "kutuekle"){ if(!isBul9(R, e.is) || kutuAl9(R, e.is, e.kutu) >= 0) return false; return kutuAlan9(R, e, false); }
+  if(e.tip === "kutusil"){ if(kutuAl9(R, e.is, e.kutu) < 0) return false; return kutuAlan9(R, e, false); }
   if(e.tip === "kutu"){ const B = isBul9(R, e.hedef); if(!B || kutuNorm9(B).some(x => kutuEsit9(x, e.kutu))) return false; return kutuTasi9(R, e, false); }
   const j = isBul9(R, e.is); if(!j) return false;
   if(e.tip === "ekle") return kmVar9b(R, j, e.km) ? false : kmEkle9(R, e.is, e.km);
@@ -6969,6 +7108,9 @@ let tanim9 = e => {
   if(e.tip === "duz") return ["KM düzenlendi", km(e.eski) + " → " + km(e.yeni)];
   if(e.tip === "gizle") return ["Bu Hafta listesinden kaldırıldı", km(e.km)];
   if(e.tip === "kutu") return ["Harita kutusunun işi değişti", `${e.ad || ""} → ${e.hedefAd || ""}`];
+  if(e.tip === "kutualan") return ["Harita kutusu düzeltildi", e.ad || ""];
+  if(e.tip === "kutuekle") return ["Haritaya kutu eklendi", e.ad || ""];
+  if(e.tip === "kutusil") return ["Harita kutusu silindi", e.ad || ""];
   if(e.tip === "yazi") return [e.alan === "devam" ? "Devam Eden yazısı" : e.yil + " Biten yazısı", (e.sonraki || "").slice(0, 70) || "(boş)"];
   return ["Değişiklik", ""];
 };

@@ -2197,9 +2197,9 @@ function harita(){
   if(!D.harita) return '<div class="empty" style="padding-top:80px">Bu dosyada harita yok.</div>';
   const j = secKutu ? byId(secKutu) : null;
   const kutular = [];
-  ISLER.forEach(x => x.kutular.forEach(k => kutular.push([x.id, k])));
+  ISLER.forEach(x => x.kutular.forEach((k, ki) => kutular.push([x.id, k, ki])));
   return `<div class="mapwrap" id="mapwrap"><div class="mapin" id="mapin"><img src="${D.harita}" id="mapimg" alt="">
-${kutular.map(([id, k]) => `<button class="kutu${secKutu === id ? " on" : ""}" data-kutu="${esc(id)}" style="left:${k[0]}%;top:${k[1]}%;width:${k[2]}%;height:${k[3]}%" aria-label="${esc(byId(id).ad)}"></button>`).join("")}</div>
+${kutular.map(([id, k, ki]) => `<button class="kutu${secKutu === id ? " on" : ""}" data-kutu="${esc(id)}" data-ki="${ki}" style="left:${k[0]}%;top:${k[1]}%;width:${k[2]}%;height:${k[3]}%" aria-label="${esc(byId(id).ad)}"></button>`).join("")}</div>
 ${haritaUst()}<div class="zoom"><button data-zoom="1.5">+</button><button data-zoom="0.667">−</button></div>
 ${j ? `<div class="sheet"><div class="handle"></div><button class="x" data-kutukapat aria-label="Kapat">${IK("x")}</button><button class="nm nmac" data-is="${esc(j.id)}">${esc(j.ad)}<span>›</span></button><div class="mt" style="margin-bottom:0">${esc([j.il.join(" · "), j.firma].filter(Boolean).join(" · "))}</div>
 ${stdSatirlari(j, true)}
@@ -4584,7 +4584,7 @@ document.addEventListener("click", e => {
   const yz = e.target.closest("[data-yazi]"); if(yz && detay){ yaziPenceresi(byId(detay.id), yz.dataset.yazi); return; }
   const h = e.target.closest("[data-hat]"); if(h){ hatGoster(h.dataset.hat); return; }
   const hm = e.target.closest("[data-haritada]"); if(hm){ kapatAlt(); secKutu = hm.dataset.haritada; detay = null; tab = "map"; ciz(); kutuyaGit(secKutu); return; }
-  const kt = e.target.closest("[data-kutu]"); if(kt){ secKutu = kt.dataset.kutu; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); return; }
+  const kt = e.target.closest("[data-kutu]"); if(kt && kutuTut9.oldu){ kutuTut9.oldu = false; return; } if(kt){ secKutu = kt.dataset.kutu; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); return; }
   if(e.target.closest("[data-kutukapat]")){ secKutu = null; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); return; }
   const z = e.target.closest("[data-zoom]"); if(z){ mapZoom(Number(z.dataset.zoom)); return; }
   if(e.target.closest("[data-aratemizle]")){ isAra = ""; const i = document.getElementById("isAra"); if(i){ i.value = ""; i.focus(); } document.getElementById("isListe").innerHTML = isListesi(aramaSonuc()); return; }
@@ -6050,6 +6050,27 @@ boyKesit = async function(j){
   if(p && hatHarita && hatMod === "2b" && hatSinir && hatSinir.length){ try{ hatHarita.fitBounds(hatSinir, { paddingTopLeft: [30, 170], paddingBottomRight: [70, p.offsetHeight + 30], maxZoom: 16 }); }catch(_){} }
 };
 
+// v188: düzenleme modunda harita kutusuna basılı tutunca kutunun işi değiştirilir (onay sorulur)
+const kutuTut9 = { z: null, oldu: false, x: 0, y: 0 };
+document.addEventListener("pointerdown", e => {
+  const kt = e.target.closest && e.target.closest(".kutu[data-kutu]"); if(!kt || typeof DUZ9 === "undefined" || !DUZ9 || !YON9) return;
+  clearTimeout(kutuTut9.z); kutuTut9.oldu = false; kutuTut9.x = e.clientX; kutuTut9.y = e.clientY;
+  kutuTut9.z = setTimeout(() => { kutuTut9.z = null; kutuTut9.oldu = true; kt.classList.add("basili"); try{ navigator.vibrate && navigator.vibrate(15); }catch(_){}
+    setTimeout(() => kt.classList.remove("basili"), 300); kutuIsDegistir9(kt.dataset.kutu, +kt.dataset.ki); }, 550);
+}, true);
+["pointerup", "pointercancel"].forEach(t => document.addEventListener(t, () => { clearTimeout(kutuTut9.z); kutuTut9.z = null; }, true));
+document.addEventListener("pointermove", e => { if(kutuTut9.z && Math.hypot(e.clientX - kutuTut9.x, e.clientY - kutuTut9.y) > 10){ clearTimeout(kutuTut9.z); kutuTut9.z = null; } }, true);
+function kutuIsDegistir9(id, ki){
+  const j = byId(id); if(!j) return; const kutu = (j.kutular || [])[ki]; if(!kutu) return;
+  const L = ISLER.filter(x => x.id !== id).map(x => ({ id: x.id, ad: x.ad, sef: x.sef || "", firma: x.firma || "", il: x.il || [] })).sort((a, b) => a.ad.localeCompare(b.ad, "tr"));
+  secici9("Kutunun işini değiştir", `Şu an: ${j.ad}`, L, "", async v => {
+    if(!v || v === "-") return; const h = byId(v); if(!h) return;
+    const ok = await onay9("Kutunun işi değiştirilsin mi?", `Şu anki iş: <b>${esc(j.ad)}</b><br>Yeni iş: <b>${esc(h.ad)}</b>`, [{ t: "Vazgeç", v: false }, { t: "Değiştir", v: true, ana: 1 }]);
+    if(!ok) return;
+    try{ await degistir9({ tip: "kutu", is: id, hedef: v, kutu: kutu.slice(0, 4), ad: j.ad, hedefAd: h.ad }); secKutu = v; ciz(); bildir(`Kutu ${h.ad} işine verildi`); }
+    catch(err){ bildir(err.message || "Değiştirilemedi"); }
+  }, []);
+}
 // v29: haritada yazarken filtreleme — eşleşen kutular parlar, diğerleri solar; tek eşleşme kalınca haritaya uçar
 let hAraSet = null, hAraTek = null, hAraZam = 0;
 const hAraEsles = () => { const q = fold(hAra || "").trim(); if(!q) return null;
@@ -6862,7 +6883,15 @@ function yaziYaz9(R, id, alan, yil, metin){
   return true;
 }
 // Liste kaydını uygula (ters: geri al)
+// v188: harita kutusu bir işten başka işe taşınır (yalnız düzenleme modunda, onayla)
+function kutuNorm9(j){ if(!Array.isArray(j.kutular)) j.kutular = j.pin ? [[j.pin[0] - 1.5, j.pin[1] - 1.5, 3, 3]] : []; return j.kutular; }
+const kutuEsit9 = (a, b) => a && b && a.length >= 4 && b.length >= 4 && [0, 1, 2, 3].every(i => Math.abs(+a[i] - +b[i]) < .01);
+function kutuTasi9(R, e, ters){
+  const [k, h] = ters ? [e.hedef, e.is] : [e.is, e.hedef], A = isBul9(R, k), B = isBul9(R, h); if(!A || !B) return false;
+  const LA = kutuNorm9(A), i = LA.findIndex(x => kutuEsit9(x, e.kutu)); if(i < 0) return false;
+  LA.splice(i, 1); if(!LA.length) delete A.pin; kutuNorm9(B).push(e.kutu.slice(0, 4)); return true; }
 function uygula9(R, e, ters){
+  if(e.tip === "kutu") return kutuTasi9(R, e, ters);
   if(e.tip === "ekle") return ters ? kmSil9(R, e.is, e.km) : kmEkle9(R, e.is, e.km);
   if(e.tip === "sil") return ters ? kmEkle9(R, e.is, e.km) : kmSil9(R, e.is, e.km);
   if(e.tip === "duz"){ const [a, b] = ters ? [e.yeni, e.eski] : [e.eski, e.yeni]; if(!kmSil9(R, e.is, a)) return false; return kmEkle9(R, e.is, b); }
@@ -6888,6 +6917,7 @@ function dnTekrar9(R, e){
   return var_;
 }
 function tekrar9(R, e){
+  if(e.tip === "kutu"){ const B = isBul9(R, e.hedef); if(!B || kutuNorm9(B).some(x => kutuEsit9(x, e.kutu))) return false; return kutuTasi9(R, e, false); }
   const j = isBul9(R, e.is); if(!j) return false;
   if(e.tip === "ekle") return kmVar9b(R, j, e.km) ? false : kmEkle9(R, e.is, e.km);
   if(e.tip === "sil") return kmVar9b(R, j, e.km) ? kmSil9(R, e.is, e.km) : false;
@@ -6938,6 +6968,7 @@ let tanim9 = e => {
   if(e.tip === "sil") return ["KM silindi", km(e.km)];
   if(e.tip === "duz") return ["KM düzenlendi", km(e.eski) + " → " + km(e.yeni)];
   if(e.tip === "gizle") return ["Bu Hafta listesinden kaldırıldı", km(e.km)];
+  if(e.tip === "kutu") return ["Harita kutusunun işi değişti", `${e.ad || ""} → ${e.hedefAd || ""}`];
   if(e.tip === "yazi") return [e.alan === "devam" ? "Devam Eden yazısı" : e.yil + " Biten yazısı", (e.sonraki || "").slice(0, 70) || "(boş)"];
   return ["Değişiklik", ""];
 };

@@ -753,6 +753,17 @@ html.dark .olckart{ background:#141c2b; color:#e6ebf3; }
 .itiozet .lb{ align-items:center; } .itiozet .lb #itiozad{ flex:1; }
 .itiozet .lb .iz{ display:flex; gap:6px; } .itiozet .lb .iz button{ width:34px; height:28px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; font-size:17px; font-weight:700; color:#374151; letter-spacing:0; }
 .itiozet.son9{ padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
+
+/* v208: drone zip */
+.dr9 .btn{ width:100%; }
+.dr9o{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:14px 0 8px; }
+.dr9o > div{ background:#f1f5f9; border-radius:12px; padding:9px 4px; text-align:center; } .dr9o b{ display:block; font-size:19px; } .dr9o small{ font-size:11px; color:#64748b; }
+.dr9i{ font-size:13px; color:#475569; margin:8px 2px; } .dr9h{ font-size:12px; color:#b91c1c; background:#fef2f2; border-radius:10px; padding:8px 10px; margin:8px 0; }
+html.dark .dr9o > div{ background:#1e293b; } html.dark .dr9i{ color:#cbd5e1; } html.dark .dr9h{ background:#3f1d1d; color:#fca5a5; }
+/* v208: haritada arama / filtre vurgusu da fuşya */
+.kutu.parla{ border-color:#a21caf !important; background:transparent !important; box-shadow:0 0 0 calc(1px * var(--kz, 1)) #a21caf, 0 0 calc(12px * var(--kz, 1)) rgba(192,38,211,.55) !important; }
+.kutu.ara9{ border-color:#a21caf !important; }
+html.dark .kutu.parla{ border-color:#d946ef !important; box-shadow:0 0 0 calc(1px * var(--kz, 1)) #d946ef, 0 0 calc(12px * var(--kz, 1)) rgba(217,70,239,.55) !important; }
 /* v204: harita + / − sağ altta; iş kartı açıksa kartın üstünde */
 .mapwrap .zoom{ top:auto; bottom:14px; transition:bottom .2s ease; }
 .mapwrap .hust{ right:10px; right:max(10px, env(safe-area-inset-right)); }
@@ -7388,7 +7399,7 @@ anasayfa = function(){
 function serit9(){
   const n = GUN9.length;
   return `<div class="dz9s"><div class="t"><span class="i">${IK("kalem")}</span><div><b>Düzenleme modu</b><small>${n ? n + " değişiklik bu telefonda" : "İşe girip KM ve yazıları düzenleyin"}</small></div><button class="kp" data-duzen9 aria-label="Düzenleme modunu kapat">${IK("x")}</button></div>
-<div class="b"><button data-dz9excel>${IK("tablo")}Excel</button><button data-dz9iti>${IK("iti")}İtinerer</button><button data-dz9aktar>${IK("aktar")}Veri Aktar</button><button data-dz9liste>${IK("liste")}Liste${n ? `<i>${n}</i>` : ""}</button></div></div>`;
+<div class="b"><button data-dz9excel>${IK("tablo")}Excel</button><button data-dz9iti>${IK("iti")}İtinerer</button><button data-dz9drone>${IK("drone")}Drone</button><button data-dz9aktar>${IK("aktar")}Veri Aktar</button><button data-dz9liste>${IK("liste")}Liste${n ? `<i>${n}</i>` : ""}</button></div></div>`;
 }
 async function duzenDegis9(){
   if(!YON9) return;
@@ -10041,6 +10052,110 @@ async function itiMenu9(){
   ov.addEventListener("click", e => { const b = e.target.closest("[data-it9]"); if(!b || b.disabled) return; kapatAlt(); if(b.dataset.it9 === "yukle") ytYukle9(); });
 }
 document.addEventListener("click", e => { if(e.target.closest("[data-dz9iti]")){ e.stopPropagation(); hazir9.then(itiMenu9); } }, true);
+
+
+// ---------- v208: Drone TXT (zip) — düzenleme modunda drone uçuşlarını telefondan güncelle ----------
+// Zip içindeki DJI uçuş .txt'leri masaüstüyle aynı ayrıştırıcıyla okunur (başlangıç noktası, tarih, süre, mesafe);
+// yanında aynı adlı .kml varsa (masaüstünün çözdüğü rota) rota da alınır. Hiçbir şey internete gönderilmez.
+let JSZIP9 = null, DJI9 = null;
+function jszip9(){ return JSZIP9 || (JSZIP9 = new Promise((ok, no) => { if(window.JSZip) return ok(window.JSZip);
+  const sc = document.createElement("script"); sc.src = "lib/jszip.min.js"; sc.onload = () => ok(window.JSZip); sc.onerror = () => { JSZIP9 = null; no(new Error("Zip okuyucu yüklenemedi; ilk kullanımda internet gerekir")); }; document.head.appendChild(sc); })); }
+function dji9(){ return DJI9 || (DJI9 = import("./lib/dji-log.mjs").catch(() => { DJI9 = null; throw new Error("Drone kayıt okuyucu yüklenemedi; ilk kullanımda internet gerekir"); })); }
+function sadeles9(pts, tol){
+  if(pts.length < 3) return pts; const keep = new Uint8Array(pts.length); keep[0] = keep[pts.length - 1] = 1; const st = [[0, pts.length - 1]];
+  while(st.length){ const [a, b] = st.pop(); let mx = 0, ix = -1; const [ax, ay] = pts[a], [bx, by] = pts[b], dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy) || 1e-12;
+    for(let i = a + 1; i < b; i++){ const d = Math.abs(dy * (pts[i][0] - ax) - dx * (pts[i][1] - ay)) / L; if(d > mx){ mx = d; ix = i; } }
+    if(mx > tol && ix > 0){ keep[ix] = 1; st.push([a, ix], [ix, b]); } }
+  return pts.filter((_, i) => keep[i]);
+}
+function kmlRota9(metin){
+  try{ const x = new DOMParser().parseFromString(metin, "text/xml"); const ls = [...x.getElementsByTagNameNS("*", "LineString")][0]; if(!ls) return null;
+    const c = ([...ls.getElementsByTagNameNS("*", "coordinates")][0] || {}).textContent || "";
+    const P = c.trim().split(/\s+/).map(q => q.split(",").map(Number)).filter(q => Number.isFinite(q[0]) && Number.isFinite(q[1])).map(q => Number.isFinite(q[2]) ? [q[1], q[0], q[2]] : [q[1], q[0]]);
+    return P.length > 1 ? P : null; }catch(_){ return null; }
+}
+async function droneZip9(file, ilerle){
+  const JSZip = await jszip9(); const zip = await JSZip.loadAsync(file);
+  const ad = n => n.split("/").pop(), gizli = n => /(^|\/)__MACOSX\//.test(n) || /^\./.test(ad(n));
+  const E = Object.values(zip.files).filter(f => !f.dir && !gizli(f.name));
+  const T = E.filter(f => /\.txt$/i.test(f.name)); if(!T.length) throw new Error("Zip'te .txt dosyası bulunamadı");
+  const K = new Map(E.filter(f => /\.kml$/i.test(f.name)).map(f => [ad(f.name).replace(/\.kml$/i, "").toLocaleLowerCase("tr-TR"), f]));
+  const ustK = [...new Set(T.map(f => f.name.includes("/") ? f.name.split("/").slice(-2, -1)[0] : ""))];
+  const klasor = ustK.length === 1 && ustK[0] ? ustK[0] : file.name.replace(/\.zip$/i, "");
+  const P = await dji9(); const r5 = n => Math.round(Number(n) * 1e5) / 1e5;
+  const ucus = [], hata = []; let i = 0;
+  for(const f of T){ i++; if(ilerle) ilerle(i, T.length);
+    try{ const b = await f.async("uint8array"); const d = new P.DJILog(b).details;
+      if(!d || !Number.isFinite(d.latitude) || !Number.isFinite(d.longitude) || (d.latitude === 0 && d.longitude === 0)){ hata.push(ad(f.name)); continue; }
+      const t = new Date(d.startTime).getTime();
+      const o = { a: r5(d.latitude), o: r5(d.longitude), t: Number.isFinite(t) ? t : 0, s: Math.round(Number(d.totalTime) || 0), m: Math.round(Number(d.totalDistance) || 0), k: klasor, d: ad(f.name) };
+      const kf = K.get(ad(f.name).replace(/\.txt$/i, "").toLocaleLowerCase("tr-TR"));
+      if(kf){ const R = kmlRota9(await kf.async("string")); if(R){ const S = sadeles9(R, 0.00004).map(p => p.length > 2 ? [r5(p[0]), r5(p[1]), Math.round(p[2])] : [r5(p[0]), r5(p[1])]); if(S.length > 1) o.r = S; } }
+      ucus.push(o);
+    }catch(_){ hata.push(ad(f.name)); }
+    if(i % 8 === 0) await new Promise(r => setTimeout(r, 0));
+  }
+  return { ucus, hata, klasor };
+}
+// değişiklik: zip'teki uçuşlar dosya adına göre eklenir / yenilenir; geri alınca eski hâline döner
+const droneAnah9 = u => String(u.d || "").toLocaleLowerCase("tr-TR");
+function droneUygula9(R, e, ters){
+  R.katman = R.katman || {}; const dr = R.katman.drone || (R.katman.drone = { ucus: [], klasorler: [] }); dr.ucus = dr.ucus || []; dr.klasorler = dr.klasorler || [];
+  if(!ters){
+    const M = new Map(dr.ucus.map((u, i) => [droneAnah9(u), i]));
+    e.liste.forEach(u => { const i = M.get(droneAnah9(u)); if(i != null) dr.ucus[i] = u; else { dr.ucus.push(u); M.set(droneAnah9(u), dr.ucus.length - 1); } });
+    if(e.klasor && !dr.klasorler.includes(e.klasor)) dr.klasorler.push(e.klasor);
+    return true;
+  }
+  const yeni = new Set(e.liste.map(droneAnah9)), eski = new Map((e.eski || []).map(u => [droneAnah9(u), u]));
+  dr.ucus = dr.ucus.flatMap(u => { const k = droneAnah9(u); if(!yeni.has(k)) return [u]; return eski.has(k) ? [eski.get(k)] : []; });
+  if(e.klasorYeni) dr.klasorler = dr.klasorler.filter(k => k !== e.klasor);
+  if(!dr.ucus.length && R.katman.drone) R.katman.drone = null;
+  return true;
+}
+const _uygula208 = uygula9;
+uygula9 = function(R, e, ters){ if(e && e.tip === "drone") return droneUygula9(R, e, ters); return _uygula208.apply(this, arguments); };
+const _tekrar208 = tekrar9;
+tekrar9 = function(R, e){ if(e && e.tip === "drone"){ const dr = R.katman && R.katman.drone, M = new Map(((dr && dr.ucus) || []).map(u => [droneAnah9(u), u]));
+    if(e.liste.every(u => { const v = M.get(droneAnah9(u)); return v && v.t === u.t && v.a === u.a && v.o === u.o && !!v.r === !!u.r; })) return false; return droneUygula9(R, e, false); }
+  return _tekrar208.apply(this, arguments); };
+const _tanim208 = tanim9;
+tanim9 = function(e){ if(e && e.tip === "drone") return ["Drone uçuşları güncellendi", `${e.klasor || ""} · ${e.liste.length} uçuş (${e.yeniN || 0} yeni, ${e.degN || 0} yenilenen)`]; return _tanim208.apply(this, arguments); };
+function droneSayfa9(){
+  const dr = D && D.katman && D.katman.drone, n = dr && dr.ucus ? dr.ucus.length : 0;
+  const ov = altSayfa(IK("drone"), "Drone Uçuşları", n ? `${n} uçuş · ${(dr.klasorler || []).join(", ")}` : "Henüz drone uçuşu yok", `<div class="dr9">
+<p class="not" style="margin:0 2px 12px;font-size:13px;color:#64748b">Drone uçuş <b>.txt</b> klasörünü zipleyip seçin. Masaüstünün çözdüğü aynı adlı <b>.kml</b> dosyaları da zip'te varsa uçuş rotaları da gelir; yoksa yalnız kalkış noktaları güncellenir. Aynı adlı uçuşlar yenilenir, yeniler eklenir; zip'te olmayan uçuşlar silinmez.</p>
+<button class="btn" data-dr9sec>${IK("yukle")}Zip seç</button><div class="dr9s" id="dr9s"></div></div>`);
+  let sonuc = null;
+  ov.addEventListener("click", async ev => {
+    const b = ev.target.closest("button"); if(!b) return;
+    if(b.hasAttribute("data-dr9sec")){
+      const inp = document.createElement("input"); inp.type = "file"; inp.accept = ".zip,application/zip,application/x-zip-compressed";
+      inp.addEventListener("change", async () => { const f = inp.files && inp.files[0]; if(!f) return; const yer = ov.querySelector("#dr9s");
+        yer.innerHTML = `<div class="dr9i">Okunuyor…</div>`; b.disabled = true;
+        try{
+          const r = await droneZip9(f, (i, N) => { yer.innerHTML = `<div class="dr9i">Okunuyor… ${i} / ${N}</div>`; });
+          const M = new Map(((D.katman && D.katman.drone && D.katman.drone.ucus) || []).map(u => [droneAnah9(u), u]));
+          const yeniN = r.ucus.filter(u => !M.has(droneAnah9(u))).length, ayni = r.ucus.filter(u => { const v = M.get(droneAnah9(u)); return v && v.t === u.t && v.a === u.a && v.o === u.o && !!v.r === !!u.r; }).length;
+          const degN = r.ucus.length - yeniN - ayni, rota = r.ucus.filter(u => u.r).length;
+          sonuc = { ...r, yeniN, degN, ayni, eski: r.ucus.map(u => M.get(droneAnah9(u))).filter(Boolean), klasorYeni: !((D.katman && D.katman.drone && D.katman.drone.klasorler) || []).includes(r.klasor) };
+          yer.innerHTML = `<div class="dr9o"><div><b>${r.ucus.length}</b><small>uçuş okundu</small></div><div><b>${yeniN}</b><small>yeni</small></div><div><b>${degN}</b><small>yenilenen</small></div><div><b>${ayni}</b><small>değişmeyen</small></div></div>
+<div class="dr9i">Klasör: <b>${esc(r.klasor)}</b> · Rotalı: ${rota}${r.hata.length ? ` · Okunamayan: ${r.hata.length}` : ""}</div>${r.hata.length ? `<div class="dr9h">${r.hata.slice(0, 12).map(esc).join("<br>")}${r.hata.length > 12 ? "<br>…" : ""}</div>` : ""}
+${yeniN + degN ? `<button class="btn" data-dr9uy>Uygula</button>` : `<div class="dr9i">Güncellenecek uçuş yok.</div>`}`;
+        }catch(err){ yer.innerHTML = `<div class="dr9h">${esc(err.message || "Zip okunamadı")}</div>`; }
+        b.disabled = false; });
+      inp.click(); return;
+    }
+    if(b.hasAttribute("data-dr9uy") && sonuc){
+      b.disabled = true; b.textContent = "Uygulanıyor…";
+      const Y = new Set(sonuc.ucus.filter(u => !sonuc.eski.some(v => droneAnah9(v) === droneAnah9(u) && v.t === u.t && v.a === u.a && v.o === u.o && !!v.r === !!u.r)).map(droneAnah9));
+      const liste = sonuc.ucus.filter(u => Y.has(droneAnah9(u))), eski = sonuc.eski.filter(u => Y.has(droneAnah9(u)));
+      try{ await degistir9({ tip: "drone", liste, eski, klasor: sonuc.klasor, klasorYeni: sonuc.klasorYeni, yeniN: sonuc.yeniN, degN: sonuc.degN }); kapatAlt(); bildir(`Drone uçuşları güncellendi: ${sonuc.yeniN} yeni, ${sonuc.degN} yenilenen`); }
+      catch(err){ bildir(err.message || "Uygulanamadı"); b.disabled = false; b.textContent = "Uygula"; }
+    }
+  });
+}
+document.addEventListener("click", e => { if(e.target.closest("[data-dz9drone]")){ e.stopPropagation(); hazir9.then(droneSayfa9); } }, true);
 
 // ---------- İtinerer – KM Karşılaştır ----------
 function farklar9(j){

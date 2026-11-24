@@ -754,6 +754,13 @@ html.dark .olckart{ background:#141c2b; color:#e6ebf3; }
 .itiozet .lb .iz{ display:flex; gap:6px; } .itiozet .lb .iz button{ width:34px; height:28px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; font-size:17px; font-weight:700; color:#374151; letter-spacing:0; }
 .itiozet.son9{ padding-bottom:calc(8px + env(safe-area-inset-bottom)); }
 
+
+/* v210: kutu oturtma önizlemesi */
+.kutu.ot9e{ border-style:dashed !important; border-color:#64748b !important; opacity:.8; }
+.ot9{ position:absolute; border:calc(2px * var(--kz, 1)) solid #c026d3; pointer-events:none; z-index:2; }
+.ot9.on{ box-shadow:0 0 0 calc(2px * var(--kz, 1)) rgba(192,38,211,.35); }
+.ot9y{ font-size:12px; color:#b91c1c; margin:-4px 0 10px; }
+.zoom .kot9{ display:grid; place-items:center; padding:0; color:#a21caf; }
 /* v208: drone zip */
 .dr9 .btn{ width:100%; }
 .dr9o{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:14px 0 8px; }
@@ -1306,7 +1313,9 @@ html.dark .durb{ background:#1a2335 !important; border-color:#2a3650 !important;
 .kc9{ position:absolute; border:2px dashed #2563eb; background:rgba(37,99,235,.18); border-radius:3px; pointer-events:none; border-width:calc(2px * var(--kz,1)); }
 .kd9bar{ position:absolute; left:10px; right:10px; bottom:10px; background:#fff; border-radius:18px; padding:12px 14px; box-shadow:0 -6px 24px rgba(0,0,0,.28); z-index:4; }
 .kd9t{ font-weight:800; font-size:15px; color:#111827; } .kd9a{ font-size:12px; color:#6b7280; margin:2px 0 10px; }
-.kd9d{ display:flex; gap:8px; } .kd9d .eb{ flex:1; margin:0; } .kd9d .eb.ana{ background:#2563eb; color:#fff; border-color:#2563eb; } .kd9d .eb.ana:disabled{ opacity:.45; } .kd9d .eb.sil{ color:#dc2626; }
+.kd9d{ display:flex; gap:8px; } .kd9d .eb{ flex:1; margin:0; height:42px; padding:0 8px; border-radius:12px; border:1px solid #e2e8f0; background:#fff; color:#0f172a; font:700 14px/1 inherit; font-family:inherit; -webkit-appearance:none; appearance:none; } .kd9d .eb:disabled{ opacity:.4; }
+html.dark .kd9d .eb{ background:#273244; border-color:#334155; color:#f1f5f9; }
+.ot9bar .kd9d .eb.ana{ background:#a21caf; border-color:#a21caf; color:#fff; } .kd9d .eb.ana{ background:#2563eb; color:#fff; border-color:#2563eb; } .kd9d .eb.ana:disabled{ opacity:.45; } .kd9d .eb.sil{ color:#dc2626; }
 .zoom .kyeni9{ font-size:15px; position:relative; } .zoom .kyeni9 b{ position:absolute; right:5px; top:2px; font-size:11px; color:#2563eb; }
 html.dark .kd9bar{ background:#1f2937; } html.dark .kd9t{ color:#f3f4f6; } html.dark .kd9a{ color:#9ca3af; }
 
@@ -2334,9 +2343,9 @@ function harita(){
   const kutular = [];
   ISLER.forEach(x => x.kutular.forEach((k, ki) => kutular.push([x.id, k, ki])));
   return `<div class="mapwrap" id="mapwrap"><div class="mapin" id="mapin"><img src="${D.harita}" id="mapimg" alt="">
-${kutular.map(([id, k, ki]) => { const ed = kd9Bu(id, ki); if(ed) k = KD9.k; return `<button class="kutu${secKutu === id ? " on" : ""}${ed ? " kd9" : ""}" data-kutu="${esc(id)}" data-ki="${ki}" style="left:${k[0]}%;top:${k[1]}%;width:${k[2]}%;height:${k[3]}%" aria-label="${esc(byId(id).ad)}">${ed ? ["nw", "ne", "sw", "se"].map(c => `<i class="kh9 ${c}" data-kh="${c}"></i>`).join("") : ""}</button>`; }).join("")}${KD9 && KD9.ciz && KD9.k ? `<div class="kc9" id="kc9" style="left:${KD9.k[0]}%;top:${KD9.k[1]}%;width:${KD9.k[2]}%;height:${KD9.k[3]}%"></div>` : ""}</div>
-${haritaUst()}<div class="zoom"><button class="sfr9" data-hsifir aria-label="Haritayı sıfırla"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button><button data-zoom="1.5">+</button><button data-zoom="0.667">−</button>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && !KD9 ? `<button class="kyeni9" data-kd9yeni aria-label="Yeni kutu">▭<b>+</b></button>` : ""}</div>
-${KD9 ? kd9Cubuk() : ""}${j && !KD9 ? `<div class="sheet"><div class="handle"></div><button class="x" data-kutukapat aria-label="Kapat">${IK("x")}</button><button class="nm nmac" data-is="${esc(j.id)}">${esc(j.ad)}<span>›</span></button><div class="mt" style="margin-bottom:0">${esc([j.il.join(" · "), j.firma].filter(Boolean).join(" · "))}</div>
+${kutular.map(([id, k, ki]) => { const ed = kd9Bu(id, ki); if(ed) k = KD9.k; const ote = otEski9(id, ki); return `<button class="kutu${secKutu === id && !ote ? " on" : ""}${ed ? " kd9" : ""}${ote ? " ot9e" : ""}" data-kutu="${esc(id)}" data-ki="${ki}" style="left:${k[0]}%;top:${k[1]}%;width:${k[2]}%;height:${k[3]}%" aria-label="${esc(byId(id).ad)}">${ed ? ["nw", "ne", "sw", "se"].map(c => `<i class="kh9 ${c}" data-kh="${c}"></i>`).join("") : ""}</button>`; }).join("")}${KD9 && KD9.ciz && KD9.k ? `<div class="kc9" id="kc9" style="left:${KD9.k[0]}%;top:${KD9.k[1]}%;width:${KD9.k[2]}%;height:${KD9.k[3]}%"></div>` : ""}${otOner9()}</div>
+${haritaUst()}<div class="zoom"><button class="sfr9" data-hsifir aria-label="Haritayı sıfırla"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button><button data-zoom="1.5">+</button><button data-zoom="0.667">−</button>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && !KD9 && !OT9 ? `<button class="kyeni9" data-kd9yeni aria-label="Yeni kutu">▭<b>+</b></button><button class="kot9" data-ot9bas aria-label="Kutuları resimdeki dikdörtgenlere oturt"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><rect x="8.5" y="8.5" width="7" height="7" rx="1"/></svg></button>` : ""}</div>
+${KD9 ? kd9Cubuk() : ""}${OT9 && !KD9 ? otCubuk9() : ""}${j && !KD9 && !OT9 ? `<div class="sheet"><div class="handle"></div><button class="x" data-kutukapat aria-label="Kapat">${IK("x")}</button><button class="nm nmac" data-is="${esc(j.id)}">${esc(j.ad)}<span>›</span></button><div class="mt" style="margin-bottom:0">${esc([j.il.join(" · "), j.firma].filter(Boolean).join(" · "))}</div>
 ${stdSatirlari(j, true)}
 <div class="hdalt">${daDugmeler(j)}</div>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && j.kutular.length ? `<button class="eb kd9ac" data-kd9duz>▭ Kutuyu düzenle${j.kutular.length > 1 ? ` <span>(${Math.min(secKi9 || 0, j.kutular.length - 1) + 1}/${j.kutular.length})</span>` : ""}</button>` : ""}</div>` : ""}
 </div>`;
@@ -6350,6 +6359,7 @@ function kd9Bu(id, ki){ return !!(KD9 && !KD9.ciz && KD9.id === id && KD9.ki ===
 function kd9Yuv(k){ return k.map(v => Math.round(v * 100) / 100); }
 function kd9Degisti(){ return !!(KD9 && !KD9.ciz && !kutuEsit9(KD9.k, KD9.k0)); }
 function kd9Gecerli(){
+  if(OT9 && (typeof DUZ9 === "undefined" || !DUZ9 || !YON9 || tab !== "map" || detay)) OT9 = null;
   if(!KD9) return;
   if(typeof DUZ9 === "undefined" || !DUZ9 || !YON9 || tab !== "map" || detay){ KD9 = null; kd9S = null; return; }
   if(!KD9.ciz){ const j = byId(KD9.id); if(!j || !j.kutular[KD9.ki] || !kutuEsit9(j.kutular[KD9.ki], KD9.k0)){ KD9 = null; kd9S = null; } }
@@ -6362,7 +6372,7 @@ function kd9Cubuk(){
   }
   const j = byId(KD9.id);
   return `<div class="kd9bar"><div class="kd9t">${esc(j ? j.ad : "")}</div><div class="kd9a">Ortasından sürükle: taşı · Köşesinden sürükle: boyutlandır</div>
-<div class="kd9d"><button class="eb sil" data-kd9="sil">Sil</button><button class="eb" data-kd9="iptal">İptal</button><button class="eb ana" data-kd9="tamam"${kd9Degisti() ? "" : " disabled"}>Tamam</button></div></div>`;
+<div class="kd9d"><button class="eb sil" data-kd9="sil">Sil</button><button class="eb" data-kd9="oturt">Oturt</button><button class="eb" data-kd9="iptal">İptal</button><button class="eb ana" data-kd9="tamam"${kd9Degisti() ? "" : " disabled"}>Tamam</button></div></div>`;
 }
 // v190: dokunma işi açar (kart); alan düzenleme kartdaki "Kutuyu düzenle" düğmesiyle
 var secKi9 = 0;
@@ -6448,6 +6458,7 @@ document.addEventListener("click", async e => {
   const a = b.dataset.kd9;
   if(a === "iptal"){ KD9 = null; kd9Yenile(); return; }
   if(a === "yeniden"){ KD9.k = null; kd9Yenile(); return; }
+  if(a === "oturt"){ try{ const r = otBul9(KD9.k); if(!r.k){ bildir("Bu kutunun çevresinde resimde dikdörtgen bulunamadı"); return; } KD9.k = r.k; kd9Yenile(); bildir(r.ayni ? "Kutu zaten yerinde" : "Kutu resimdeki dikdörtgene oturtuldu · Tamam ile kaydedin"); }catch(err){ bildir(err.message || "Oturtulamadı"); } return; }
   if(a === "is"){ kd9IsSec(); return; }
   const j = byId(KD9.id); if(!j) { KD9 = null; kd9Yenile(); return; }
   if(a === "tamam"){
@@ -6738,7 +6749,7 @@ function hustKucult9(){
 const _mapUygula37 = mapUygula;
 mapUygula = function(){ const r = _mapUygula37.apply(this, arguments); hustKucult9(); zoomYer9(); return r; };
 function zoomYer9(){ const w = document.getElementById("mapwrap"); if(!w) return; const z = w.querySelector(".zoom"); if(!z) return;
-  const s = w.querySelector(".sheet, .kd9bar"); z.style.bottom = s ? (s.offsetHeight + 20) + "px" : "";
+  const s = w.querySelector(".sheet, .kd9bar"); z.style.bottom = s ? (s.offsetHeight + 24) + "px" : "";
   const sf = z.querySelector(".sfr9"); if(sf) sf.classList.toggle("bos9", mz.s <= 1.01 && !hIl.size && !hStd.size && !(typeof hBirim !== "undefined" && hBirim.size) && !(hAra || "").trim() && !secKutu); }
 // v209: sıfırla — arama, İL / BİRİM / STD filtreleri, açık iş kartı temizlenir; harita ilk görünüşüne yumuşakça döner
 document.addEventListener("click", e => {
@@ -10067,6 +10078,112 @@ async function itiMenu9(){
 }
 document.addEventListener("click", e => { if(e.target.closest("[data-dz9iti]")){ e.stopPropagation(); hazir9.then(itiMenu9); } }, true);
 
+
+
+// ---------- v210: kutuları resimdeki dikdörtgenlere otomatik oturt ----------
+// Renkten bağımsız: kutunun çevresinde resimde çevresinden ayrılan uzun, düz yatay / dikey çizgiler aranır (ince çizgi ya da
+// dolu alan kenarı); dört kenarı en tutarlı olan ve elle çizilen kutuya en yakın dikdörtgen seçilir. Hiçbir şey kendiliğinden değişmez.
+var OT9 = null;
+function otTuval9(){
+  const img = document.getElementById("mapimg"); if(!img || !img.naturalWidth) throw new Error("Harita resmi henüz yüklenmedi");
+  const c0 = otTuval9.c; if(c0 && c0.src === img.src) return c0;
+  const nw = img.naturalWidth, nh = img.naturalHeight, o = Math.min(1, 4096 / Math.max(nw, nh)), W = Math.round(nw * o), H = Math.round(nh * o);
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const ctx = cv.getContext("2d", { willReadFrequently: true }); ctx.drawImage(img, 0, 0, W, H);
+  return (otTuval9.c = { src: img.src, ctx, W, H });
+}
+function otBul9(k){
+  const { ctx, W, H } = otTuval9();
+  const x1 = k[0] / 100 * W, y1 = k[1] / 100 * H, x2 = (k[0] + k[2]) / 100 * W, y2 = (k[1] + k[3]) / 100 * H, w = x2 - x1, h = y2 - y1;
+  const m = Math.max(10, 0.35 * Math.max(w, h));
+  const X0 = Math.max(0, Math.floor(x1 - m - 6)), Y0 = Math.max(0, Math.floor(y1 - m - 6)), X1 = Math.min(W, Math.ceil(x2 + m + 6)), Y1 = Math.min(H, Math.ceil(y2 + m + 6));
+  const ww = X1 - X0, hh = Y1 - Y0; if(ww < 12 || hh < 12) return { k: null };
+  const d = ctx.getImageData(X0, Y0, ww, hh).data;
+  const fark = (i, j) => { const a = d[i] - d[j], b = d[i + 1] - d[j + 1], c = d[i + 2] - d[j + 2]; return Math.sqrt(a * a + b * b + c * c); };
+  const Hm = new Float32Array(ww * hh), Vm = new Float32Array(ww * hh);
+  for(let y = 5; y < hh - 5; y++) for(let x = 5; x < ww - 5; x++){
+    const i = (y * ww + x) * 4; let hr = 0, vr = 0;
+    for(let q = 2; q <= 4; q++){
+      const u = Math.min(fark(i, i - q * ww * 4), fark(i, i + q * ww * 4)); if(u > hr) hr = u;
+      const v = Math.min(fark(i, i - q * 4), fark(i, i + q * 4)); if(v > vr) vr = v; }
+    hr = Math.max(hr, 0.7 * fark(i - 2 * ww * 4, i + 2 * ww * 4)); vr = Math.max(vr, 0.7 * fark(i - 8, i + 8));
+    Hm[y * ww + x] = hr; Vm[y * ww + x] = vr;
+  }
+  const T = 55;
+  const sat = (y, a, b) => { if(y < 6 || y > hh - 7) return 0; a = Math.max(5, Math.round(a)); b = Math.min(ww - 6, Math.round(b)); if(b - a < 4) return 0; let n = 0;
+    for(let x = a; x <= b; x++) if(Math.max(Hm[(y - 1) * ww + x], Hm[y * ww + x], Hm[(y + 1) * ww + x]) >= T) n++; return n / (b - a + 1); };
+  const sut = (x, a, b) => { if(x < 6 || x > ww - 7) return 0; a = Math.max(5, Math.round(a)); b = Math.min(hh - 6, Math.round(b)); if(b - a < 4) return 0; let n = 0;
+    for(let y = a; y <= b; y++) if(Math.max(Vm[y * ww + x - 1], Vm[y * ww + x], Vm[y * ww + x + 1]) >= T) n++; return n / (b - a + 1); };
+  // en iyi çizgi: kapsama yüksek ve elle çizilene yakın; kalın çizgide ortası
+  const bul = (f, p0, lo, hi) => { let en = -1, eS = -1e9, eK = 0; const K = [];
+    for(let p = Math.round(lo); p <= Math.round(hi); p++){ const c = f(p); K.push([p, c]); const sk = c - 0.25 * Math.abs(p - p0) / m; if(c >= 0.55 && sk > eS){ eS = sk; en = p; eK = c; } }
+    if(en < 0) return null; let a = en, b = en; const esik = eK * 0.8, kc = p => (K.find(z => z[0] === p) || [0, 0])[1];
+    while(kc(a - 1) >= esik && en - a < 8) a--; while(kc(b + 1) >= esik && b - en < 8) b++; return (a + b) / 2; };
+  let L = x1 - X0, R = x2 - X0, U = y1 - Y0, B = y2 - Y0;
+  for(let tur = 0; tur < 2; tur++){
+    const kx = (R - L) * 0.12, ky = (B - U) * 0.12;
+    const u = bul(y => sat(y, L + kx, R - kx), U, U - m, Math.min(U + m, (U + B) / 2 - 2));
+    const b = bul(y => sat(y, L + kx, R - kx), B, Math.max(B - m, (U + B) / 2 + 2), B + m);
+    const l = bul(x => sut(x, U + ky, B - ky), L, L - m, Math.min(L + m, (L + R) / 2 - 2));
+    const r = bul(x => sut(x, U + ky, B - ky), R, Math.max(R - m, (L + R) / 2 + 2), R + m);
+    if(u == null || b == null || l == null || r == null) return { k: null };
+    U = u; B = b; L = l; R = r;
+  }
+  const nw = R - L, nh = B - U; if(nw < w * 0.5 || nw > w * 1.8 || nh < h * 0.5 || nh > h * 1.8) return { k: null };
+  const yuv = v => Math.round(v * 100) / 100;
+  const yk = [yuv((L + X0) / W * 100), yuv((U + Y0) / H * 100), yuv(nw / W * 100), yuv(nh / H * 100)];
+  const ayni = Math.abs(L + X0 - x1) < 1.2 && Math.abs(R + X0 - x2) < 1.2 && Math.abs(U + Y0 - y1) < 1.2 && Math.abs(B + Y0 - y2) < 1.2;
+  return { k: yk, ayni };
+}
+function otEski9(id, ki){ return !!(OT9 && OT9.liste.some(o => o.durum === "ok" && !o.atla && o.id === id && o.ki === ki)); }
+function otOner9(){ if(!OT9) return ""; return OT9.liste.filter(o => o.durum === "ok" && !o.atla).map(o => `<div class="ot9${OT9.sira != null && OT9.liste[OT9.sira] === o ? " on" : ""}" style="left:${o.yeni[0]}%;top:${o.yeni[1]}%;width:${o.yeni[2]}%;height:${o.yeni[3]}%"></div>`).join(""); }
+function otCubuk9(){
+  const ok = OT9.liste.filter(o => o.durum === "ok"), ayni = OT9.liste.filter(o => o.durum === "ayni").length, yok = OT9.liste.filter(o => o.durum === "yok");
+  const sec = ok.filter(o => !o.atla).length;
+  if(OT9.sira != null){ const o = OT9.liste[OT9.sira], j = byId(o.id), n = ok.indexOf(o) + 1;
+    return `<div class="kd9bar ot9bar"><div class="kd9t">${esc(j ? j.ad : "")}</div><div class="kd9a">${n} / ${ok.length} · fuşya: önerilen yer, kesikli: şimdiki</div>
+<div class="kd9d"><button class="eb" data-ot9="geri"${n > 1 ? "" : " disabled"}>‹</button><button class="eb${o.atla ? " ana" : ""}" data-ot9="atla">${o.atla ? "Atlandı" : "Atla"}</button><button class="eb" data-ot9="ileri"${n < ok.length ? "" : " disabled"}>›</button><button class="eb" data-ot9="liste">Bitti</button></div></div>`; }
+  return `<div class="kd9bar ot9bar"><div class="kd9t">Kutuları oturt</div><div class="kd9a">${ok.length} kutu için öneri · ${ayni} zaten yerinde · ${yok.length} bulunamadı${ok.length - sec ? ` · ${ok.length - sec} atlandı` : ""}</div>
+${yok.length ? `<div class="ot9y">Bulunamadı: ${yok.slice(0, 6).map(o => esc(kisaAd((byId(o.id) || {}).ad || ""))).join(", ")}${yok.length > 6 ? "…" : ""}</div>` : ""}
+<div class="kd9d"><button class="eb" data-ot9="kapat">Kapat</button>${ok.length ? `<button class="eb" data-ot9="tek">Tek tek bak</button><button class="eb ana" data-ot9="uygula"${sec ? "" : " disabled"}>Uygula (${sec})</button>` : ""}</div></div>`;
+}
+function otGit9(o){ const w = document.getElementById("mapwrap"), img = document.getElementById("mapimg"); if(!w || !img) return;
+  const k = o.yeni, W = w.clientWidth, H = w.clientHeight, ih = img.offsetHeight, bar = (w.querySelector(".ot9bar") || {}).offsetHeight || 120, alan = H - bar - 30;
+  const hs = Math.min(10, Math.max(1.5, Math.min(W * 0.45 / (k[2] / 100 * W), alan * 0.45 / (k[3] / 100 * ih))));
+  const cx = (k[0] + k[2] / 2) / 100 * W, cy = (k[1] + k[3] / 2) / 100 * ih;
+  // hedef: kutunun ortası görünen alanın ortasında
+  const a = { ...mz }, b = { s: hs, x: W / 2 - cx * hs, y: alan / 2 + 10 - cy * hs }, t0 = performance.now(), id = ++cift9.anim;
+  const ad = now => { if(id !== cift9.anim) return; const q = Math.min(1, (now - t0) / 320), e = 1 - Math.pow(1 - q, 3); mz.s = a.s + (b.s - a.s) * e; mz.x = a.x + (b.x - a.x) * e; mz.y = a.y + (b.y - a.y) * e; mapUygula(); if(q < 1) requestAnimationFrame(ad); };
+  requestAnimationFrame(ad); }
+function otYenile9(){ const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); }
+document.addEventListener("click", async e => {
+  if(e.target.closest && e.target.closest("[data-ot9bas]")){ e.stopPropagation();
+    bildir("Kutular resimde aranıyor…"); await new Promise(r => setTimeout(r, 30));
+    try{ const L = [];
+      ISLER.forEach(j => (j.kutular || []).forEach((k, ki) => { let r = { k: null }; try{ r = otBul9(k.map(Number)); }catch(err){ throw err; }
+        L.push({ id: j.id, ki, eski: k.slice(0, 4), yeni: r.k, durum: !r.k ? "yok" : r.ayni ? "ayni" : "ok" }); }));
+      OT9 = { liste: L, sira: null }; secKutu = null; otYenile9();
+    }catch(err){ bildir(err.message || "Kutular incelenemedi"); }
+    return; }
+  const b = e.target.closest && e.target.closest("[data-ot9]"); if(!b || !OT9) return; e.stopPropagation();
+  const a = b.dataset.ot9, ok = OT9.liste.filter(o => o.durum === "ok");
+  if(a === "kapat"){ OT9 = null; otYenile9(); return; }
+  if(a === "tek"){ OT9.sira = OT9.liste.indexOf(ok[0]); otYenile9(); otGit9(ok[0]); return; }
+  if(a === "liste"){ OT9.sira = null; otYenile9(); return; }
+  if(a === "atla"){ const o = OT9.liste[OT9.sira]; o.atla = !o.atla; otYenile9(); return; }
+  if(a === "geri" || a === "ileri"){ const i = ok.indexOf(OT9.liste[OT9.sira]) + (a === "ileri" ? 1 : -1); if(ok[i]){ OT9.sira = OT9.liste.indexOf(ok[i]); otYenile9(); otGit9(ok[i]); } return; }
+  if(a === "uygula"){ const sec = ok.filter(o => !o.atla); if(!sec.length) return;
+    b.disabled = true; b.textContent = "Uygulanıyor…";
+    try{ await degistir9({ tip: "kututoplu", liste: sec.map(o => ({ is: o.id, eski: o.eski, yeni: o.yeni, ad: (byId(o.id) || {}).ad || "" })) });
+      OT9 = null; otYenile9(); bildir(`${sec.length} kutu oturtuldu`); }
+    catch(err){ bildir(err.message || "Uygulanamadı"); b.disabled = false; b.textContent = "Uygula"; }
+  }
+}, true);
+const _uygula210 = uygula9;
+uygula9 = function(R, e, ters){ if(e && e.tip === "kututoplu"){ let n = 0; (ters ? e.liste.slice().reverse() : e.liste).forEach(x => { if(kutuAlan9(R, { tip: "kutualan", is: x.is, eski: x.eski, yeni: x.yeni }, ters)) n++; }); return n > 0; } return _uygula210.apply(this, arguments); };
+const _tekrar210 = tekrar9;
+tekrar9 = function(R, e){ if(e && e.tip === "kututoplu"){ let n = 0; e.liste.forEach(x => { if(kutuAl9(R, x.is, x.yeni) < 0 && kutuAl9(R, x.is, x.eski) >= 0 && kutuAlan9(R, { tip: "kutualan", is: x.is, eski: x.eski, yeni: x.yeni }, false)) n++; }); return n > 0; } return _tekrar210.apply(this, arguments); };
+const _tanim210 = tanim9;
+tanim9 = function(e){ if(e && e.tip === "kututoplu") return ["Harita kutuları oturtuldu", `${e.liste.length} kutu`]; return _tanim210.apply(this, arguments); };
 
 // ---------- v208: Drone TXT (zip) — düzenleme modunda drone uçuşlarını telefondan güncelle ----------
 // Zip içindeki DJI uçuş .txt'leri masaüstüyle aynı ayrıştırıcıyla okunur (başlangıç noktası, tarih, süre, mesafe);

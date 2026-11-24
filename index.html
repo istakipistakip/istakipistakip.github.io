@@ -2868,8 +2868,50 @@ function itiDuzelt9(kok, j){
     try{ if(itiKolUc9(svg)) degisti = true; }catch(_){}
     try{ if(itiOkAd9(svg)) degisti = true; }catch(_){}
     try{ if(itiPbUc9(svg)) degisti = true; }catch(_){}
+    try{ if(itiYapiDal9(svg)) degisti = true; }catch(_){}
     try{ if(itiSigdir9(svg)) degisti = true; }catch(_){} });
   return degisti;
+}
+// v199: bağlantı yolundaki (döndürülmüş) yapı yazıları başka yazıya/yola biniyorsa yolun hemen yanında boş yere alınır:
+// önce en kısa çizgiyle yolun bir yanı, sonra öbür yanı; dolu ise bir satır uzağı
+function itiYapiDal9(svg){
+  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse();
+  const kutu = (el, m0) => { let b; try{ b = el.getBBox(); }catch(_){ return null; } if(!b.width && !b.height) return null; const m = (m0 || ki).multiply(el.getCTM());
+    let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9; [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m); x1 = Math.min(x1, q.x); y1 = Math.min(y1, q.y); x2 = Math.max(x2, q.x); y2 = Math.max(y2, q.y); });
+    return { x1, y1, x2, y2 }; };
+  const kes = (a, b, p = 2) => a && b && a.x1 < b.x2 + p && a.x2 > b.x1 - p && a.y1 < b.y2 + p && a.y2 > b.y1 - p;
+  const G = [...svg.querySelectorAll("g.yapi-etiket")].filter(g => { const m = ki.multiply(g.getCTM()); return Math.abs(m.b) > .5; });
+  if(!G.length) return false;
+  let d = false;
+  G.forEach(g => {
+    const L = g.querySelector("line"), C = g.querySelector("circle"), T = g.querySelector("text"); if(!L || !C || !T) return;
+    // önceki adımların bu yazıya eklediği kaydırma ve kılavuz çizgisi (döndürülmüş yolda yanlış yere düşüyor) kaldırılır; yer burada baştan seçilir
+    [...g.querySelectorAll("line")].slice(1).forEach(x => x.remove());
+    const trT = (T.getAttribute("transform") || "").replace(/translate\([^)]*\)/g, "").trim();
+    if(trT) T.setAttribute("transform", trT); else T.removeAttribute("transform");
+    const engel = () => { const o = [];
+      svg.querySelectorAll("text").forEach(t => { if(g.contains(t) || t.closest("defs") || t.getAttribute("display") === "none" || !t.textContent.trim()) return; const b = kutu(t); if(b) o.push(b); });
+      svg.querySelectorAll("rect").forEach(r => { if(r.closest("defs") || r.closest("g.yapi-etiket") || /^(none|transparent)$/.test(r.getAttribute("fill") || "") || r.getAttribute("opacity") === "0") return; const b = kutu(r); if(b && b.x2 - b.x1 > 3 && b.y2 - b.y1 > 3 && (b.x2 - b.x1) * (b.y2 - b.y1) < 4e6) o.push(b); });
+      return o; };
+    const bos = () => { const b = kutu(T); return !engel().some(o => kes(b, o)); };
+    if(bos()){ d = true; return; }
+    // yerel çerçevede yolun üst/alt kenarı (etiketin bağlı olduğu yerde)
+    const ana = g.parentNode, mi = ana.getCTM().inverse(), cx = +L.getAttribute("x1"), yUst = +L.getAttribute("y2");
+    let yAlt = yUst;
+    ana.querySelectorAll("rect").forEach(r => { if(r.closest("g.yapi-etiket") || /^(none|transparent)$/.test(r.getAttribute("fill") || "")) return; const b = kutu(r, mi); if(!b || b.y2 - b.y1 < 3) return;
+      if(b.x1 <= cx + 1 && b.x2 >= cx - 1 && b.y1 >= yUst - 2 && b.y2 > yAlt && b.y2 - yUst < 400) yAlt = b.y2; });
+    const eski = [L.getAttribute("y1"), L.getAttribute("y2"), C.getAttribute("cy"), T.getAttribute("y"), T.getAttribute("transform")];
+    const ty0 = +T.getAttribute("y"), tr0 = T.getAttribute("transform") || "";
+    // yazı ters çevrilmişse (rotate 180) dönme merkezi de yazıyla birlikte kayar
+    const koy = (yDot, kenar) => { const dy = yDot + 4 - ty0; L.setAttribute("y1", yDot); L.setAttribute("y2", kenar); C.setAttribute("cy", yDot); T.setAttribute("y", yDot + 4);
+      if(tr0) T.setAttribute("transform", tr0.replace(/rotate\(180 (-?[\d.]+) (-?[\d.]+)\)/, (m, a, c) => `rotate(180 ${a} ${(+c + dy).toFixed(2)})`)); };
+    for(let k = 0; k < 8; k++){
+      koy(yUst - 16 - k * 19, yUst); if(bos()){ d = true; return; }
+      if(yAlt > yUst){ koy(yAlt + 16 + k * 19, yAlt); if(bos()){ d = true; return; } }
+    }
+    L.setAttribute("y1", eski[0]); L.setAttribute("y2", eski[1]); C.setAttribute("cy", eski[2]); T.setAttribute("y", eski[3]); if(eski[4] != null) T.setAttribute("transform", eski[4]);
+  });
+  return d;
 }
 // v179: son adım — kenardan taşan yazı kalırsa çizim alanı o kadar genişler
 function itiSigdir9(svg){

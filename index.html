@@ -2894,44 +2894,59 @@ function itiDuzelt9(kok, j){
     try{ if(itiSigdir9(svg)) degisti = true; }catch(_){} });
   return degisti;
 }
-// v199: bağlantı yolundaki (döndürülmüş) yapı yazıları başka yazıya/yola biniyorsa yolun hemen yanında boş yere alınır:
-// önce en kısa çizgiyle yolun bir yanı, sonra öbür yanı; dolu ise bir satır uzağı
+// v201: yan yoldaki yapı yazıları (köprü, kavşak, menfez…) ana yoldakiyle aynı boyda ve yatay (düz) okunur;
+// yapının hizasında yolun yanında, kısa noktalı çizgiyle; yer doluysa öbür yan, sonra biraz yukarı/aşağı.
+// Döndürülmüş yan yolun başlangıç kılavuz çizgisi (şeridin üstünden geçen gri kesik çizgi) kaldırılır.
 function itiYapiDal9(svg){
-  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse();
+  if(svg._yd9) return false; svg._yd9 = 1;
+  const kok = svg.getCTM(); if(!kok) return false; const ki = kok.inverse(), NS = "http://www.w3.org/2000/svg";
   const kutu = (el, m0) => { let b; try{ b = el.getBBox(); }catch(_){ return null; } if(!b.width && !b.height) return null; const m = (m0 || ki).multiply(el.getCTM());
     let x1 = 1e9, y1 = 1e9, x2 = -1e9, y2 = -1e9; [[b.x, b.y], [b.x + b.width, b.y], [b.x, b.y + b.height], [b.x + b.width, b.y + b.height]].forEach(([x, y]) => { const q = new DOMPoint(x, y).matrixTransform(m); x1 = Math.min(x1, q.x); y1 = Math.min(y1, q.y); x2 = Math.max(x2, q.x); y2 = Math.max(y2, q.y); });
     return { x1, y1, x2, y2 }; };
   const kes = (a, b, p = 2) => a && b && a.x1 < b.x2 + p && a.x2 > b.x1 - p && a.y1 < b.y2 + p && a.y2 > b.y1 - p;
-  const G = [...svg.querySelectorAll("g.yapi-etiket")].filter(g => { const m = ki.multiply(g.getCTM()); return Math.abs(m.b) > .5; });
-  if(!G.length) return false;
+  const olc = el => { const m = ki.multiply(el.getCTM()); return { s: Math.sqrt(Math.abs(m.a * m.d - m.b * m.c)) || 1, aci: Math.atan2(m.b, m.a) * 180 / Math.PI }; };
+  const zemin = r => /^(#fff|#ffffff|white|none|transparent|#eef0f3|#f3eef8)$/i.test((r.getAttribute("fill") || "").trim()) || /^url\(/.test(r.getAttribute("fill") || "");
   let d = false;
-  G.forEach(g => {
-    const L = g.querySelector("line"), C = g.querySelector("circle"), T = g.querySelector("text"); if(!L || !C || !T) return;
-    // önceki adımların bu yazıya eklediği kaydırma ve kılavuz çizgisi (döndürülmüş yolda yanlış yere düşüyor) kaldırılır; yer burada baştan seçilir
-    [...g.querySelectorAll("line")].slice(1).forEach(x => x.remove());
-    const trT = (T.getAttribute("transform") || "").replace(/translate\([^)]*\)/g, "").trim();
-    if(trT) T.setAttribute("transform", trT); else T.removeAttribute("transform");
-    const engel = () => { const o = [];
-      svg.querySelectorAll("text").forEach(t => { if(g.contains(t) || t.closest("defs") || t.getAttribute("display") === "none" || !t.textContent.trim()) return; const b = kutu(t); if(b) o.push(b); });
-      svg.querySelectorAll("rect").forEach(r => { if(r.closest("defs") || r.closest("g.yapi-etiket") || /^(none|transparent)$/.test(r.getAttribute("fill") || "") || r.getAttribute("opacity") === "0") return; const b = kutu(r); if(b && b.x2 - b.x1 > 3 && b.y2 - b.y1 > 3 && (b.x2 - b.x1) * (b.y2 - b.y1) < 4e6) o.push(b); });
-      return o; };
-    const bos = () => { const b = kutu(T); return !engel().some(o => kes(b, o)); };
-    if(bos()){ d = true; return; }
-    // yerel çerçevede yolun üst/alt kenarı (etiketin bağlı olduğu yerde)
-    const ana = g.parentNode, mi = ana.getCTM().inverse(), cx = +L.getAttribute("x1"), yUst = +L.getAttribute("y2");
-    let yAlt = yUst;
-    ana.querySelectorAll("rect").forEach(r => { if(r.closest("g.yapi-etiket") || /^(none|transparent)$/.test(r.getAttribute("fill") || "")) return; const b = kutu(r, mi); if(!b || b.y2 - b.y1 < 3) return;
+  // ana yolun yazı boyu (ekranda)
+  let hedef = 12;
+  for(const g of svg.querySelectorAll("g.yapi-etiket")){ const o = olc(g); if(Math.abs(o.aci) < 1 && o.s > .97){ const t = g.querySelector("text"); if(t){ hedef = (parseFloat(t.getAttribute("font-size")) || 12) * o.s; break; } } }
+  // döndürülmüş yollardaki gri başlangıç/bitiş kılavuzları şeridi kesiyorsa kaldırılır
+  svg.querySelectorAll("g.iti-dikey").forEach(G => {
+    const bar = [...G.querySelectorAll("rect")].filter(r => !zemin(r)).map(r => kutu(r)).filter(b => b && (b.y2 - b.y1) > (b.x2 - b.x1));
+    G.querySelectorAll("line[stroke-dasharray]").forEach(l => { if(l.closest("g.yapi-etiket") || !/^#b8bec6$/i.test(l.getAttribute("stroke") || "")) return; const b = kutu(l); if(b && bar.some(r => kes(b, r, -1))){ l.remove(); d = true; } }); });
+  [...svg.querySelectorAll("g.yapi-etiket")].forEach(g => {
+    const o = olc(g); const L = g.querySelector("line"), C = g.querySelector("circle"), T = g.querySelector("text"); if(!L || !C || !T) return;
+    if(Math.abs(o.aci) < 1){   // yatay ama küçültülmüş yol: yalnız yazı boyu eşitlenir
+      if(o.s < .97){ T.setAttribute("font-size", (hedef / o.s).toFixed(1)); d = true; } return; }
+    const ana = g.parentNode, M = ki.multiply(ana.getCTM()), mi = ana.getCTM().inverse();
+    const cx = +L.getAttribute("x1"), yUst = Math.max(+L.getAttribute("y1"), +L.getAttribute("y2"));
+    let yAlt = yUst, yUst2 = yUst;
+    ana.querySelectorAll("rect").forEach(r => { if(r.closest("g.yapi-etiket") || zemin(r)) return; const b = kutu(r, mi); if(!b || b.y2 - b.y1 < 3) return;
       if(b.x1 <= cx + 1 && b.x2 >= cx - 1 && b.y1 >= yUst - 2 && b.y2 > yAlt && b.y2 - yUst < 400) yAlt = b.y2; });
-    const eski = [L.getAttribute("y1"), L.getAttribute("y2"), C.getAttribute("cy"), T.getAttribute("y"), T.getAttribute("transform")];
-    const ty0 = +T.getAttribute("y"), tr0 = T.getAttribute("transform") || "";
-    // yazı ters çevrilmişse (rotate 180) dönme merkezi de yazıyla birlikte kayar
-    const koy = (yDot, kenar) => { const dy = yDot + 4 - ty0; L.setAttribute("y1", yDot); L.setAttribute("y2", kenar); C.setAttribute("cy", yDot); T.setAttribute("y", yDot + 4);
-      if(tr0) T.setAttribute("transform", tr0.replace(/rotate\(180 (-?[\d.]+) (-?[\d.]+)\)/, (m, a, c) => `rotate(180 ${a} ${(+c + dy).toFixed(2)})`)); };
-    for(let k = 0; k < 8; k++){
-      koy(yUst - 16 - k * 19, yUst); if(bos()){ d = true; return; }
-      if(yAlt > yUst){ koy(yAlt + 16 + k * 19, yAlt); if(bos()){ d = true; return; } }
-    }
-    L.setAttribute("y1", eski[0]); L.setAttribute("y2", eski[1]); C.setAttribute("cy", eski[2]); T.setAttribute("y", eski[3]); if(eski[4] != null) T.setAttribute("transform", eski[4]);
+    const kok2 = (x, y) => new DOMPoint(x, y).matrixTransform(M);
+    const E1 = kok2(cx, yUst2), E2 = kok2(cx, yAlt), y0 = (E1.y + E2.y) / 2;
+    const metin = T.textContent, renk = T.getAttribute("fill") || "#1a1a1a", fs = hedef;
+    g.remove();
+    const N = document.createElementNS(NS, "g"); N.setAttribute("class", "yapi-etiket yd9");
+    const ln = document.createElementNS(NS, "line"), ci = document.createElementNS(NS, "circle"), tx = document.createElementNS(NS, "text");
+    ln.setAttribute("stroke", renk); ln.setAttribute("stroke-width", "1.5"); ln.setAttribute("stroke-dasharray", "3,2");
+    ci.setAttribute("r", "3.5"); ci.setAttribute("fill", renk); ci.setAttribute("stroke", "#fff"); ci.setAttribute("stroke-width", "1.5");
+    tx.setAttribute("font-size", fs.toFixed(1)); tx.setAttribute("font-weight", "800"); tx.setAttribute("fill", renk); tx.setAttribute("stroke", "#fff"); tx.setAttribute("stroke-width", "3"); tx.setAttribute("paint-order", "stroke"); tx.textContent = metin;
+    N.append(ln, ci, tx); svg.appendChild(N);
+    const engel = [];
+    svg.querySelectorAll("text").forEach(t => { if(N.contains(t) || t.closest("defs") || t.getAttribute("display") === "none" || !t.textContent.trim()) return; const b = kutu(t); if(b) engel.push(b); });
+    svg.querySelectorAll("rect").forEach(r => { if(r.closest("defs") || zemin(r) || r.getAttribute("opacity") === "0") return; const b = kutu(r); if(b && b.x2 - b.x1 > 3 && b.y2 - b.y1 > 3 && (b.x2 - b.x1) * (b.y2 - b.y1) < 4e6) engel.push(b); });
+    svg.querySelectorAll("g[data-ikon9]").forEach(e => { if(e.getAttribute("display") === "none") return; const b = kutu(e); if(b) engel.push(b); });
+    const koy = (E, O, dy) => { const yon = E.x >= O.x ? 1 : -1, yy = y0 + dy, dx = E.x + yon * 16;
+      ln.setAttribute("x1", (E.x + yon * 1).toFixed(1)); ln.setAttribute("y1", y0.toFixed(1)); ln.setAttribute("x2", dx.toFixed(1)); ln.setAttribute("y2", yy.toFixed(1));
+      ci.setAttribute("cx", dx.toFixed(1)); ci.setAttribute("cy", yy.toFixed(1));
+      tx.setAttribute("x", (dx + yon * 7).toFixed(1)); tx.setAttribute("y", (yy + fs * .35).toFixed(1)); tx.setAttribute("text-anchor", yon > 0 ? "start" : "end");
+      const b = kutu(tx); return !engel.some(e => kes(b, e)); };
+    const yanlar = [[E2, E1], [E1, E2]], adim = fs + 7;
+    let ok = false;
+    for(const k of [0, -1, 1, -2, 2, -3, 3]){ for(const [E, O] of yanlar){ if(koy(E, O, k * adim)){ ok = true; break; } } if(ok) break; }
+    if(!ok) koy(E2, E1, 0);
+    d = true;
   });
   return d;
 }
@@ -11214,6 +11229,20 @@ function itiSerit9(svg, ic, fsOf, medH){
     const b = yerel(svg, g); if(!b) return; const cy = (b.y1 + b.y2) / 2, cx = (b.x1 + b.x2) / 2;
     const ort = L => L.R.some(r => r.x1 <= cx + 16 && r.x2 >= cx - 16);
     const ic = KL.find(L => cy > L.y1 - 2 && cy < L.y2 + 2 && ort(L)); if(!ic) return;
+    // v201: dikey (döndürülmüş) yan yolda ikon yolun ucuna değil, yapının hizasında yolun soluna alınır ve dik durur
+    if((ic.y2 - ic.y1) > (Math.max(...ic.R.map(r => r.x2)) - Math.min(...ic.R.map(r => r.x1))) * 1.5){
+      const mt0 = (g.getAttribute("transform") || "").match(/translate\(\s*([-\d.e]+)[\s,]+([-\d.e]+)\s*\)/); if(!mt0) return;
+      try{ const mp = svg.getCTM().inverse().multiply(g.parentNode.getCTM()), aci = Math.atan2(mp.b, mp.a) * 180 / Math.PI;
+        if(Math.abs(aci) > 1 && !/rotate\(/.test(g.getAttribute("transform"))) g.setAttribute("transform", g.getAttribute("transform").replace(mt0[0], `${mt0[0]} rotate(${(-aci).toFixed(1)})`)); }catch(_){}
+      const b2 = yerel(svg, g); if(!b2) return;
+      const solX = Math.min(...KL.filter(L => L.kok === ic.kok && ort(L)).flatMap(L => L.R.map(r => r.x1)));
+      const dxK = (solX - 3) - b2.x2, dyK = cy - (b2.y1 + b2.y2) / 2;
+      let ddx = dxK, ddy = dyK;
+      try{ const M = svg.getCTM().inverse().multiply(g.parentNode.getCTM()).inverse(); const a = new DOMPoint(0, 0).matrixTransform(M), c = new DOMPoint(dxK, dyK).matrixTransform(M); ddx = c.x - a.x; ddy = c.y - a.y; }catch(_){}
+      const mt1 = g.getAttribute("transform").match(/translate\(\s*([-\d.e]+)[\s,]+([-\d.e]+)\s*\)/);
+      g.setAttribute("transform", g.getAttribute("transform").replace(mt1[0], `translate(${(+mt1[1] + ddx).toFixed(1)},${(+mt1[2] + ddy).toFixed(1)})`));
+      g.setAttribute("data-ikon9", "1"); tasindi.add(g); n++; return;
+    }
     const ustY = Math.min(...KL.filter(L => L.kok === ic.kok && ort(L)).map(L => L.y1));
     const dyK = (ustY - 2) - b.y2;
     const mt = (g.getAttribute("transform") || "").match(/translate\(\s*([-\d.e]+)[\s,]+([-\d.e]+)\s*\)/); if(!mt) return;
@@ -11239,13 +11268,15 @@ function itiSerit9(svg, ic, fsOf, medH){
   });
   seritler.forEach((m, P) => m.forEach(L => {
     // görünen kesimler: her aralıkta belge sırasında en son çizilen dikdörtgen
-    const xs = [...new Set(L.R.flatMap(o => [o.x1, o.x2]))].sort((a, b) => a - b), kes = [];
+    const xs = [...new Set(L.R.flatMap(o => [o.x1, o.x2]))].sort((a, b) => a - b), kes = [], yapiAra = [];
     for(let i = 0; i < xs.length - 1; i++){
       const a = xs[i], b = xs[i + 1]; if(b - a < .01) continue;
-      let ust = null; for(const o of L.R) if(o.x1 <= a + .01 && o.x2 >= b - .01) ust = o;
+      let ust = null, alt = null; for(const o of L.R) if(o.x1 <= a + .01 && o.x2 >= b - .01){ ust = o; if(!o.yapi) alt = o; }
       if(!ust) continue;
-      const key = ust.yapi ? "Y" + L.R.indexOf(ust) : ust.f + "|" + ust.lab, son = kes[kes.length - 1];
-      if(son && son.key === key && Math.abs(son.x2 - a) < .6) son.x2 = b; else kes.push({ key, x1: a, x2: b, o: ust });
+      // v201: köprü gibi yapı parçası kaplamayı bölmez — altındaki kaplama sürüyorsa tek yazı (yazı yapının üstüne konmaz)
+      const ref = ust.yapi && alt ? alt : ust; if(ust.yapi) yapiAra.push([a, b]);
+      const key = ref.yapi ? "Y" + L.R.indexOf(ref) : ref.f + "|" + ref.lab, son = kes[kes.length - 1];
+      if(son && son.key === key && Math.abs(son.x2 - a) < .6) son.x2 = b; else kes.push({ key, x1: a, x2: b, o: ref });
     }
     const ly1 = L.y, ly2 = L.y + L.h, cy = L.y + L.h / 2;
     // yuvarlamadan kalan görünmez ince aralıklar (< 1.5 birim) kesimi bölmez
@@ -11266,12 +11297,17 @@ function itiSerit9(svg, ic, fsOf, medH){
       const pay = Math.max(3, fs * .4), ihtiyac = w + 2 * pay;
       // boş aralıklar
       let bos = [[k.x1, k.x2]];
+      yapiAra.forEach(([y1, y2]) => { bos = bos.flatMap(([u, v]) => y2 + 2 <= u || y1 - 2 >= v ? [[u, v]] : [[u, Math.max(u, y1 - 2)], [Math.min(v, y2 + 2), v]]).filter(([u, v]) => v - u > .5); });
+      // v201: dikey yan yolda yazı şeride sığıyorsa düz (yatay) okunur
+      let dik = 0; try{ const mp = svg.getCTM().inverse().multiply(P.getCTM()); dik = Math.atan2(mp.b, mp.a) * 180 / Math.PI; }catch(_){}
+      const duz = Math.abs(Math.abs(dik) - 90) < 5 && w + 4 <= L.h;
+      const ihtiyac2 = duz ? fs * 1.3 + 2 * pay : ihtiyac;
       E.forEach(b => { const a1 = b.x1 - 2, a2 = b.x2 + 2; bos = bos.flatMap(([u, v]) => a2 <= u || a1 >= v ? [[u, v]] : [[u, Math.max(u, a1)], [Math.min(v, a2), v]]).filter(([u, v]) => v - u > .5); });
       const c = (k.x1 + k.x2) / 2;
       let en = null, enD = Infinity;
-      bos.forEach(([u, v]) => { if(v - u < ihtiyac) return; const x = Math.min(Math.max(c, u + ihtiyac / 2), v - ihtiyac / 2), d = Math.abs(x - c); if(d < enD){ enD = d; en = x; } });
+      bos.forEach(([u, v]) => { if(v - u < ihtiyac2) return; const x = Math.min(Math.max(c, u + ihtiyac2 / 2), v - ihtiyac2 / 2), d = Math.abs(x - c); if(d < enD){ enD = d; en = x; } });
       if(en === null){ t.remove(); return; }
-      t.setAttribute("x", en.toFixed(1)); n++;
+      t.setAttribute("x", en.toFixed(1)); if(duz){ t.setAttribute("transform", `rotate(${(-dik).toFixed(1)} ${en.toFixed(1)} ${cy.toFixed(1)})`); t.setAttribute("stroke-width", Math.max(0, Math.min(fs * .35, (L.h - w) / 2 - .5)).toFixed(2)); } n++;
     });
   }));
   return n;

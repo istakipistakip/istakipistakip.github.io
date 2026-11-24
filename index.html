@@ -766,6 +766,10 @@ html.dark .dr9o > div{ background:#1e293b; } html.dark .dr9i{ color:#cbd5e1; } h
 html.dark .kutu.parla{ border-color:#d946ef !important; box-shadow:0 0 0 calc(1px * var(--kz, 1)) #d946ef, 0 0 calc(12px * var(--kz, 1)) rgba(217,70,239,.55) !important; }
 /* v204: harita + / − sağ altta; iş kartı açıksa kartın üstünde */
 .mapwrap .zoom{ top:auto; bottom:14px; transition:bottom .2s ease; }
+.mapwrap .zoom button{ width:34px; height:34px; border-radius:9px; font-size:18px; }
+.mapwrap .zoom .sfr9{ display:grid; place-items:center; padding:0; margin-bottom:4px; color:#374151; transition:opacity .2s; }
+.mapwrap .zoom .sfr9.bos9{ opacity:.45; }
+
 .mapwrap .hust{ right:10px; right:max(10px, env(safe-area-inset-right)); }
 .itiserit{ position:relative; height:30px; border-radius:6px; overflow:hidden; background:#fff; border:1px solid #e2e8f0; touch-action:none; }
 .itiserit .ic{ position:absolute; inset:2px; }
@@ -2331,7 +2335,7 @@ function harita(){
   ISLER.forEach(x => x.kutular.forEach((k, ki) => kutular.push([x.id, k, ki])));
   return `<div class="mapwrap" id="mapwrap"><div class="mapin" id="mapin"><img src="${D.harita}" id="mapimg" alt="">
 ${kutular.map(([id, k, ki]) => { const ed = kd9Bu(id, ki); if(ed) k = KD9.k; return `<button class="kutu${secKutu === id ? " on" : ""}${ed ? " kd9" : ""}" data-kutu="${esc(id)}" data-ki="${ki}" style="left:${k[0]}%;top:${k[1]}%;width:${k[2]}%;height:${k[3]}%" aria-label="${esc(byId(id).ad)}">${ed ? ["nw", "ne", "sw", "se"].map(c => `<i class="kh9 ${c}" data-kh="${c}"></i>`).join("") : ""}</button>`; }).join("")}${KD9 && KD9.ciz && KD9.k ? `<div class="kc9" id="kc9" style="left:${KD9.k[0]}%;top:${KD9.k[1]}%;width:${KD9.k[2]}%;height:${KD9.k[3]}%"></div>` : ""}</div>
-${haritaUst()}<div class="zoom"><button data-zoom="1.5">+</button><button data-zoom="0.667">−</button>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && !KD9 ? `<button class="kyeni9" data-kd9yeni aria-label="Yeni kutu">▭<b>+</b></button>` : ""}</div>
+${haritaUst()}<div class="zoom"><button class="sfr9" data-hsifir aria-label="Haritayı sıfırla"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button><button data-zoom="1.5">+</button><button data-zoom="0.667">−</button>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && !KD9 ? `<button class="kyeni9" data-kd9yeni aria-label="Yeni kutu">▭<b>+</b></button>` : ""}</div>
 ${KD9 ? kd9Cubuk() : ""}${j && !KD9 ? `<div class="sheet"><div class="handle"></div><button class="x" data-kutukapat aria-label="Kapat">${IK("x")}</button><button class="nm nmac" data-is="${esc(j.id)}">${esc(j.ad)}<span>›</span></button><div class="mt" style="margin-bottom:0">${esc([j.il.join(" · "), j.firma].filter(Boolean).join(" · "))}</div>
 ${stdSatirlari(j, true)}
 <div class="hdalt">${daDugmeler(j)}</div>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && j.kutular.length ? `<button class="eb kd9ac" data-kd9duz>▭ Kutuyu düzenle${j.kutular.length > 1 ? ` <span>(${Math.min(secKi9 || 0, j.kutular.length - 1) + 1}/${j.kutular.length})</span>` : ""}</button>` : ""}</div>` : ""}
@@ -6734,7 +6738,17 @@ function hustKucult9(){
 const _mapUygula37 = mapUygula;
 mapUygula = function(){ const r = _mapUygula37.apply(this, arguments); hustKucult9(); zoomYer9(); return r; };
 function zoomYer9(){ const w = document.getElementById("mapwrap"); if(!w) return; const z = w.querySelector(".zoom"); if(!z) return;
-  const s = w.querySelector(".sheet, .kd9bar"); z.style.bottom = s ? (s.offsetHeight + 20) + "px" : ""; }
+  const s = w.querySelector(".sheet, .kd9bar"); z.style.bottom = s ? (s.offsetHeight + 20) + "px" : "";
+  const sf = z.querySelector(".sfr9"); if(sf) sf.classList.toggle("bos9", mz.s <= 1.01 && !hIl.size && !hStd.size && !(typeof hBirim !== "undefined" && hBirim.size) && !(hAra || "").trim() && !secKutu); }
+// v209: sıfırla — arama, İL / BİRİM / STD filtreleri, açık iş kartı temizlenir; harita ilk görünüşüne yumuşakça döner
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("[data-hsifir]"); if(!b) return; e.stopPropagation();
+  if(typeof KD9 !== "undefined" && KD9){ bildir("Önce kutu düzenlemesini bitirin"); return; }
+  try{ b.animate([{ transform: "rotate(0)" }, { transform: "rotate(-360deg)" }], { duration: 450, easing: "cubic-bezier(.3,.7,.3,1)" }); }catch(_){}
+  hAra = ""; hIl.clear(); hStd.clear(); if(typeof hBirim !== "undefined") hBirim.clear(); hAraSet = null; hAraTek = null; secKutu = null; hustAcik9 = false; hustMod9 = "";
+  const keep = { ...mz }; ciz(); mz = keep;
+  resimHazir(() => { mapUygula(); mapGecis9(1, 0, 0); });
+}, true);
 document.addEventListener("click", e => {
   if(!e.target.closest || !e.target.closest("[data-hfd9]")) return;
   e.stopPropagation(); e.preventDefault(); hustAcik9 = true; hustMod9 = "filtre"; hustKucult9(); ketOlcek();

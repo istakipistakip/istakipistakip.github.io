@@ -6748,7 +6748,8 @@ hatGoster = async function(){ yolaYak9(false); return _hatGoster43.apply(this, a
 // ===================== v45 =====================
 // --- PDF önizleme: iki parmakla yakınlaştırma yalnız sayfaya uygulanır; üst (Kapat) ve
 // alt (Paylaş) çubuklar sabit kalır. Sol kenardan sağa kaydırınca kapanır.
-document.addEventListener("gesturestart", e => { if(document.getElementById("pon")) e.preventDefault(); }, { passive: false });
+// v191: iPhone'da sayfanın kendisi iki parmakla büyümesin (harita/KMZ/itinerer kendi yakınlaştırmasını dokunuşlardan yapar, etkilenmez)
+["gesturestart", "gesturechange", "gestureend"].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 (() => {
   let pz = null;
   const govde = () => document.getElementById("pon-govde");

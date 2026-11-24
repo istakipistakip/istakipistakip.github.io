@@ -1215,6 +1215,7 @@ html.dark .durb{ background:#1a2335 !important; border-color:#2a3650 !important;
 .hust .hara input{ display:block !important; }
 #mapin.ucus9{ transition:transform .55s cubic-bezier(.22,.8,.24,1); }
 #mapin.ucus9 .kutu{ transition:border-width .55s; }
+.sheet .kd9ac{ display:block; width:100%; margin-top:10px; color:#2563eb; font-weight:700; } .sheet .kd9ac span{ color:#64748b; font-weight:600; }
 .kutu.kd9{ border-style:dashed !important; border-color:#2563eb !important; background:rgba(37,99,235,.16) !important; box-shadow:none !important; z-index:2; touch-action:none; }
 .kh9{ position:absolute; width:22px; height:22px; margin:-11px 0 0 -11px; border-radius:50%; background:#fff; border:3px solid #2563eb; box-shadow:0 1px 4px rgba(0,0,0,.35); transform:scale(var(--kz,1)); pointer-events:none; }
 .kh9.nw{ left:0; top:0; } .kh9.ne{ left:100%; top:0; } .kh9.sw{ left:0; top:100%; } .kh9.se{ left:100%; top:100%; }
@@ -2214,7 +2215,7 @@ ${kutular.map(([id, k, ki]) => { const ed = kd9Bu(id, ki); if(ed) k = KD9.k; ret
 ${haritaUst()}<div class="zoom"><button data-zoom="1.5">+</button><button data-zoom="0.667">−</button>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && !KD9 ? `<button class="kyeni9" data-kd9yeni aria-label="Yeni kutu">▭<b>+</b></button>` : ""}</div>
 ${KD9 ? kd9Cubuk() : ""}${j && !KD9 ? `<div class="sheet"><div class="handle"></div><button class="x" data-kutukapat aria-label="Kapat">${IK("x")}</button><button class="nm nmac" data-is="${esc(j.id)}">${esc(j.ad)}<span>›</span></button><div class="mt" style="margin-bottom:0">${esc([j.il.join(" · "), j.firma].filter(Boolean).join(" · "))}</div>
 ${stdSatirlari(j, true)}
-<div class="hdalt">${daDugmeler(j)}</div></div>` : ""}
+<div class="hdalt">${daDugmeler(j)}</div>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && j.kutular.length ? `<button class="eb kd9ac" data-kd9duz>▭ Kutuyu düzenle${j.kutular.length > 1 ? ` <span>(${Math.min(secKi9 || 0, j.kutular.length - 1) + 1}/${j.kutular.length})</span>` : ""}</button>` : ""}</div>` : ""}
 </div>`;
 }
 function mapUygula(){
@@ -4598,7 +4599,7 @@ document.addEventListener("click", e => {
   const ac = e.target.closest("[data-ac]"); if(ac && detay){ aciklamaPenceresi(byId(detay.id), Number(ac.dataset.ac)); return; }
   const yz = e.target.closest("[data-yazi]"); if(yz && detay){ yaziPenceresi(byId(detay.id), yz.dataset.yazi); return; }
   const h = e.target.closest("[data-hat]"); if(h){ hatGoster(h.dataset.hat); return; }
-  const hm = e.target.closest("[data-haritada]"); if(hm){ kapatAlt(); secKutu = hm.dataset.haritada; detay = null; tab = "map"; ciz(); kutuyaGit(secKutu); return; }
+  const hm = e.target.closest("[data-haritada]"); if(hm){ kapatAlt(); secKutu = hm.dataset.haritada; secKi9 = 0; detay = null; tab = "map"; ciz(); kutuyaGit(secKutu); return; }
   const kt = e.target.closest("[data-kutu]"); if(kt && kutuTut9.oldu){ kutuTut9.oldu = false; return; } if(kt && kd9Tik(kt)) return; if(kt){ secKutu = kt.dataset.kutu; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); return; }
   if(e.target.closest("[data-kutukapat]")){ secKutu = null; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); return; }
   const z = e.target.closest("[data-zoom]"); if(z){ mapZoom(Number(z.dataset.zoom)); return; }
@@ -6106,14 +6107,21 @@ function kd9Cubuk(){
   return `<div class="kd9bar"><div class="kd9t">${esc(j ? j.ad : "")}</div><div class="kd9a">Ortasından sürükle: taşı · Köşesinden sürükle: boyutlandır</div>
 <div class="kd9d"><button class="eb sil" data-kd9="sil">Sil</button><button class="eb" data-kd9="iptal">İptal</button><button class="eb ana" data-kd9="tamam"${kd9Degisti() ? "" : " disabled"}>Tamam</button></div></div>`;
 }
+// v190: dokunma işi açar (kart); alan düzenleme kartdaki "Kutuyu düzenle" düğmesiyle
+var secKi9 = 0;
 function kd9Tik(kt){
-  if(typeof DUZ9 === "undefined" || !DUZ9 || !YON9) return false;
-  if(kd9S || (KD9 && KD9.surdu)){ if(KD9) KD9.surdu = false; return true; }
-  if(KD9 && KD9.ciz) return true;
-  const id = kt.dataset.kutu, ki = +kt.dataset.ki; if(kd9Bu(id, ki)) return true;
+  const id = kt.dataset.kutu, ki = +kt.dataset.ki;
+  if(typeof DUZ9 === "undefined" || !DUZ9 || !YON9 || !KD9){ secKi9 = ki; return false; }
+  if(kd9S || KD9.surdu){ KD9.surdu = false; return true; }
+  if(KD9.ciz) return true;
+  if(kd9Bu(id, ki)) return true;
   if(kd9Degisti()){ bildir("Önce bu kutuda Tamam ya da İptal'e bas"); return true; }
-  const j = byId(id), k = j && j.kutular[ki]; if(!k) return true;
-  KD9 = { id, ki, k: k.slice(0, 4).map(Number), k0: k.slice(0, 4) }; secKutu = id; kd9Yenile(); return true;
+  KD9 = null; secKi9 = ki; return false;
+}
+function kd9Ac(){
+  const j = secKutu && byId(secKutu); if(!j || !j.kutular.length) return;
+  const ki = Math.min(secKi9 || 0, j.kutular.length - 1), k = j.kutular[ki];
+  KD9 = { id: j.id, ki, k: k.slice(0, 4).map(Number), k0: k.slice(0, 4) }; kd9Yenile();
 }
 function kd9Yuzde(x, y){ const inn = document.getElementById("mapin"), img = document.getElementById("mapimg"); if(!inn || !img) return null; const r = img.getBoundingClientRect(); if(!r.width || !r.height) return null; return [(x - r.left) / r.width * 100, (y - r.top) / r.height * 100]; }
 function kd9Bas(x, y, t){
@@ -6172,11 +6180,12 @@ function kd9IsSec(){
   secici9("Yeni kutu hangi işin?", "Kutuyu haritaya ekleyeceğim işi seç", L, "", async v => {
     if(!v || v === "-" || !KD9 || !KD9.ciz || !KD9.k) return; const h = byId(v); if(!h) return;
     const kutu = KD9.k.slice();
-    try{ await degistir9({ tip: "kutuekle", is: v, kutu, ad: h.ad }); KD9 = null; secKutu = v; kd9Yenile(); bildir(`${h.ad} işine kutu eklendi`); }
+    try{ await degistir9({ tip: "kutuekle", is: v, kutu, ad: h.ad }); KD9 = null; secKutu = v; secKi9 = Math.max(0, (byId(v)?.kutular.length || 1) - 1); kd9Yenile(); bildir(`${h.ad} işine kutu eklendi`); }
     catch(err){ bildir(err.message || "Eklenemedi"); }
   }, []);
 }
 document.addEventListener("click", async e => {
+  if(e.target.closest("[data-kd9duz]")){ e.stopPropagation(); kd9Ac(); return; }
   if(e.target.closest("[data-kd9yeni]")){ e.stopPropagation(); KD9 = { ciz: true, k: null }; secKutu = null; kd9Yenile(); return; }
   const b = e.target.closest("[data-kd9]"); if(!b || !KD9) return; e.stopPropagation();
   const a = b.dataset.kd9;

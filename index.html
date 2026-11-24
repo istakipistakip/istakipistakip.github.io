@@ -1080,6 +1080,28 @@ main.ilk{ animation:ilkGir .45s ease; }
 .hos.giris .gform{ margin-top:auto; background:rgba(9,13,24,.58); -webkit-backdrop-filter:blur(18px) saturate(1.3); backdrop-filter:blur(18px) saturate(1.3); border:1px solid rgba(255,255,255,.12); border-radius:24px; padding:6px 16px 16px; box-shadow:0 20px 50px rgba(0,0,0,.45); animation:yukari .8s cubic-bezier(.2,1,.3,1) .8s both; transition:transform .6s cubic-bezier(.5,0,.2,1), opacity .5s; }
 .hos.giris .gform.git{ transform:translateY(130%); opacity:0; }
 .hos.giris .gbaska{ animation:yukari .6s ease 1s both; }
+
+/* v200: giriş ekranı — açılışla aynı dil (lacivert zemin, İşTakip yazısı, 3 boyutlu yol) */
+.hos.giris.g9{ background:radial-gradient(130% 75% at 50% 40%,#1f3d66 0%,#11274a 50%,#0a1a31 100%) !important; justify-content:flex-start; min-height:100%; padding:calc(96px + env(safe-area-inset-top)) 24px calc(150px + env(safe-area-inset-bottom)); }
+.hos.giris.g9::after{ display:none; }
+.g9 .gu9{ display:flex; flex-direction:column; align-items:center; transition:transform .8s cubic-bezier(.5,0,.2,1); will-change:transform; }
+.g9 .w9g{ font-size:30px; line-height:1.15; white-space:nowrap; }
+.g9 .w9g b{ font-family:"AcIs",-apple-system,"SF Pro Display",system-ui,sans-serif; font-weight:700; color:#fb923c; letter-spacing:-.02em; margin-right:2px; }
+.g9 .w9g span{ font-family:"AcTk",-apple-system,"SF Pro Display",system-ui,sans-serif; font-weight:300; letter-spacing:-.01em; }
+.g9 .gb9{ margin-top:8px; font-size:12.5px; line-height:1.45; color:rgba(255,255,255,.55); transition:opacity .4s; }
+.g9 .gb9 b{ color:rgba(255,255,255,.7); }
+.hos.giris.g9 .gform{ margin-top:40px; max-width:360px; background:rgba(255,255,255,.055); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.1); border-radius:24px; padding:8px 20px 18px; box-shadow:0 24px 60px rgba(0,0,0,.35); animation:none; transition:transform .7s cubic-bezier(.5,0,.2,1), opacity .5s; }
+.g9 .gform label{ font-size:11px; font-weight:700; letter-spacing:.08em; color:rgba(255,255,255,.6); opacity:1; margin:14px 0 7px; }
+.g9 .gform input[type=text], .g9 .gform input[type=password], .g9 .gsif input{ height:50px; border-radius:14px; border:1px solid rgba(255,255,255,.14); background:rgba(6,16,32,.45); font-size:17px; padding:0 14px; }
+.g9 .gform input[type=text]:focus, .g9 .gsif input:focus{ outline:none; border-color:#fb923c; box-shadow:0 0 0 3px rgba(251,146,60,.18); }
+.g9 .gform .ghat{ font-size:15px; margin:16px 0 18px; }
+.g9 .gform .btn{ height:52px; border-radius:14px; background:linear-gradient(180deg,#f97316,#ea580c); border:none; font-size:17px; font-weight:700; box-shadow:0 8px 22px rgba(234,88,12,.35), inset 0 1px 0 rgba(255,255,255,.25); }
+.hos.giris.g9 .gbaska{ display:block; margin:16px auto 0; color:rgba(255,255,255,.6); font-weight:500; font-size:14px; text-decoration:none; border-bottom:1px solid rgba(255,255,255,.3); padding:0 0 1px; border-radius:0; animation:none; }
+.hos.giris.g9 > .gh9{ position:fixed; left:0; right:0; top:55%; text-align:center; font-size:15px; color:rgba(255,255,255,.75); opacity:0; pointer-events:none; transition:opacity .5s .5s; z-index:3; }
+.hos.giris.g9 > svg.yk9{ position:fixed; left:50%; bottom:calc(56px + env(safe-area-inset-bottom)); transform:translateX(-50%); width:min(86vw,340px); height:auto; overflow:visible; z-index:0; pointer-events:none; }
+.g9.git .gform{ transform:translateY(120vh); opacity:0; }
+.g9.git .gb9{ opacity:0; }
+.hos.giris.g9.git > .gh9{ opacity:1; }
 .hos.giris .gecis5{ position:absolute; inset:0; z-index:5; background:radial-gradient(circle at 50% 42%,#1e293b,#0b1020 70%); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; opacity:0; transition:opacity .45s; pointer-events:none; }
 .hos.giris .gecis5.ac{ opacity:1; }
 .hos.giris .gecis5 b{ font-size:22px; } .hos.giris .gecis5 small{ color:#94a3b8; font-size:13px; }
@@ -4970,21 +4992,21 @@ const GIRIS = (() => {
   function ekran(kul, devam, mesaj){
     document.getElementById("tabs").style.display = "none";
     kapatAlt && kapatAlt();
-    document.getElementById("main").innerHTML = `<div class="hos giris"><canvas class="yolc" id="yolc"></canvas>
-<div class="hos-logo"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path class="k5" d="M8 3L4 21"/><path class="k5" d="M16 3l4 18"/><path d="M12 4v3M12 10.5v3M12 17v3" stroke="#fde68a"/></svg></div>
-<h1>İşTakip</h1>
-<div class="hos-alt">${kurumHtml()}</div>
+    document.getElementById("main").innerHTML = `<div class="hos giris g9" id="g9">
+<div class="gu9" id="gu9"><div class="w9g"><b>İş</b><span>Takip</span></div><div class="gb9">${kurumHtml()}</div></div>
 <form class="gform" id="gform" method="post" action="#" autocomplete="on">
 <label for="gkadi">Kullanıcı adı</label><input id="gkadi" name="username" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" required>
 <label for="gsifre">Şifre</label><div class="gsif"><input id="gsifre" name="password" type="password" autocomplete="current-password" required><button type="button" data-goster="gsifre">göster</button></div>
 <label class="ghat"><input type="checkbox" id="ghatirla" checked> Beni hatırla</label>
 <button class="btn" type="submit" id="ggit">Giriş</button>
 <div class="hos-hata" id="ghata"${mesaj ? "" : " hidden"}>${esc(mesaj || "")}</div>
+<button type="button" class="gbaska" data-yukle>Başka veri dosyası yükle</button>
 </form>
-<button class="gbaska" data-yukle>Başka veri dosyası yükle</button>
-<div class="gecis5" id="gecis5"><b>Hoş geldiniz</b><small>Veriler açılıyor…</small></div>
+<div class="gh9" id="gh9">Hoş geldiniz</div>
+${yolKesitSvg9("g9")}
 </div>`;
-    const yol5 = (() => { try{ return yolCiz5(document.getElementById("yolc")); }catch(_){ return null; } })();
+    const g9 = document.getElementById("g9"), ys9 = g9.querySelector("svg.yk9");
+    try{ yolKesit9(ys9, null, 9); }catch(_){}
     const f = document.getElementById("gform");
     f.addEventListener("submit", async ev => {
       ev.preventDefault();
@@ -4994,7 +5016,19 @@ const GIRIS = (() => {
       const r = await sifreyleAc(kul, kadi, sif);
       if(!r){ btn.disabled = false; btn.textContent = "Giriş"; h.textContent = "Kullanıcı adı veya şifre hatalı."; h.hidden = false; return; }
       oturumYaz({ k: norm(kadi), v: r.e.v, ad: r.ad, kek: b64(r.kek) }, document.getElementById("ghatirla").checked);
-      if(yol5 && !azHareket && girisAnimGun()){ yol5.hizlan(); f.classList.add("git"); const gc = document.getElementById("gecis5"); if(gc){ gc.querySelector("b").textContent = "Hoş geldiniz" + (r.ad ? ", " + r.ad.split(/\s+/)[0] : ""); setTimeout(() => gc.classList.add("ac"), 650); } await new Promise(ok => setTimeout(ok, 1150)); }
+      // v200: giriş açılışa dönüşür — kart aşağı iner, yazı ortaya gelir, yol kesiti yeniden kurulur
+      if(!azHareket){ try{
+        const gu = document.getElementById("gu9"), gh = document.getElementById("gh9"), w = gu.querySelector(".w9g"), rb = w.getBoundingClientRect();
+        gh.textContent = "Hoş geldiniz" + (r.ad ? ", " + r.ad.split(/\s+/)[0] : "");
+        const hedef = window.innerHeight / 2 - rb.height * 1.5;
+        gu.style.transform = `translateY(${(hedef - rb.top).toFixed(1)}px)`;
+        gh.style.top = (hedef + rb.height + 22) + "px";
+        if(document.activeElement && document.activeElement.blur) document.activeElement.blur();
+        g9.classList.add("git"); yolKesit9(ys9, w, 0);
+        await new Promise(ok => setTimeout(ok, 450));
+        await new Promise(ok => { const t0 = performance.now(); const ad = now => { const t = (now - t0) / 1000; yolKesit9(ys9, w, t); if(t < 2.05) requestAnimationFrame(ad); else ok(); }; requestAnimationFrame(ad); });
+        await new Promise(ok => setTimeout(ok, 250));
+      }catch(_){} }
       document.getElementById("tabs").style.display = "";
       await devam(r.K, r.e);
     });
@@ -5639,6 +5673,31 @@ document.addEventListener("click", e => {
 }, true);
 
 // ---------- giriş ekranı: akan yol ----------
+// v200: 3 boyutlu yol kesiti (açılış ekranıyla aynı) — giriş ekranında durur, girişte yeniden kurulur
+function yolKesitSvg9(on){
+  return `<svg class="yk9" viewBox="-4 -2 190 40" aria-hidden="true"><defs>
+<pattern id="${on}pt" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="1.2" cy="1.5" r=".6" fill="#3e2210" opacity=".7"/><circle cx="3.7" cy="3.8" r=".5" fill="#b07d52" opacity=".6"/></pattern>
+<pattern id="${on}pp" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".5" fill="#6f5a3d" opacity=".7"/><circle cx="3" cy="3" r=".45" fill="#e3d1ad" opacity=".7"/></pattern>
+<radialGradient id="${on}gg" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".4"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs>
+<ellipse class="g9e" cx="0" cy="29" rx="0" ry="4" fill="url(#${on}gg)"/><g class="t9e" data-on="${on}"></g></svg>`;
+}
+function yolKesit9(svg, yazi, t){
+  const g = svg.querySelector(".t9e"), gl = svg.querySelector(".g9e"), on = g.dataset.on, L = 150, dx = 24, dy = -13;
+  const K = [{ h: 5, on: "#6e4126", ust: "#93603a", uc: "#4c2a15", d: on + "pt", a: .25, b: 1.45 }, { h: 3.25, on: "#a88c60", ust: "#c9b083", uc: "#836c48", d: on + "pp", a: .5, b: 1.7 }, { h: 2.75, on: "#2b2f35", ust: "#40454e", uc: "#1a1d21", bsk: 1, a: .75, b: 1.95 }];
+  const kol = x => x < .5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2, ar = (a, b) => kol(Math.min(1, Math.max(0, (t - a) / (b - a))));
+  const P = a => a.map(p => p[0].toFixed(2) + "," + p[1].toFixed(2)).join(" ");
+  let yb = 26, h = "";
+  K.forEach(k => { const x = L * ar(k.a, k.b), yt = yb - k.h;
+    if(x > .3){ h += `<polygon points="${P([[0, yt], [x, yt], [x + dx, yt + dy], [dx, yt + dy]])}" fill="${k.ust}"/>`;
+      if(k.bsk){ const m = (f, c, sw, o, da) => `<line x1="${dx * f}" y1="${yt + dy * f}" x2="${x + dx * f}" y2="${yt + dy * f}" stroke="${c}" stroke-width="${sw}" opacity="${o}"${da ? ' stroke-dasharray="7 5"' : ""}/>`; h += m(.5, "#fff", 1.1, .95, 1) + m(.14, "#e2e8f0", .5, .7) + m(.86, "#e2e8f0", .5, .7); }
+      h += `<rect x="0" y="${yt}" width="${x}" height="${k.h}" fill="${k.on}"/>` + (k.d && !k.bsk ? `<rect x="0" y="${yt}" width="${x}" height="${k.h}" fill="url(#${k.d})"/>` : "");
+      h += `<polygon points="${P([[x, yt], [x + dx, yt + dy], [x + dx, yb + dy], [x, yb]])}" fill="${k.uc}"/>`;
+      h += `<line x1="0" y1="${yt}" x2="${x}" y2="${yt}" stroke="#fff" stroke-opacity=".14" stroke-width=".6"/>`; }
+    yb = yt; });
+  g.innerHTML = h;
+  const x0 = L * ar(.25, 1.45); gl.setAttribute("cx", (x0 + dx) / 2); gl.setAttribute("rx", x0 / 2 + 14 * Math.min(1, x0 / 20));
+  if(yazi) yazi.style.clipPath = yazi.style.webkitClipPath = `inset(-20% ${(100 - ar(.25, 1.95) * 100).toFixed(2)}% -20% 0)`;
+}
 function yolCiz5(cv){
   const g = cv.getContext("2d"); let W = 0, H = 0, HZ = 0;
   const boyut = () => { const d = Math.min(2, window.devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * d; cv.height = H * d; g.setTransform(d, 0, 0, d, 0, 0); HZ = H * .43; };

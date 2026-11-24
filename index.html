@@ -2325,12 +2325,16 @@ function mapUygula(){
   inn.style.width = W + "px";
   const iw = W * mz.s, ih = img.offsetHeight * mz.s;
   mz.x = Math.min(0, Math.max(W - iw, mz.x));
-  mz.y = ih <= H ? (H - ih) / 2 : Math.min(0, Math.max(H - ih, mz.y));
+  // v203: klavye açıkken haritanın altı klavyenin üstüne kadar çıkabilir (alttaki kutular klavyenin üstünde görünebilsin)
+  let kb = 0; try{ const vv = window.visualViewport; if(vv){ const wr = w.getBoundingClientRect(); kb = Math.max(0, wr.bottom - (vv.offsetTop + vv.height)); if(kb < 60) kb = 0; } }catch(_){}
+  mz.y = ih <= H - kb ? (ih <= H ? (H - ih) / 2 : Math.min(0, Math.max(H - ih - kb, mz.y))) : Math.min(0, Math.max(H - ih - kb, mz.y));
   inn.style.transform = `translate(${mz.x}px,${mz.y}px) scale(${mz.s})`;
   const bw = (2 / mz.s) + "px";
   inn.querySelectorAll(".kutu").forEach(k => { k.style.borderWidth = bw; });
   inn.style.setProperty("--kz", 1 / mz.s);
 }
+// v203: klavye açılıp kapanınca harita sınırları yeniden ayarlanır
+try{ window.visualViewport && window.visualViewport.addEventListener("resize", () => { if(document.getElementById("mapin")) mapUygula(); }); }catch(_){}
 function mapZoom(f, cx, cy){
   const w = document.getElementById("mapwrap"); if(!w) return;
   const ns = Math.min(10, Math.max(1, mz.s * f));
@@ -2376,10 +2380,14 @@ function kutuyaGit(id){
   if(!j || !j.kutular.length || !w) return;
   resimHazir(() => {
     const k = j.kutular[0], W = w.clientWidth, H = w.clientHeight, ih = img.offsetHeight;
+    // v203: klavye açıksa görünen alan klavyenin üstü kadardır; kutu arama çubuğunun altı ile klavyenin arasına, biraz yukarıya konur
+    let ust = 0, alan = H, oran = 0.38;
+    try{ const vv = window.visualViewport, wr = w.getBoundingClientRect(), gorAlt = vv ? Math.min(wr.bottom, vv.offsetTop + vv.height) - wr.top : H;
+      if(gorAlt < H - 60){ const hu = w.querySelector(".hust"); ust = hu ? Math.max(0, hu.getBoundingClientRect().bottom - wr.top) : 0; alan = Math.max(80, gorAlt - ust); oran = 0.4; } }catch(_){}
     // kutu ekranın yaklaşık üçte birini kaplasın
-    mz.s = Math.min(10, Math.max(1.5, Math.min(W * 0.35 / (k[2] / 100 * W), H * 0.3 / (k[3] / 100 * ih))));
+    mz.s = Math.min(10, Math.max(1.5, Math.min(W * 0.35 / (k[2] / 100 * W), alan * 0.3 / (k[3] / 100 * ih))));
     const cx = (k[0] + k[2] / 2) / 100 * W, cy = (k[1] + k[3] / 2) / 100 * ih;
-    mz.x = W / 2 - cx * mz.s; mz.y = H * 0.38 - cy * mz.s;
+    mz.x = W / 2 - cx * mz.s; mz.y = (ust ? ust + alan * oran : H * 0.38) - cy * mz.s;
     mapUygula();
   });
 }

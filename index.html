@@ -2348,6 +2348,35 @@ function mapZoom(f, cx, cy){
   mz.x = cx - (cx - mz.x) * ns / mz.s; mz.y = cy - (cy - mz.y) * ns / mz.s; mz.s = ns;
   mapUygula();
 }
+// v206: haritada boş alana çift dokunma — 1. ve 2. çift dokunma birer kat (2×) yakınlaştırır, 3. ilk görünüşe döner
+const cift9 = { t: 0, x: 0, y: 0, b: null, anim: 0 };
+function mapGecis9(hs, px, py){
+  const w = document.getElementById("mapwrap"); if(!w) return;
+  const a = { ...mz }, sifir = hs <= 1.001;
+  const b = sifir ? { s: 1, x: 0, y: a.y } : { s: hs, x: px - (px - a.x) * hs / a.s, y: py - (py - a.y) * hs / a.s };
+  if(sifir){ const ih = (document.getElementById("mapimg")?.offsetHeight || 0); b.y = (w.clientHeight - ih) / 2; }
+  const id = ++cift9.anim, t0 = performance.now(), T = azHareket ? 1 : 260;
+  const ad = now => { if(id !== cift9.anim) return; const k = Math.min(1, (now - t0) / T), e = 1 - Math.pow(1 - k, 3);
+    mz.s = a.s + (b.s - a.s) * e; mz.x = a.x + (b.x - a.x) * e; mz.y = a.y + (b.y - a.y) * e; mapUygula(); if(k < 1) requestAnimationFrame(ad); };
+  requestAnimationFrame(ad);
+}
+const ciftHaric9 = ".kutu, .sheet, .zoom, .hust, .kd9bar, .ket6, button, a, input";
+document.addEventListener("touchstart", e => {
+  const w = document.getElementById("mapwrap"); if(!w || !w.contains(e.target)) { cift9.b = null; return; }
+  if(e.touches.length !== 1 || e.target.closest(ciftHaric9) || (typeof KD9 !== "undefined" && KD9)){ cift9.b = null; cift9.t = 0; return; }
+  cift9.b = { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now(), m: false };
+}, { capture: true, passive: true });
+document.addEventListener("touchmove", e => { if(cift9.b && e.touches.length === 1 && Math.hypot(e.touches[0].clientX - cift9.b.x, e.touches[0].clientY - cift9.b.y) > 12) cift9.b.m = true; if(e.touches.length > 1 && cift9.b) cift9.b.m = true; }, { capture: true, passive: true });
+document.addEventListener("touchend", e => {
+  const b = cift9.b; cift9.b = null; if(!b || b.m || e.touches.length || Date.now() - b.t > 300) { if(b) cift9.t = 0; return; }
+  const now = Date.now();
+  if(cift9.t && now - cift9.t < 320 && Math.hypot(b.x - cift9.x, b.y - cift9.y) < 35){
+    cift9.t = 0; const w = document.getElementById("mapwrap"); if(!w) return; const r = w.getBoundingClientRect();
+    const hs = mz.s >= 3.9 ? 1 : Math.min(10, mz.s * 2);
+    mapGecis9(hs, b.x - r.left, b.y - r.top); return;
+  }
+  cift9.t = now; cift9.x = b.x; cift9.y = b.y;
+}, { capture: true, passive: true });
 function resimHazir(f){
   const img = document.getElementById("mapimg"); if(!img) return;
   if(img.complete && img.naturalWidth) f(); else img.addEventListener("load", f, { once: true });

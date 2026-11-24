@@ -1321,6 +1321,8 @@ html, body{ touch-action:manipulation; }
 .hust .hfd9 i{ font-style:normal; color:#fb923c; }
 .hust.kucuk9 > :not(.hfd9){ display:none !important; }
 .hust.kucuk9 .hfd9{ display:inline-flex; }
+.hust.ara9 > .hcsat, .hust.ara9 > .hozet{ display:none !important; }
+.hust.filt9 > .hara{ display:none !important; }
 /* Anasayfa: aşağı çekince arama */
 .cek9{ position:fixed; left:50%; top:calc(8px + env(safe-area-inset-top)); z-index:40; transform:translate(-50%,-60px); display:flex; align-items:center; gap:7px; padding:8px 14px; border-radius:20px; background:#0f172a; color:#fff; font-size:12.5px; font-weight:700; box-shadow:0 6px 18px rgba(0,0,0,.3); pointer-events:none; opacity:0; }
 .cek9 svg{ width:15px; height:15px; }
@@ -6662,21 +6664,23 @@ document.addEventListener("click", e => {
 document.addEventListener("input", e => { if(e.target.id === "hAra"){ const n = document.getElementById("hfdn9"); if(n){ const x = filtreSay9(); n.textContent = x ? ` (${x})` : ""; } } });
 
 // Yakınlaşınca filtreler "Ara · Filtre (n)" düğmesine iner; dokununca açılır, haritaya dokununca yine iner
-let hustAcik9 = false;
+let hustAcik9 = false, hustMod9 = "";   // v202: yakınken "Ara" yalnız arama kutusunu, "Filtre" yalnız İL · BİRİM · STD satırlarını açar
 function hustKucult9(){
   const h = document.querySelector("#mapwrap .hust"); if(!h) return;
-  const ara = document.activeElement && document.activeElement.id === "hAra";
-  h.classList.toggle("kucuk9", mz.s > 1.25 && !hustAcik9 && !ara);
+  const ara = document.activeElement && document.activeElement.id === "hAra", yakin = mz.s > 1.25;
+  h.classList.toggle("kucuk9", yakin && !hustAcik9 && !ara);
+  const mod = yakin && (hustAcik9 || ara) ? (hustMod9 || (ara ? "ara" : "")) : "";
+  h.classList.toggle("ara9", mod === "ara"); h.classList.toggle("filt9", mod === "filtre");
 }
 const _mapUygula37 = mapUygula;
 mapUygula = function(){ const r = _mapUygula37.apply(this, arguments); hustKucult9(); return r; };
 document.addEventListener("click", e => {
   if(!e.target.closest || !e.target.closest("[data-hfd9]")) return;
-  e.stopPropagation(); e.preventDefault(); hustAcik9 = true; hustKucult9(); ketOlcek();
+  e.stopPropagation(); e.preventDefault(); hustAcik9 = true; hustMod9 = "filtre"; hustKucult9(); ketOlcek();
 }, true);
 document.addEventListener("touchstart", e => {
   if(!hustAcik9 || !e.target.closest) return;
-  if(e.target.closest("#mapwrap") && !e.target.closest(".hust")){ hustAcik9 = false; hustKucult9(); }
+  if(e.target.closest("#mapwrap") && !e.target.closest(".hust")){ hustAcik9 = false; hustMod9 = ""; hustKucult9(); }
 }, { passive: true });
 
 // Anasayfa: sayfa esnemez; en üstteyken aşağı çekilince arama açılır
@@ -6991,13 +6995,13 @@ document.addEventListener("touchmove", e => {
 document.addEventListener("touchend", e => {
   const c = hCek9; hCek9 = null; if(!c || !c.d) return;
   e.stopPropagation(); cekGizle9();
-  if(c.d > 70){ try{ navigator.vibrate && navigator.vibrate(8); }catch(_){} hustAcik9 = true; hustKucult9(); const a = document.getElementById("hAra"); if(a){ a.focus(); a.select && a.select(); } }
+  if(c.d > 70){ try{ navigator.vibrate && navigator.vibrate(8); }catch(_){} hustAcik9 = true; hustMod9 = "ara"; hustKucult9(); const a = document.getElementById("hAra"); if(a){ a.focus(); a.select && a.select(); } }
 }, { capture: true, passive: false });
 // --- Yakınlaşınca küçülen düğme ikiye: "Ara" klavyeyle, "Filtre (n)" klavyesiz
 document.addEventListener("click", e => {
   if(!e.target.closest || !e.target.closest("[data-hfdara9]")) return;
   e.stopPropagation(); e.preventDefault();
-  hustAcik9 = true; hustKucult9();
+  hustAcik9 = true; hustMod9 = "ara"; hustKucult9();
   const a = document.getElementById("hAra"); if(a) a.focus();
   ketOlcek();
 }, true);
@@ -8740,7 +8744,6 @@ function kmRaporCiz9(doc, V, a, b, sec, Wg){
   const gun = Math.round((new Date(b) - new Date(a)) / 864e5) + 1;
   // başlık
   yaz("KM İlerleme Raporu", X0, 19, { k: 1, f: 17 });
-  yaz("Tarihi bu aralıkta olan KM girişleri", X0, 25, { f: 8.5, c: GRI });
   yaz(`${trG9(a)} – ${trG9(b)}`, X1, 19, { k: 1, f: 10.5, r: 1 });
   yaz(`${gun} gün`, X1, 25, { f: 8.5, c: GRI, r: 1 });
   doc.setDrawColor(...TUR); doc.setLineWidth(0.9); doc.line(X0, 28.5, X1, 28.5);

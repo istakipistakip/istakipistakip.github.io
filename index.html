@@ -1517,6 +1517,8 @@ body.y9-rapor [data-kmrapor]{ display:none !important; }
 .kf13 label{ display:block; font-size:12.5px; font-weight:700; color:#475569; margin:12px 0 5px; }
 .kf13 input[type=text], .kf13 input[type=password], .kf13 input[type=number]{ width:100%; height:44px; border-radius:11px; border:1px solid #d6dbe3; padding:0 12px; font-size:16px; background:#fff; color:#0f172a; box-sizing:border-box; }
 .kf13 label.kfc{ display:flex; align-items:center; gap:9px; font-size:13.5px; color:#334155; margin-top:14px; } .kf13 label.kfc input{ width:20px; height:20px; }
+.hos-tan9{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; max-width:320px; height:50px; margin:12px auto 0; border-radius:14px; border:1.5px solid rgba(255,255,255,.35); background:rgba(255,255,255,.06); color:#fff; font-weight:800; font-size:15.5px; }
+.hos-tan9 svg{ width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:2; }
 .ak9sel{ width:100%; height:44px; border-radius:11px; border:1px solid #d6dbe3; padding:0 10px; font-size:15px; margin:10px 0 8px; background:#fff; color:#0f172a; }
 html.dark .ak9sel{ background:#0b1220; border-color:#334155; color:#e2e8f0; }
 .ghy9{ display:block; width:100%; height:44px; margin-top:12px; border-radius:12px; border:0; background:#0f172a; color:#fff; font-weight:800; font-size:14.5px; }
@@ -5050,8 +5052,9 @@ function hosgeldin(mesaj){
 <h1>İşTakip</h1>
 <div class="hos-alt">${kurumHtml()}</div>
 <button class="btn" data-yukle style="margin-top:26px">${IK("yukle")}Veri Dosyasını Yükle</button>
+<button class="hos-tan9" data-tanit9>${IK("kisi")}Bu telefonu tanıt</button>
 ${mesaj ? `<div class="hos-hata">${esc(mesaj)}</div>` : ""}
-<div class="hos-not"><b>Nasıl kullanılır?</b><br>1. Yukarıdaki düğmeyle <b>.istakip</b> veri dosyasını seçin.<br>2. Safari'de <b>Paylaş → Ana Ekrana Ekle</b> derseniz uygulama gibi açılır.<br><br>Veriler yalnızca bu telefonda saklanır, internete gönderilmez. Yeni dosya yüklenince eskisinin yerine geçer.</div>
+<div class="hos-not"><b>Nasıl kullanılır?</b><br>Yeni kullanıcıysanız önce <b>Bu telefonu tanıt</b> ile çıkan kodu yöneticinize gösterin; o size veri dosyasını gönderecek.<br>1. <b>Veri Dosyasını Yükle</b> ile gelen <b>.istakip</b> dosyasını seçin.<br>2. Safari'de <b>Paylaş → Ana Ekrana Ekle</b> derseniz uygulama gibi açılır.<br><br>Veriler yalnızca bu telefonda saklanır, internete gönderilmez. Yeni dosya yüklenince eskisinin yerine geçer.</div>
 </div>`;
 }
 function dosyaSec(){

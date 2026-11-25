@@ -7748,7 +7748,7 @@ async function telefonDosyasi9(tur){
     ic = v; Object.assign(ek, { tur: "tam", temel: KILIT.temel });
   }
   const dosya = { ...ek, veri: await paketle9(ic, r.K), ...(HAMK9 && HAMK9.veriKmz && HAMK9.z === "gzip" ? { veriKmz: HAMK9.veriKmz } : {}) };
-  return { metin: JSON.stringify(dosya), ad: dosyaAdi9(tur === "degisiklik" ? "-degisiklik" : "") };
+  return { metin: JSON.stringify(dosya), ad: "IsTakip.istakip" };   // v219: hep aynı ad; yenisi eskisinin yerine geçer
 }
 async function aktarimDosyasi9(){
   await hazir9;
@@ -12442,7 +12442,7 @@ async function kisiDosyasi9(k){
   v.erisim = { ...JSON.parse(JSON.stringify(d.erisim || {})), yetki: y ? { [k]: y } : {} };
   const dosya = { format: "istakip-mobil", v: 7, sifreli: 1, z: "gzip", olusturma: v0.olusturma, kul: [e], tur: "tam", temel: KILIT.temel, kisi: 1, veri: await paketle9(v, r.K) };
   const ad = fold(d.ad[k] || "kisi").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "kisi";
-  return { metin: JSON.stringify(dosya), ad: dosyaAdi9("-" + ad) };
+  return { metin: JSON.stringify(dosya), ad: `IsTakip-${ad}.istakip` };
 }
 async function erisimYaz9(d){
   await yonDepoYaz9(d);

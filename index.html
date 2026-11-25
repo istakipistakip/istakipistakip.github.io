@@ -2408,6 +2408,7 @@ function harita(){
   if(!D.harita) return '<div class="empty" style="padding-top:80px">Bu dosyada harita yok.</div>';
   kd9Gecerli();
   const j = secKutu ? byId(secKutu) : null;
+  if(!j || KD9 || OT9) PAY9 = 0;
   const kutular = [];
   ISLER.forEach(x => x.kutular.forEach((k, ki) => kutular.push([x.id, k, ki])));
   return `<div class="mapwrap" id="mapwrap"><div class="mapin${typeof DUZ9 !== "undefined" && DUZ9 && YON9 ? " dz9k" : ""}" id="mapin"><img src="${D.harita}" id="mapimg" alt="">
@@ -2427,7 +2428,10 @@ function mapUygula(){
   mz.x = Math.min(0, Math.max(W - iw, mz.x));
   // v203: klavye açıkken haritanın altı klavyenin üstüne kadar çıkabilir (alttaki kutular klavyenin üstünde görünebilsin)
   let kb = 0; try{ const vv = window.visualViewport; if(vv){ const wr = w.getBoundingClientRect(); kb = Math.max(0, wr.bottom - (vv.offsetTop + vv.height)); if(kb < 60) kb = 0; } }catch(_){}
+  const y9 = mz.y;
   mz.y = ih <= H - kb ? (ih <= H ? (H - ih) / 2 : Math.min(0, Math.max(H - ih - kb, mz.y))) : Math.min(0, Math.max(H - ih - kb, mz.y));
+  // v220: iş kartı açıkken haritanın altı kartın üstüne kadar kaydırılabilir (alttaki kutu kartın altında kalmasın)
+  if(PAY9 > 0){ const ust = ih <= H ? (H - ih) / 2 : 0; mz.y = Math.min(ust, Math.max(Math.min(ust, H - ih - kb) - PAY9, y9)); }
   inn.style.transform = `translate(${mz.x}px,${mz.y}px) scale(${mz.s})`;
   const bw = (2 / mz.s) + "px";
   inn.querySelectorAll(".kutu").forEach(k => { k.style.borderWidth = bw; });
@@ -2503,6 +2507,30 @@ function mapKur(){
   window.onmouseup = () => { if(kd9S) kd9Bit(); md = null; setTimeout(() => { surukle = false; }, 0); };
   w.addEventListener("click", e => { if(surukle){ e.stopPropagation(); e.preventDefault(); } }, true);
   w.addEventListener("wheel", e => { e.preventDefault(); const r = w.getBoundingClientRect(); mapZoom(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+}
+var PAY9 = 0, PAYA9 = 0;
+// v220: dokunulan kutu açılan kartın altında kalacaksa harita yumuşakça yukarı kayar
+function kartYer9(id, ki){
+  requestAnimationFrame(() => {
+    const w = document.getElementById("mapwrap"), sh = w && w.querySelector(".sheet"); if(!sh){ PAY9 = 0; return; }
+    const kt = w.querySelector(`.kutu[data-kutu="${CSS.escape(id)}"][data-ki="${ki}"]`) || w.querySelector(`.kutu[data-kutu="${CSS.escape(id)}"]`); if(!kt) return;
+    const wr = w.getBoundingClientRect(), sr = sh.getBoundingClientRect(), kr = kt.getBoundingClientRect();
+    PAY9 = Math.max(0, wr.bottom - sr.top + 14);
+    const hu = w.querySelector(".hust"), ustS = (hu ? hu.getBoundingClientRect().bottom : wr.top) + 10, alt = sr.top - 14;
+    if(kr.bottom <= alt) return;
+    let dy = alt - kr.bottom; if(kr.top + dy < ustS) dy = Math.min(0, ustS - kr.top);
+    if(dy >= -1) return;
+    const a = mz.y, id9 = ++PAYA9, t0 = performance.now(), T = azHareket ? 1 : 280;
+    const ad = now => { if(id9 !== PAYA9) return; const k = Math.min(1, (now - t0) / T), e = 1 - Math.pow(1 - k, 3); mz.y = a + dy * e; mapUygula(); if(k < 1) requestAnimationFrame(ad); };
+    requestAnimationFrame(ad);
+  });
+}
+// kart kapanınca harita yumuşakça olağan sınırına döner
+function kartBirak9(p){
+  if(!(p > 0)){ PAY9 = 0; return; }
+  const id9 = ++PAYA9, t0 = performance.now(), T = azHareket ? 1 : 260;
+  const ad = now => { if(id9 !== PAYA9) return; const k = Math.min(1, (now - t0) / T), e = 1 - Math.pow(1 - k, 3); PAY9 = p * (1 - e); if(k >= 1) PAY9 = 0; mapUygula(); if(k < 1) requestAnimationFrame(ad); };
+  requestAnimationFrame(ad);
 }
 function kutuyaGit(id){
   const j = byId(id), w = document.getElementById("mapwrap"), img = document.getElementById("mapimg");
@@ -4897,8 +4925,8 @@ document.addEventListener("click", e => {
   const yz = e.target.closest("[data-yazi]"); if(yz && detay){ yaziPenceresi(byId(detay.id), yz.dataset.yazi); return; }
   const h = e.target.closest("[data-hat]"); if(h){ hatGoster(h.dataset.hat); return; }
   const hm = e.target.closest("[data-haritada]"); if(hm){ kapatAlt(); secKutu = hm.dataset.haritada; secKi9 = 0; detay = null; tab = "map"; ciz(); kutuyaGit(secKutu); return; }
-  const kt = e.target.closest("[data-kutu]"); if(kt && kutuTut9.oldu){ kutuTut9.oldu = false; return; } if(kt && kd9Tik(kt)) return; if(kt){ secKutu = kt.dataset.kutu; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); return; }
-  if(e.target.closest("[data-kutukapat]")){ secKutu = null; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); return; }
+  const kt = e.target.closest("[data-kutu]"); if(kt && kutuTut9.oldu){ kutuTut9.oldu = false; return; } if(kt && kd9Tik(kt)) return; if(kt){ secKutu = kt.dataset.kutu; const keep = { ...mz }, p = PAY9; ciz(); mz = keep; PAY9 = p; resimHazir(() => { mapUygula(); kartYer9(secKutu, kt.dataset.ki); }); return; }
+  if(e.target.closest("[data-kutukapat]")){ secKutu = null; const keep = { ...mz }, p = PAY9; ciz(); mz = keep; PAY9 = p; resimHazir(() => { mapUygula(); kartBirak9(p); }); return; }
   const z = e.target.closest("[data-zoom]"); if(z){ mapZoom(Number(z.dataset.zoom)); return; }
   if(e.target.closest("[data-aratemizle]")){ isAra = ""; const i = document.getElementById("isAra"); if(i){ i.value = ""; i.focus(); } document.getElementById("isListe").innerHTML = isListesi(aramaSonuc()); return; }
   const fv = e.target.closest("[data-fav]"); if(fv){ favDegis(fv.dataset.fav); const l = document.getElementById("isListe"); if(l) l.innerHTML = isListesi(aramaSonuc()); return; }

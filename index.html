@@ -1517,6 +1517,8 @@ body.y9-rapor [data-kmrapor]{ display:none !important; }
 .kf13 label{ display:block; font-size:12.5px; font-weight:700; color:#475569; margin:12px 0 5px; }
 .kf13 input[type=text], .kf13 input[type=password], .kf13 input[type=number]{ width:100%; height:44px; border-radius:11px; border:1px solid #d6dbe3; padding:0 12px; font-size:16px; background:#fff; color:#0f172a; box-sizing:border-box; }
 .kf13 label.kfc{ display:flex; align-items:center; gap:9px; font-size:13.5px; color:#334155; margin-top:14px; } .kf13 label.kfc input{ width:20px; height:20px; }
+.ghy9{ display:block; width:100%; height:44px; margin-top:12px; border-radius:12px; border:0; background:#0f172a; color:#fff; font-weight:800; font-size:14.5px; }
+html.dark .ghy9{ background:#e2e8f0; color:#0f172a; }
 .kf13 .kfn{ font-size:12.5px !important; color:#64748b !important; }
 .sf9{ display:flex; gap:6px; } .sf9 input{ flex:1; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; } .sf9 button{ flex:none; height:44px; padding:0 14px; border-radius:11px; border:1px solid #fdba74; background:#fff7ed; color:#9a3412; font-weight:800; }
 .sb9{ height:5px; border-radius:3px; background:#e2e8f0; margin-top:7px; overflow:hidden; } .sb9 i{ display:block; height:100%; width:0; border-radius:3px; transition:width .2s, background .2s; }
@@ -12293,26 +12295,30 @@ async function cihazAl9(olustur){
   return c;
 }
 async function parmakIzi9(pB64){ return hex9(new Uint8Array(await crypto.subtle.digest("SHA-256", unb64_9(pB64))).subarray(0, 8)); }
-async function tanitKod9(){
+// v215: giriş yapmış kullanıcının kodunda kullanıcı adı ve adı da olur: yönetici okutunca kişi kendiliğinden bulunur
+const kodYaz9 = x => encodeURIComponent(x || "").replace(/\./g, "%2E");
+async function tanitKod9(kadi, ad){
   const c = await cihazAl9(true), t = Date.now(), m = modelAd9().replace(/\./g, ",");
-  const g = b64_9(new Uint8Array(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, c.imza.privateKey, enc9.encode(c.p + "|" + c.s + "|" + t))));
-  return ["IT9", b64u9(c.p), b64u9(c.s), t.toString(36), b64u9(g), encodeURIComponent(m)].join(".");
+  const k = kadi ? GIRIS.norm(kadi) : "", a = k ? String(ad || "").trim() : "";
+  const g = b64_9(new Uint8Array(await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, c.imza.privateKey, enc9.encode(c.p + "|" + c.s + "|" + t + (k ? "|" + k + "|" + a : "")))));
+  return ["IT9", b64u9(c.p), b64u9(c.s), t.toString(36), b64u9(g), encodeURIComponent(m), ...(k ? [kodYaz9(k), kodYaz9(a)] : [])].join(".");
 }
 async function tanitCoz9(metin){
   const p0 = String(metin || "").trim().replace(/\s+/g, "").split(".");
   if(p0[0] !== "IT9" || p0.length < 5) throw new Error("Bu bir İşTakip telefon kodu değil.");
   const p = ub64u9(p0[1]), s = ub64u9(p0[2]), t = parseInt(p0[3], 36), g = ub64u9(p0[4]), m = decodeURIComponent(p0[5] || "").replace(/,/g, ".");
+  let kk = "", ka = ""; try{ kk = decodeURIComponent(p0[6] || ""); ka = decodeURIComponent(p0[7] || ""); }catch(_){ throw new Error("Kod bozuk."); }
   if(!Number.isFinite(t)) throw new Error("Kod bozuk.");
   const simdi = Date.now();
   if(simdi - t > GUN24_9) throw new Error("Bu kodun süresi dolmuş (24 saat). Kişiden yeni kod isteyin.");
   if(t - simdi > 10 * 60e3) throw new Error("Kodun tarihi ileride; telefonların saatini kontrol edin.");
   try{
     const sk = await crypto.subtle.importKey("raw", unb64_9(s), { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
-    const ok = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, sk, unb64_9(g), enc9.encode(p + "|" + s + "|" + t));
+    const ok = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, sk, unb64_9(g), enc9.encode(p + "|" + s + "|" + t + (kk ? "|" + kk + "|" + ka : "")));
     if(!ok) throw 0;
     await crypto.subtle.importKey("raw", unb64_9(p), { name: "ECDH", namedCurve: "P-256" }, false, []);
   }catch(_){ throw new Error("Kod doğrulanamadı; yeniden okutun."); }
-  return { p, t, m, fp: await parmakIzi9(p) };
+  return { p, t, m, fp: await parmakIzi9(p), kadi: kk, ad: ka };
 }
 // kullanıcının şifreyle kilitli anahtarını (w) bir kat daha o telefona kilitle
 async function bagla9(e, w, kod){
@@ -12457,7 +12463,9 @@ async function tanitSayfa9(){
 <p>Bu kodu yöneticinize gösterin; o kendi telefonunda okutacak. Uzaktaysanız ekran görüntüsünü ya da aşağıdaki yazıyı gönderebilirsiniz. Kodda şifre ya da veri yoktur.</p>
 <div class="kod" id="tq9kod"></div><div class="dg"><button class="eb" data-tq9kop>Kodu kopyala</button><button class="eb" data-tq9yen>Yenile</button></div>
 <p class="alt">Telefon: ${esc(modelAd9())}</p></div>`);
-  const yap = async () => { try{ const k = await tanitKod9(); ov.querySelector("#tq9qr").innerHTML = await qrSvg9(k); ov.querySelector("#tq9kod").textContent = k; }catch(err){ ov.querySelector("#tq9qr").innerHTML = `<div class="dr9h">${esc(err.message || "Kod hazırlanamadı")}</div>`; } };
+  const o = oturumBilgi(), gk = document.getElementById("gkadi");
+  const kadi = o && o.k || (gk && gk.value.trim()) || "", ad = o && o.k ? o.ad : "";
+  const yap = async () => { try{ const k = await tanitKod9(kadi, ad); ov.querySelector("#tq9qr").innerHTML = await qrSvg9(k); ov.querySelector("#tq9kod").textContent = k; }catch(err){ ov.querySelector("#tq9qr").innerHTML = `<div class="dr9h">${esc(err.message || "Kod hazırlanamadı")}</div>`; } };
   await yap();
   ov.addEventListener("click", async e => {
     if(e.target.closest("[data-tq9yen]")) return yap();
@@ -12555,10 +12563,21 @@ async function kulEkle9(d, ciz2){
   const okunan = await qrOkut9(); if(!okunan) return;
   let kod; try{ kod = await tanitCoz9(okunan); }catch(err){ bildir(err.message); return; }
   const L = kulBirlestir9(KILIT.kul, d);
+  if(kod.kadi){
+    const kk = await GIRIS.kulKod(kod.kadi), e = L.find(x => x.k === kk);
+    if(e){
+      const ad = kod.ad || d.ad[kk] || kod.kadi;
+      if(e.c === kod.fp){ if(kod.ad && d.ad[kk] !== kod.ad){ d.ad[kk] = kod.ad; await yonDepoYaz9(d); await ciz2(); } bildir(`${ad} bu telefonda zaten tanıtılmış`); return; }
+      const ok = await onay9("Telefonu tanıt", `<b>${esc(ad)}</b> (${esc(kod.kadi)})${e.x ? " başka bir telefona tanıtılmış. Bu telefonla değiştirilsin mi?" : " bu telefona tanıtılsın mı?"}<br><small>Telefon: ${esc(kod.m || "")}</small>`, [{ t: "Vazgeç", v: false }, { t: "Tanıt", v: true, ana: 1 }]);
+      if(!ok) return;
+      if(kod.ad){ d.ad[kk] = kod.ad; await yonDepoYaz9(d); }
+      return kulTanit9(d, e, ciz2, kod);
+    }
+  }
   if(L.some(e => e.c === kod.fp)){ const e = L.find(x => x.c === kod.fp); await onay9("Bu telefon zaten tanıtılmış", `Bu telefon <b>${esc(d.ad[e.k] || "bir kullanıcıya")}</b> bağlı. Bir telefona yalnız bir kullanıcı bağlanabilir.`, [{ t: "Tamam", v: true, ana: 1 }]); return; }
   const p = kulForm9("Yeni kullanıcı", `<p class="kfn">Telefon: ${esc(kod.m || "")} · kod ${esc(kod.fp.slice(0, 6))}</p>
-<label>Ad soyad</label><input data-a="ad" type="text" autocomplete="off">
-<label>Kullanıcı adı</label><input data-a="kadi" type="text" autocomplete="off" autocapitalize="none" spellcheck="false">
+<label>Ad soyad</label><input data-a="ad" type="text" autocomplete="off" value="${esc(kod.ad || "")}">
+<label>Kullanıcı adı</label><input data-a="kadi" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" value="${esc(kod.kadi || "")}">
 ${sifreHtml9}
 <label class="kfc"><input data-a="kmz" type="checkbox"> Sadece KMZ (iş listesi ve KMZ ekranı)</label>
 <div class="kfh hos-hata" hidden></div>`);
@@ -12606,17 +12625,21 @@ async function kulAdGir9(d, e, ciz2){
   if(await GIRIS.kulKod(v.kadi) !== e.k){ bildir("Kullanıcı adı bu kayda ait değil"); return; }
   d.ad[e.k] = v.ad.trim(); await yonDepoYaz9(d); ciz2();
 }
-async function kulTanit9(d, e, ciz2){
+async function kulTanit9(d, e, ciz2, hazirKod){
   let w = e.w || d.w[e.k];
   if(!w){ await onay9("Telefon değişikliği", "Bu kullanıcının önceki telefonundaki kilidi açılamıyor. Yeni telefona tanıtmak için ona <b>yeni şifre</b> vermeniz gerekir.", [{ t: "Tamam", v: true, ana: 1 }]); return kulSifre9(d, e, ciz2); }
-  const okunan = await qrOkut9(); if(!okunan) return;
-  let kod; try{ kod = await tanitCoz9(okunan); }catch(err){ bildir(err.message); return; }
+  let kod = hazirKod;
+  if(!kod){
+    const okunan = await qrOkut9(); if(!okunan) return;
+    try{ kod = await tanitCoz9(okunan); }catch(err){ bildir(err.message); return; }
+    if(kod.kadi){ if(await GIRIS.kulKod(kod.kadi) !== e.k){ bildir(`Bu kod başka bir kullanıcının (${kod.ad || kod.kadi})`); return; } if(kod.ad) d.ad[e.k] = kod.ad; }
+  }
   const L = kulBirlestir9(KILIT.kul, d), baska = L.find(x => x.c === kod.fp && x.k !== e.k);
   if(baska){ bildir(`Bu telefon ${d.ad[baska.k] || "başka bir kullanıcıya"} bağlı`); return; }
   try{
     const n = await bagla9(e, w, kod);
     d.ekle[e.k] = n; d.w[e.k] = w; (d.cp = d.cp || {})[e.k] = kod.p; await kulYaz9(d); await ciz2();
-    bildir("Telefon tanıtıldı · dosyayı gönderdiğinizde geçerli olur");
+    bildir((d.ad[e.k] ? d.ad[e.k] + " · " : "") + "telefon tanıtıldı · dosyayı gönderdiğinizde geçerli olur");
   }catch(err){ bildir(err.message || "Tanıtılamadı"); }
 }
 async function kulSifre9(d, e, ciz2){
@@ -12691,7 +12714,13 @@ ${birimler.length ? `<div class="kb9 k">Birimler</div><div class="yh9">${birimle
   ov.querySelector("#yt9ara").addEventListener("input", ev => { const q = fold(ev.target.value).trim(); ov.querySelectorAll(".yl9 label").forEach(l => { l.style.display = !q || l.dataset.ad.includes(q) ? "" : "none"; }); });
 }
 async function ghAyar9(ciz2){
-  const p = kulForm9("GitHub anahtarı", `<p class="kfn">Engellediğiniz kişinin telefonundaki verilerin silinmesi için uygulamanın sitesine engel listesini bu telefon yazar. GitHub'da yalnız <b>istakipistakip.github.io</b> deposuna <b>Contents: Read and write</b> izni olan bir “fine-grained” anahtar oluşturup yapıştırın. Anahtar yalnız bu telefonda saklanır.</p><input data-a="gh" type="password" autocomplete="off" placeholder="github_pat_…"><div class="kfh hos-hata" hidden></div>`);
+  const p = kulForm9("GitHub anahtarı", `<p class="kfn">Engellediğiniz kişinin telefonundaki verilerin silinmesi için uygulamanın sitesine engel listesini bu telefon yazar. GitHub'da yalnız <b>istakipistakip.github.io</b> deposuna <b>Contents: Read and write</b> izni olan bir “fine-grained” anahtar oluşturup yapıştırın. Anahtar yalnız bu telefonda saklanır.</p><button type="button" class="ghy9" data-ghyeni>Anahtar oluştur</button><p class="kfn">Açılan GitHub sayfasında depo olarak <b>istakipistakip.github.io</b>'yu seçin, <b>Generate token</b>'a basın, çıkan anahtarı kopyalayıp buraya yapıştırın.</p><input data-a="gh" type="password" autocomplete="off" placeholder="github_pat_…"><div class="kfh hos-hata" hidden></div>`);
+  const fo = kulForm9.son;
+  fo.querySelector("[data-ghyeni]").addEventListener("click", () => {
+    const q = new URLSearchParams({ name: "IsTakip engel " + new Date().toISOString().slice(0, 10), description: "IsTakip Mobil engel listesi (erisim.json)", target_name: "istakipistakip", expires_in: "366", contents: "write" });
+    window.open("https://github.com/settings/personal-access-tokens/new?" + q.toString(), "_blank");
+    setTimeout(() => fo.querySelector('[data-a="gh"]').focus(), 400);
+  });
   const v = await p; if(!v) return;
   const t = v.gh.trim();
   if(!t){ localStorage.removeItem("istakip-gh9"); ciz2(); return; }

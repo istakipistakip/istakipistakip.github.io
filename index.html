@@ -1517,6 +1517,8 @@ body.y9-rapor [data-kmrapor]{ display:none !important; }
 .kf13 label{ display:block; font-size:12.5px; font-weight:700; color:#475569; margin:12px 0 5px; }
 .kf13 input[type=text], .kf13 input[type=password], .kf13 input[type=number]{ width:100%; height:44px; border-radius:11px; border:1px solid #d6dbe3; padding:0 12px; font-size:16px; background:#fff; color:#0f172a; box-sizing:border-box; }
 .kf13 label.kfc{ display:flex; align-items:center; gap:9px; font-size:13.5px; color:#334155; margin-top:14px; } .kf13 label.kfc input{ width:20px; height:20px; }
+.ak9sel{ width:100%; height:44px; border-radius:11px; border:1px solid #d6dbe3; padding:0 10px; font-size:15px; margin:10px 0 8px; background:#fff; color:#0f172a; }
+html.dark .ak9sel{ background:#0b1220; border-color:#334155; color:#e2e8f0; }
 .ghy9{ display:block; width:100%; height:44px; margin-top:12px; border-radius:12px; border:0; background:#0f172a; color:#fff; font-weight:800; font-size:14.5px; }
 html.dark .ghy9{ background:#e2e8f0; color:#0f172a; }
 .kf13 .kfn{ font-size:12.5px !important; color:#64748b !important; }
@@ -7256,7 +7258,9 @@ async function degisiklikUygula9(o, g){
   const P = parcala9(eski);
   Object.keys(g.parca || {}).forEach(k => { P[k] = g.parca[k]; });
   (g.sil || []).forEach(k => { if(k !== "c") delete P[k]; });
-  const eksik = (P.c && P.c.isler || []).some(j => j && j.hat === "#h" && !P["h:" + j.id]);
+  // v216: işleri kısıtlı kullanıcının telefonunda diğer işlerin parçaları yoktur; onlar birleşince yine ayıklanır
+  const eksik = !eski._suz && (P.c && P.c.isler || []).some(j => j && j.hat === "#h" && !P["h:" + j.id]);
+  if(eski._suz && P.c && P.c.isler) P.c = { ...P.c, isler: P.c.isler.map(j => j && j.hat === "#h" && !P["h:" + j.id] ? { ...j, hat: null } : j) };
   if(eksik){ dur("Bu güncelleme için önce tam veri dosyası gerekiyor (telefondaki veri eksik)."); return; }
   const v = birlestir9(P);
   await kilitYaz({ kul: o.kul, olusturma: o.olusturma, temel: KILIT.temel });
@@ -7766,13 +7770,32 @@ function aktarSayfa9(){
 <label class="rd"><input type="radio" name="ak9t" value="degisiklik"${degOlur ? " checked" : " disabled"}><span><b>Değişiklik dosyası</b>${degOlur ? "<small>Küçük; son tam dosyanın yüklü olduğu telefonlarda açılır</small>" : "<small>Önce diğer telefonlara bir kez tam dosya gönderin; sonrakiler değişiklik dosyası olabilir</small>"}</span></label>
 <label class="rd"><input type="radio" name="ak9t" value="tam"${degOlur ? "" : " checked"}><span><b>Tam dosya</b><small>Bütün veri; her telefonda açılır</small></span></label>
 <button class="btn" data-ak9haz>Hazırla</button><div class="sonuc" id="ak9s"></div></div>
+<div class="blk" id="ak9kb" hidden><b>Kişiye özel dosya</b><small>Yalnız o kişinin işleri ve yalnız onun kaydı; yalnız onun telefonunda açılır. İşleri kısıtlı kişilere bunu gönderin.</small>
+<select id="ak9kisi" class="ak9sel"></select><button class="btn" data-ak9kisi>Hazırla</button><div class="sonuc" id="ak9k"></div></div>
 <div class="blk"><b>Program için aktarım dosyası</b><small>${GUN9.length} değişiklik şifreli olarak tek dosyada. Programda <b>Aktarım → Veriyi Programa Aktar</b> ile alınır.</small>
 <button class="btn ikinci" data-ak9akt${GUN9.length ? "" : " disabled"}>Hazırla</button><div class="sonuc" id="ak9a"></div></div>
 <p class="not">Program aldığı değişiklikleri sonraki Telefon Verisi'nde bildirir; telefon onları listeden çıkarır. Programın henüz almadığı değişiklikler yeni dosyada yoksa telefon sorar ve tekrar uygular.</p></div>`;
   const ov = altSayfa(IK("aktar"), "Veri Aktar", GUN9.length + " değişiklik · " + veriTarih(), govde);
-  let hazirD = null, hazirA = null;
+  let hazirD = null, hazirA = null, hazirK = null;
+  (async () => { try{
+    const d = await idbOku("kulyon9"); if(!d || !KILIT || !KILIT.kul) return;
+    const ben = await GIRIS.kulKod(oturumK9() || ""), L = kulBirlestir9(KILIT.kul, d).filter(e => e.k !== ben);
+    if(!L.length) return;
+    const kis = e => { const y = (d.erisim.yetki || {})[e.k]; return !!(y && y.i && y.i.t === "sec"); };
+    L.sort((a, b) => (kis(b) - kis(a)) || String(d.ad[a.k] || "~").localeCompare(String(d.ad[b.k] || "~"), "tr"));
+    ov.querySelector("#ak9kisi").innerHTML = L.map(e => `<option value="${esc(e.k)}">${esc(d.ad[e.k] || "Adı girilmemiş · " + e.k.slice(0, 6))}${kis(e) ? " · kısıtlı" : " · tüm işler"}${e.x ? "" : " · tanıtılmadı"}</option>`).join("");
+    ov.querySelector("#ak9kb").hidden = false;
+  }catch(_){} })();
+  ov.addEventListener("change", ev => { if(ev.target.id === "ak9kisi"){ hazirK = null; ov.querySelector("#ak9k").innerHTML = ""; } });
   ov.addEventListener("click", async ev => {
     const b = ev.target.closest("button"); if(!b) return;
+    if(b.hasAttribute("data-ak9kisi")){
+      const yer = ov.querySelector("#ak9k"), k = ov.querySelector("#ak9kisi").value; if(!k) return;
+      b.disabled = true; const eskiYazi = b.textContent; b.textContent = "Hazırlanıyor…";
+      try{ hazirK = await kisiDosyasi9(k); yer.innerHTML = `<div class="dos"><span>${esc(hazirK.ad)}<small>${boyut9(hazirK.metin.length)}</small></span><button class="btn" data-ak9pay="k">${IK("paylas")}Paylaş</button></div>`; }
+      catch(err){ yer.innerHTML = `<div class="hata">${esc(err.message || "Hazırlanamadı")}</div>`; }
+      b.disabled = false; b.textContent = eskiYazi; return;
+    }
     if(b.hasAttribute("data-ak9haz") || b.hasAttribute("data-ak9akt")){
       const akt = b.hasAttribute("data-ak9akt"), yer = ov.querySelector(akt ? "#ak9a" : "#ak9s");
       b.disabled = true; const eskiYazi = b.textContent; b.textContent = "Hazırlanıyor…";
@@ -7784,7 +7807,7 @@ function aktarSayfa9(){
       b.disabled = false; b.textContent = eskiYazi;
       return;
     }
-    if(b.dataset.ak9pay){ const d = b.dataset.ak9pay === "a" ? hazirA : hazirD; if(d) paylas9(d); }
+    if(b.dataset.ak9pay){ const d = b.dataset.ak9pay === "a" ? hazirA : b.dataset.ak9pay === "k" ? hazirK : hazirD; if(d) paylas9(d); }
   });
   ov.addEventListener("change", ev => { if(ev.target.name === "ak9t"){ hazirD = null; ov.querySelector("#ak9s").innerHTML = ""; } });
 }
@@ -12380,8 +12403,42 @@ kilitYaz = async function(k){
 const _veriYukle213 = veriYukle;
 veriYukle = async function(v){
   try{ const d = await idbOku("kulyon9"); if(d && v && d.erisim) v.erisim = JSON.parse(JSON.stringify(d.erisim)); }catch(_){}
-  return _veriYukle213.apply(this, arguments);
+  // v216: işleri kısıtlı kullanıcının telefonuna görmediği işlerin verisi hiç kaydedilmez
+  try{ const k = oturumK9(); if(k && v && v.erisim && !(await yonKod9(k))){ const y = (v.erisim.yetki || {})[await GIRIS.kulKod(k)]; if(y && y.i && y.i.t === "sec") v = suzVeri9(v, y); } }catch(_){}
+  return _veriYukle213.call(this, v);
 };
+// yetkili olunmayan işleri ve onlara ait hat / itinerer / resim / silinen kayıtlarını veriden çıkarır
+function suzVeri9(v, y){
+  if(!v || !y || !y.i || y.i.t !== "sec") return v;
+  const il = new Set(y.i.il || []), bi = new Set(y.i.birim || []), is = new Set(y.i.is || []);
+  const ok = j => !!j && (is.has(j.id) || (j.il || []).some(x => il.has(x)) || (!!j.birim && bi.has(j.birim)));
+  const n = { ...v, _suz: 1 };
+  n.isler = (v.isler || []).filter(ok);
+  const ids = new Set(n.isler.map(j => j.id)), kod = new Set(n.isler.flatMap(j => j.iti || []));
+  if(v.silinen){ const sl = {}; Object.keys(v.silinen).forEach(yl => { sl[yl] = (v.silinen[yl] || []).filter(x => (x.il || []).some(i => il.has(i)) || (!!x.birim && bi.has(x.birim))); }); n.silinen = sl; }
+  delete n.excelBag;
+  if(v.iti && v.iti.projeler){ const pr = {}; Object.keys(v.iti.projeler).forEach(k => { if(kod.has(k)) pr[k] = v.iti.projeler[k]; }); n.iti = { ...v.iti, projeler: pr }; }
+  if(Array.isArray(v.itiKodlar)) n.itiKodlar = v.itiKodlar.filter(k => kod.has(k));
+  if(v.hResim){ const r = {}, ort = new Set(); Object.keys(v.hResim).forEach(k => { if(!ids.has(k)) return; r[k] = v.hResim[k]; if(typeof r[k] === "string" && r[k][0] === "#") ort.add(r[k].slice(1)); }); n.hResim = r;
+    if(v.hResimOrtak){ const o = {}; ort.forEach(k => { if(v.hResimOrtak[k] != null) o[k] = v.hResimOrtak[k]; }); n.hResimOrtak = o; } }
+  else if(v.hResimOrtak) n.hResimOrtak = null;
+  return n;
+}
+// yönetici: yalnız o kişinin işleri ve yalnız onun kaydıyla tam dosya
+async function kisiDosyasi9(k){
+  await hazir9;
+  if(!KILIT || !KILIT.kul) throw new Error("Şifreli veri dosyası yüklü değil.");
+  const r = await GIRIS.oturumlaAc(KILIT.kul); if(!r || !r.K) throw new Error("Oturum doğrulanamadı; çıkış yapıp tekrar giriş yapın.");
+  const d = await yonDepo9(), e = kulBirlestir9(KILIT.kul, d).find(x => x.k === k); if(!e) throw new Error("Kullanıcı bulunamadı.");
+  const v0 = await tamOku9(); if(!v0) throw new Error("Veri bulunamadı");
+  if(!KILIT.temel){ const yeni = "p" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); await kilitYaz({ ...KILIT, temel: yeni }); FARK9 = { temel: yeni, keys: [], sil: [] }; await idbYaz9("fark9", FARK9); }
+  const y = (d.erisim.yetki || {})[k] || null;
+  const v = suzVeri9(v0, y);
+  v.erisim = { ...JSON.parse(JSON.stringify(d.erisim || {})), yetki: y ? { [k]: y } : {} };
+  const dosya = { format: "istakip-mobil", v: 7, sifreli: 1, z: "gzip", olusturma: v0.olusturma, kul: [e], tur: "tam", temel: KILIT.temel, kisi: 1, veri: await paketle9(v, r.K) };
+  const ad = fold(d.ad[k] || "kisi").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "kisi";
+  return { metin: JSON.stringify(dosya), ad: dosyaAdi9("-" + ad) };
+}
 async function erisimYaz9(d){
   await yonDepoYaz9(d);
   try{ await hamAl9(); HAM9.erisim = JSON.parse(JSON.stringify(d.erisim)); await hamKaydet9(); }catch(_){}
@@ -12402,6 +12459,7 @@ function yetkiUygula9(){
   const il = new Set(y.i.il || []), bi = new Set(y.i.birim || []), is = new Set(y.i.is || []);
   const ok = j => is.has(j.id) || (j.il || []).some(x => il.has(x)) || (j.birim && bi.has(j.birim));
   ISLER = ISLER.filter(ok); if(D && Array.isArray(D.isler)) D.isler = D.isler.filter(ok);
+  if(D && D.silinen) Object.keys(D.silinen).forEach(yl => { D.silinen[yl] = (D.silinen[yl] || []).filter(x => (x.il || []).some(i => il.has(i)) || (!!x.birim && bi.has(x.birim))); });
 }
 // giriş yapan kullanıcının kodu (yetkiler bununla bulunur); değişince yetkiler yeniden uygulanır
 let KKk9 = null;
@@ -12717,7 +12775,7 @@ async function ghAyar9(ciz2){
   const p = kulForm9("GitHub anahtarı", `<p class="kfn">Engellediğiniz kişinin telefonundaki verilerin silinmesi için uygulamanın sitesine engel listesini bu telefon yazar. GitHub'da yalnız <b>istakipistakip.github.io</b> deposuna <b>Contents: Read and write</b> izni olan bir “fine-grained” anahtar oluşturup yapıştırın. Anahtar yalnız bu telefonda saklanır.</p><button type="button" class="ghy9" data-ghyeni>Anahtar oluştur</button><p class="kfn">Açılan GitHub sayfasında depo olarak <b>istakipistakip.github.io</b>'yu seçin, <b>Generate token</b>'a basın, çıkan anahtarı kopyalayıp buraya yapıştırın.</p><input data-a="gh" type="password" autocomplete="off" placeholder="github_pat_…"><div class="kfh hos-hata" hidden></div>`);
   const fo = kulForm9.son;
   fo.querySelector("[data-ghyeni]").addEventListener("click", () => {
-    const q = new URLSearchParams({ name: "IsTakip engel " + new Date().toISOString().slice(0, 10), description: "IsTakip Mobil engel listesi (erisim.json)", target_name: "istakipistakip", expires_in: "366", contents: "write" });
+    const q = new URLSearchParams({ name: "IsTakip engel " + new Date().toISOString().slice(0, 10), description: "IsTakip Mobil engel listesi (erisim.json)", target_name: "istakipistakip", expires_in: "365", contents: "write" });
     window.open("https://github.com/settings/personal-access-tokens/new?" + q.toString(), "_blank");
     setTimeout(() => fo.querySelector('[data-a="gh"]').focus(), 400);
   });

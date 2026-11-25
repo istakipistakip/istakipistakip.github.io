@@ -2531,7 +2531,7 @@ async function hatGoster(id, korun){
   hatKapat();
   hatIs = j;
   const K = D.katman || {};
-  const katVar = (K.kmz && K.kmz.length) || (K.drone && K.drone.ucus && K.drone.ucus.length);
+  const katVar = (K.kmz && K.kmz.length) || (!document.body.classList.contains("y9-drone") && K.drone && K.drone.ucus && K.drone.ucus.length);
   const v = document.createElement("div"); v.className = "hatv"; v.id = "hatv";
   v.innerHTML = `<div class="hatbar hb2"><div class="hr1"><button class="x" data-hatkapat aria-label="Kapat">${IK("geri")}</button><div class="ad"><b>${hatTum ? "Tüm İşler KMZ" : esc(j.ad)}</b><small>${hatTum ? "Seçili: " + esc(j.ad) : esc([j.il.join(" · "), j.firma].filter(Boolean).join(" · ")) + " · KMZ"}</small></div></div>
 <div class="hr2"><div class="hara" id="hara"><button data-hara aria-label="İş ara">${IK("ara")}</button><input id="hara2" type="search" placeholder="İş ara…" autocomplete="off"></div><button class="htum${hatTum ? " on" : ""}" data-htum>${IK("lejant")}Tüm İşler KMZ</button><span class="hsp"></span><div class="hseg"><button data-hmod="2b"${hatMod === "2b" ? ' class="on"' : ""}>2B</button><button data-hmod="3b"${hatMod === "3b" ? ' class="on"' : ""}>3B</button></div></div><div class="honer" id="honer2"></div></div>
@@ -2608,7 +2608,7 @@ function katmanPenceresi(){
 const ZAMAN = { "1": ["Son 1 ay", 31], "3": ["Son 3 ay", 92], "t": ["Tümü", 0] };
 function katmanCiz(){
   const b = document.getElementById("katbb"); if(!b || !kat) return;
-  const K = D.katman || {}, dr = K.drone;
+  const K = D.katman || {}, dr = document.body.classList.contains("y9-drone") ? null : K.drone;
   let h = "";
   if(dr && dr.ucus && dr.ucus.length){
     const son = Math.max(...dr.ucus.map(u => u.t || 0));
@@ -2691,7 +2691,7 @@ function rotaOrtak(r, s){
 const rotaKutu = r => { let a0 = 90, a1 = -90, o0 = 180, o1 = -180; r.forEach(p => { a0 = Math.min(a0, p[0]); a1 = Math.max(a1, p[0]); o0 = Math.min(o0, p[1]); o1 = Math.max(o1, p[1]); }); return [a0, a1, o0, o1]; };
 const kesisir = (x, y) => !(x[1] < y[0] - 0.0006 || y[1] < x[0] - 0.0006 || x[3] < y[2] - 0.0008 || y[3] < x[2] - 0.0008);
 function droneSuz(){
-  const dr = D.katman && D.katman.drone; if(!dr || !kat) return [];
+  const dr = D.katman && D.katman.drone; if(!dr || !kat || document.body.classList.contains("y9-drone")) return [];
   const anahtar = kat.alan + "|" + kat.zaman;
   if(kat.suzOnbellek && kat.suzOnbellek.k === anahtar) return kat.suzOnbellek.l;
   const gun = ZAMAN[kat.zaman][1], sinirT = gun ? Date.now() - gun * 86400000 : 0;
@@ -12387,7 +12387,7 @@ async function kulYaz9(d){
 }
 
 // ---------- yetkiler ----------
-const OZ9 = [["km", "KM Bilgileri"], ["ihale", "İhale Bilgileri"], ["pdf", "PDF"], ["kmz", "KMZ ve Yol Tarifi"], ["iti", "İtinerer"], ["rapor", "KM Raporu ve Görsel Kart"]];
+const OZ9 = [["km", "KM Bilgileri"], ["ihale", "İhale Bilgileri"], ["pdf", "PDF"], ["kmz", "KMZ ve Yol Tarifi"], ["iti", "İtinerer"], ["rapor", "KM Raporu ve Görsel Kart"], ["drone", "Drone Uçuşları"]];
 function yetkiBul9(){ if(!D || !D.erisim || !KK9 || YON9) return null; return (D.erisim.yetki || {})[KK9] || null; }
 function yetkiUygula9(){
   const y = yetkiBul9(), b = document.body;

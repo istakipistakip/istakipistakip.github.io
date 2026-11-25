@@ -2,8 +2,8 @@
 // Açılış hızlı olsun diye uygulama dosyaları ÖNCE ÖNBELLEKTEN verilir (internet beklenmez).
 // Yeni sürüm (bu dosyadaki SURUM değişince) arka planda indirilir; hazır olunca
 // sayfa "Yeni sürüm yüklendi" notunu gösterir.
-const SURUM = "istakip-mobil-v212";
-const DOSYALAR = ["./", "index.html", "manifest.json", "leaflet.js", "leaflet.css", "ikon-180.png", "ikon-192.png", "ikon-512.png", "jspdf.min.js", "DejaVuSans-tr.ttf", "DejaVuSans-Bold-tr.ttf", "maplibre-gl.js", "maplibre-gl.css", "leaflet-rotate.js", "pdf.min.js", "pdf.worker.min.js", "iti-cizim.html"];
+const SURUM = "istakip-mobil-v213";
+const DOSYALAR = ["./", "index.html", "lib/qrcode.min.js", "manifest.json", "leaflet.js", "leaflet.css", "ikon-180.png", "ikon-192.png", "ikon-512.png", "jspdf.min.js", "DejaVuSans-tr.ttf", "DejaVuSans-Bold-tr.ttf", "maplibre-gl.js", "maplibre-gl.css", "leaflet-rotate.js", "pdf.min.js", "pdf.worker.min.js", "iti-cizim.html"];
 self.addEventListener("install", e => {
   // tarayıcının HTTP önbelleği atlanır: yeni sürümün dosyaları gerçekten yeni gelsin
   e.waitUntil(caches.open(SURUM).then(c => c.addAll(DOSYALAR.map(u => new Request(u, { cache: "reload" })))).then(() => self.skipWaiting()));
@@ -14,6 +14,7 @@ self.addEventListener("fetch", e => {
   if(e.request.method !== "GET") return;
   const url = new URL(e.request.url);
   if(url.origin !== self.location.origin) return;
+  if(url.pathname.endsWith("/erisim.json")) return;   // engel listesi hep güncel okunur
   const sayfa = e.request.mode === "navigate";
   e.respondWith((async () => {
     const c = await caches.open(SURUM);

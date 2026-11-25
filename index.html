@@ -4939,6 +4939,46 @@ function kur(v){
   D.itiKod = new Set(D.iti && D.iti.projeler ? Object.keys(D.iti.projeler) : (D.itiKodlar || []));
   tab = "home"; detay = null; isAra = ""; aramaAcik = false; parAra = ""; secKutu = null; mz = { s: 1, x: 0, y: 0 };
 }
+
+// ---------- v212: erişim kapatma ----------
+// 1) ENGEL9: engellenen kullanıcıların tek yönlü kodları (veri dosyasındaki kullanıcı kodlarıyla aynı yöntem; ad açık yazılmaz).
+//    Uygulama internete bağlanınca yeni sürüm kendiliğinden iner; listede olan kullanıcının telefonundaki tüm veri silinir.
+// 2) Veri süresi: en son veri dosyası (tam ya da değişiklik) 30 günden eskiyse veri gösterilmez (yönetici hariç).
+const ENGEL9 = new Set([]);
+const VERI_GUN9 = 30;
+async function engelMi9(k){
+  if(!ENGEL9.size || !k) return false;
+  try{ const n = GIRIS.norm(k), h = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("istakip-kul:" + n)));
+    return ENGEL9.has(Array.from(h.subarray(0, 16), b => b.toString(16).padStart(2, "0")).join("")); }catch(_){ return false; }
+}
+function engelBayrak9(){ try{ return localStorage.getItem("istakip-erisim-kapali") === "1"; }catch(_){ return false; } }
+async function engelle9(){
+  try{ const tut = []; for(let i = 0; i < localStorage.length; i++) tut.push(localStorage.key(i)); tut.forEach(k => localStorage.removeItem(k)); }catch(_){}
+  try{ sessionStorage.clear(); }catch(_){}
+  try{ localStorage.setItem("istakip-erisim-kapali", "1"); }catch(_){}
+  try{ await new Promise(ok => { const r = indexedDB.deleteDatabase(DB_AD); r.onsuccess = r.onerror = r.onblocked = () => ok(); setTimeout(ok, 3000); }); }catch(_){}
+  try{ if(window.caches){ const ad = await caches.keys(); await Promise.all(ad.filter(k => !/^istakip-mobil-v/.test(k)).map(k => caches.delete(k))); } }catch(_){}
+  D = null; engelEkran9();
+}
+function engelEkran9(){
+  const t = document.getElementById("tabs"); if(t) t.style.display = "none";
+  document.getElementById("main").innerHTML = `<div class="hos"><h1 style="margin-top:30vh">İşTakip</h1><div class="hos-alt" style="margin-top:14px">Bu telefonda uygulamaya erişiminiz kapatıldı.</div></div>`;
+}
+function veriTazele9(){ try{ const n = Date.now(); localStorage.setItem("istakip-veri-tarih", String(n)); localStorage.setItem("istakip-en-ileri", String(Math.max(n, +localStorage.getItem("istakip-en-ileri") || 0))); }catch(_){}
+  // süre dolu ekranındayken değişiklik dosyası yüklendiyse uygulama yeniden görünür
+  setTimeout(() => { const tb = document.getElementById("tabs"); if(D && tb && tb.style.display === "none" && !document.querySelector(".hos.giris")){ tb.style.display = ""; ciz(); } }, 80); }
+function sureKontrol9(){
+  try{
+    if(!D || (typeof YON9 !== "undefined" && YON9)) return;
+    const simdi = Math.max(Date.now(), +localStorage.getItem("istakip-en-ileri") || 0); localStorage.setItem("istakip-en-ileri", String(simdi));
+    let t = +localStorage.getItem("istakip-veri-tarih") || 0; if(!t){ veriTazele9(); return; }   // ilk kez: bugünden başlar
+    if(simdi - t <= VERI_GUN9 * 864e5) return;
+    const g = Math.floor((simdi - t) / 864e5);
+    const tb = document.getElementById("tabs"); if(tb) tb.style.display = "none";
+    document.getElementById("main").innerHTML = `<div class="hos"><h1 style="margin-top:22vh">İşTakip</h1><div class="hos-alt" style="margin-top:14px">Telefondaki veriler ${g} gün önce yüklendi. Görmek için güncel veri dosyasını yükleyin.</div><button class="btn" data-yukle style="margin-top:26px">${IK("yukle")}Veri Dosyasını Yükle</button></div>`;
+  }catch(_){}
+}
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && D) sureKontrol9(); });
 function hosgeldin(mesaj){
   document.getElementById("tabs").style.display = "none";
   document.getElementById("main").innerHTML = `<div class="hos">
@@ -4966,8 +5006,8 @@ function dosyaSec(){
           if(!(o.kul && o.veri)) throw new Error("bicim");
           const ac = async K => {
             const v = await GIRIS.veriCoz(o, K);
-            if(v && v.tur === "degisiklik"){ if(await degisiklikUygula9(o, v)) await dosyaSonrasi9(o, v); return; }
-            await kilitYaz({ kul: o.kul, olusturma: o.olusturma, temel: o.temel || null }); await veriYukle(v); await dosyaSonrasi9(o, v);
+            if(v && v.tur === "degisiklik"){ if(await degisiklikUygula9(o, v)){ veriTazele9(); await dosyaSonrasi9(o, v); } return; }
+            await kilitYaz({ kul: o.kul, olusturma: o.olusturma, temel: o.temel || null }); await veriYukle(v); veriTazele9(); await dosyaSonrasi9(o, v);
           };
           const r = await GIRIS.oturumlaAc(o.kul);
           if(r) await ac(r.K);
@@ -4977,7 +5017,7 @@ function dosyaSec(){
         const v = o && o.format === "istakip-mobil" ? o.veri : o;
         if(!v || !Array.isArray(v.isler) || !v.olusturma) throw new Error("bicim");
         await kilitYaz(null);
-        await veriYukle(v);
+        await veriYukle(v); veriTazele9();
       }catch(e){
         if(D) bildir("Bu dosya İşTakip veri dosyası değil.");
         else hosgeldin("Bu dosya İşTakip veri dosyası değil.");
@@ -5106,6 +5146,7 @@ ${yolKesitSvg9("g9")}
       const kadi = document.getElementById("gkadi").value, sif = document.getElementById("gsifre").value;
       const r = await sifreyleAc(kul, kadi, sif);
       if(!r){ btn.disabled = false; btn.textContent = "Giriş"; h.textContent = "Kullanıcı adı veya şifre hatalı."; h.hidden = false; return; }
+      if(await engelMi9(norm(kadi))){ engelle9(); return; }
       oturumYaz({ k: norm(kadi), v: r.e.v, ad: r.ad, kek: b64(r.kek) }, document.getElementById("ghatirla").checked);
       // v200: giriş açılışa dönüşür — kart aşağı iner, yazı ortaya gelir, yol kesiti yeniden kurulur
       if(!azHareket){ try{
@@ -9799,8 +9840,12 @@ function bildir(m){
 document.addEventListener("click", e => { if(e.target.closest("[data-sifre]") && KILIT){ GIRIS.sifreDegistir(KILIT.kul); return; } }, true);
 document.addEventListener("click", e => { if(e.target.closest("[data-yukle]")){ e.preventDefault(); e.stopImmediatePropagation(); dosyaSec(); } }, true);
 (async () => {
+  // v212: engellenen kullanıcı / süresi dolan veri
+  if(engelBayrak9()){ engelEkran9(); return; }
+  try{ const o = JSON.parse(localStorage.getItem("istakip-oturum") || sessionStorage.getItem("istakip-oturum") || "null"); if(o && o.k && await engelMi9(o.k)){ engelle9(); return; } }catch(_){}
   const v = await veriOku();
   try{ KILIT = await idbOku("kilit"); }catch(e){ KILIT = null; }
+  if(v) setTimeout(sureKontrol9, 2500);
   if(v && KILIT && KILIT.kul){
     const r = await GIRIS.oturumlaAc(KILIT.kul).catch(() => null);
     if(!r){

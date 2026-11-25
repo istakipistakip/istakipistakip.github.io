@@ -5421,7 +5421,9 @@ function avatarMenu(){
   document.getElementById("avm")?.remove();
   const o = oturumBilgi();
   const m = document.createElement("div"); m.className = "avm"; m.id = "avm";
-  m.innerHTML = `<div class="m"><div class="k"><b>${o ? esc(o.ad || o.k) : "İşTakip Mobil"}</b><small>${o ? esc(o.k) + " · " : ""}Veri ${esc(veriTarih())}</small></div><button data-yukle>${IK("yukle")}Veri Yükle</button><button data-temadegis>${IK(tema === "koyu" ? "gunes" : "ay")}${tema === "koyu" ? "Açık mod" : "Karanlık mod"}</button>${KILIT ? `<button data-sifre>${IK("anahtar")}Şifre değiştir</button><button data-cikis5>${IK("geri")}Çıkış yap</button>` : ""}</div>`;
+  // v218: henüz telefonu tanıtılmamış kullanıcıya menüde "Bu telefonu tanıt"
+  const tk = KILIT && !YON9 && typeof KK9 !== "undefined" && KK9 ? (KILIT.kul || []).find(x => x.k === KK9) : null, tanit = !!(tk && !tk.x);
+  m.innerHTML = `<div class="m"><div class="k"><b>${o ? esc(o.ad || o.k) : "İşTakip Mobil"}</b><small>${o ? esc(o.k) + " · " : ""}Veri ${esc(veriTarih())}</small></div>${tanit ? `<button data-tanit9>${IK("kisi")}Bu telefonu tanıt</button>` : ""}<button data-yukle>${IK("yukle")}Veri Yükle</button><button data-temadegis>${IK(tema === "koyu" ? "gunes" : "ay")}${tema === "koyu" ? "Açık mod" : "Karanlık mod"}</button>${KILIT ? `<button data-sifre>${IK("anahtar")}Şifre değiştir</button><button data-cikis5>${IK("geri")}Çıkış yap</button>` : ""}</div>`;
   m.addEventListener("click", e => { if(e.target === m) m.remove(); else if(e.target.closest("button")) setTimeout(() => m.remove(), 0); });
   document.body.appendChild(m);
 }
@@ -12533,7 +12535,7 @@ async function tanitSayfa9(){
     if(e.target.closest("[data-tq9kop]")){ const t = ov.querySelector("#tq9kod").textContent; try{ await navigator.clipboard.writeText(t); bildir("Kod kopyalandı"); }catch(_){ const r = document.createRange(); r.selectNodeContents(ov.querySelector("#tq9kod")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } }
   });
 }
-document.addEventListener("click", e => { if(e.target.closest && e.target.closest("[data-tanit9]")){ e.preventDefault(); e.stopPropagation(); tanitSayfa9(); } }, true);
+document.addEventListener("click", e => { if(e.target.closest && e.target.closest("[data-tanit9]")){ e.preventDefault(); e.stopPropagation(); document.getElementById("avm")?.remove(); tanitSayfa9(); } }, true);
 
 // ---------- yönetici: QR okut (kamera / fotoğraf / yapıştır) ----------
 function qrOkut9(){

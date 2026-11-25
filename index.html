@@ -2408,7 +2408,7 @@ function harita(){
   if(!D.harita) return '<div class="empty" style="padding-top:80px">Bu dosyada harita yok.</div>';
   kd9Gecerli();
   const j = secKutu ? byId(secKutu) : null;
-  if(!j || KD9 || OT9) PAY9 = 0;
+  if(!j || KD9 || OT9){ PAY9 = 0; KART9 = null; }
   const kutular = [];
   ISLER.forEach(x => x.kutular.forEach((k, ki) => kutular.push([x.id, k, ki])));
   return `<div class="mapwrap" id="mapwrap"><div class="mapin${typeof DUZ9 !== "undefined" && DUZ9 && YON9 ? " dz9k" : ""}" id="mapin"><img src="${D.harita}" id="mapimg" alt="">
@@ -2508,31 +2508,48 @@ function mapKur(){
   w.addEventListener("click", e => { if(surukle){ e.stopPropagation(); e.preventDefault(); } }, true);
   w.addEventListener("wheel", e => { e.preventDefault(); const r = w.getBoundingClientRect(); mapZoom(e.deltaY < 0 ? 1.2 : 1 / 1.2, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
 }
-var PAY9 = 0, PAYA9 = 0;
-// v220: dokunulan kutu açılan kartın altında kalacaksa harita yumuşakça yukarı kayar
+var PAY9 = 0, PAYA9 = 0, KART9 = null;
+// v220/v221: dokunulan kutu açılan kartın altında kalacaksa harita yumuşakça yukarı kayar;
+// kutu kartın üstündeki boşluğa sığmıyorsa harita sığacak kadar uzaklaşır. Kart kapanınca eski hâline döner.
+function mzAnim9(b, pay, T, bitti){
+  const a = { ...mz }, p0 = PAY9, id9 = ++PAYA9, t0 = performance.now(); T = azHareket ? 1 : T;
+  const ad = now => { if(id9 !== PAYA9) return; const k = Math.min(1, (now - t0) / T), e = 1 - Math.pow(1 - k, 3);
+    mz.s = a.s + (b.s - a.s) * e; mz.x = a.x + (b.x - a.x) * e; mz.y = a.y + (b.y - a.y) * e; PAY9 = p0 + (pay - p0) * e; mapUygula();
+    if(k < 1) requestAnimationFrame(ad); else if(bitti) bitti(); };
+  requestAnimationFrame(ad);
+}
 function kartYer9(id, ki){
   requestAnimationFrame(() => {
     const w = document.getElementById("mapwrap"), sh = w && w.querySelector(".sheet"); if(!sh){ PAY9 = 0; return; }
     const kt = w.querySelector(`.kutu[data-kutu="${CSS.escape(id)}"][data-ki="${ki}"]`) || w.querySelector(`.kutu[data-kutu="${CSS.escape(id)}"]`); if(!kt) return;
     const wr = w.getBoundingClientRect(), sr = sh.getBoundingClientRect(), kr = kt.getBoundingClientRect();
-    PAY9 = Math.max(0, wr.bottom - sr.top + 14);
-    const hu = w.querySelector(".hust"), ustS = (hu ? hu.getBoundingClientRect().bottom : wr.top) + 10, alt = sr.top - 14;
-    if(kr.bottom <= alt) return;
-    let dy = alt - kr.bottom; if(kr.top + dy < ustS) dy = Math.min(0, ustS - kr.top);
-    if(dy >= -1) return;
-    const a = mz.y, id9 = ++PAYA9, t0 = performance.now(), T = azHareket ? 1 : 280;
-    const ad = now => { if(id9 !== PAYA9) return; const k = Math.min(1, (now - t0) / T), e = 1 - Math.pow(1 - k, 3); mz.y = a + dy * e; mapUygula(); if(k < 1) requestAnimationFrame(ad); };
-    requestAnimationFrame(ad);
+    PAY9 = Math.max(PAY9, wr.bottom - sr.top + 14);
+    const hu = w.querySelector(".hust"), ustS = (hu ? hu.getBoundingClientRect().bottom : wr.top) + 10, alt = sr.top - 14, bosH = alt - ustS;
+    if(kr.top >= ustS - 1 && kr.bottom <= alt + 1 && kr.left >= wr.left - 1 && kr.right <= wr.right + 1) return;
+    if(!KART9) KART9 = { s: mz.s, x: mz.x, y: mz.y };
+    // kutunun resim üzerindeki yeri (ölçeksiz)
+    const bx = (kr.left - wr.left - mz.x) / mz.s, by = (kr.top - wr.top - mz.y) / mz.s, bw = kr.width / mz.s, bh = kr.height / mz.s, W = wr.width;
+    let ns = mz.s;
+    if(kr.height > bosH - 8 || kr.width > W - 16) ns = Math.max(1, Math.min(mz.s, (bosH - 16) / bh, (W - 24) / bw));
+    let nx, ny;
+    if(ns !== mz.s){ nx = W / 2 - (bx + bw / 2) * ns; ny = (ustS - wr.top) + bosH / 2 - (by + bh / 2) * ns; }
+    else{
+      nx = mz.x; ny = mz.y;
+      const top = kr.top, bot = kr.bottom;
+      if(bot > alt) ny += alt - bot; if(top + (ny - mz.y) < ustS) ny = mz.y + (ustS - top);
+      if(kr.left < wr.left) nx += wr.left - kr.left + 8; else if(kr.right > wr.right) nx -= kr.right - wr.right + 8;
+    }
+    mzAnim9({ s: ns, x: nx, y: ny }, PAY9, 300);
   });
 }
-// kart kapanınca harita yumuşakça olağan sınırına döner
 function kartBirak9(p){
+  const eski = KART9; KART9 = null;
   if(!(p > 0)){ PAY9 = 0; return; }
-  const id9 = ++PAYA9, t0 = performance.now(), T = azHareket ? 1 : 260;
-  const ad = now => { if(id9 !== PAYA9) return; const k = Math.min(1, (now - t0) / T), e = 1 - Math.pow(1 - k, 3); PAY9 = p * (1 - e); if(k >= 1) PAY9 = 0; mapUygula(); if(k < 1) requestAnimationFrame(ad); };
-  requestAnimationFrame(ad);
+  if(eski) mzAnim9(eski, 0, 280, () => { PAY9 = 0; mapUygula(); });
+  else mzAnim9({ ...mz }, 0, 260, () => { PAY9 = 0; mapUygula(); });
 }
 function kutuyaGit(id){
+  KART9 = null;
   const j = byId(id), w = document.getElementById("mapwrap"), img = document.getElementById("mapimg");
   if(!j || !j.kutular.length || !w) return;
   resimHazir(() => {
@@ -4925,8 +4942,8 @@ document.addEventListener("click", e => {
   const yz = e.target.closest("[data-yazi]"); if(yz && detay){ yaziPenceresi(byId(detay.id), yz.dataset.yazi); return; }
   const h = e.target.closest("[data-hat]"); if(h){ hatGoster(h.dataset.hat); return; }
   const hm = e.target.closest("[data-haritada]"); if(hm){ kapatAlt(); secKutu = hm.dataset.haritada; secKi9 = 0; detay = null; tab = "map"; ciz(); kutuyaGit(secKutu); return; }
-  const kt = e.target.closest("[data-kutu]"); if(kt && kutuTut9.oldu){ kutuTut9.oldu = false; return; } if(kt && kd9Tik(kt)) return; if(kt){ secKutu = kt.dataset.kutu; const keep = { ...mz }, p = PAY9; ciz(); mz = keep; PAY9 = p; resimHazir(() => { mapUygula(); kartYer9(secKutu, kt.dataset.ki); }); return; }
-  if(e.target.closest("[data-kutukapat]")){ secKutu = null; const keep = { ...mz }, p = PAY9; ciz(); mz = keep; PAY9 = p; resimHazir(() => { mapUygula(); kartBirak9(p); }); return; }
+  const kt = e.target.closest("[data-kutu]"); if(kt && kutuTut9.oldu){ kutuTut9.oldu = false; return; } if(kt && kd9Tik(kt)) return; if(kt){ secKutu = kt.dataset.kutu; const keep = { ...mz }, p = PAY9, e9 = KART9; ciz(); mz = keep; PAY9 = p; KART9 = e9; resimHazir(() => { mapUygula(); kartYer9(secKutu, kt.dataset.ki); }); return; }
+  if(e.target.closest("[data-kutukapat]")){ secKutu = null; const keep = { ...mz }, p = PAY9, e9 = KART9; ciz(); mz = keep; PAY9 = p; KART9 = e9; resimHazir(() => { mapUygula(); kartBirak9(p); }); return; }
   const z = e.target.closest("[data-zoom]"); if(z){ mapZoom(Number(z.dataset.zoom)); return; }
   if(e.target.closest("[data-aratemizle]")){ isAra = ""; const i = document.getElementById("isAra"); if(i){ i.value = ""; i.focus(); } document.getElementById("isListe").innerHTML = isListesi(aramaSonuc()); return; }
   const fv = e.target.closest("[data-fav]"); if(fv){ favDegis(fv.dataset.fav); const l = document.getElementById("isListe"); if(l) l.innerHTML = isListesi(aramaSonuc()); return; }
@@ -6836,7 +6853,7 @@ document.addEventListener("touchend", () => {
   if(c.d > 70 || hiz > .6){
     document.querySelectorAll(".ket6").forEach(k => k.remove());
     const a = c.sh.animate([{ transform: `translateY(${c.d}px)`, opacity: c.sh.style.opacity || 1 }, { transform: `translateY(${c.sh.offsetHeight + 40}px)`, opacity: 0 }], { duration: 180, easing: "ease-in", fill: "forwards" });
-    a.onfinish = () => { secKutu = null; const keep = { ...mz }; ciz(); mz = keep; resimHazir(mapUygula); };
+    a.onfinish = () => { secKutu = null; const keep = { ...mz }, p = PAY9, e9 = KART9; ciz(); mz = keep; PAY9 = p; KART9 = e9; resimHazir(() => { mapUygula(); kartBirak9(p); }); };
   }else{
     c.sh.style.transition = "transform .22s cubic-bezier(.2,.9,.3,1.2), opacity .2s";
     c.sh.style.transform = ""; c.sh.style.opacity = "";

@@ -1247,9 +1247,11 @@ body:has(.dalt) .adak6{ bottom:calc(150px + env(safe-area-inset-bottom)); }
 html.dark .adak6, html.dark .ada{ background:#1e293b !important; color:#e6ebf3; border:1px solid #334155; box-shadow:0 12px 28px rgba(0,0,0,.6) !important; }
 /* haritadaki kutular: ince, yuvarlak, hafif dolgulu; seçilende iş adı etiketi */
 /* v207: kutu = haritadaki dikdörtgenin kenarı üstünde açık fuşya çizgi, içi boş, köşeler sivri; seçilince koyu fuşya ve kalın (ekranda hep aynı kalınlık) */
-.kutu{ border-style:solid !important; border-color:#f0abfc !important; background:transparent !important; border-radius:0 !important; }
+.kutu{ border-style:solid !important; border-color:transparent !important; background:transparent !important; border-radius:0 !important; }
+/* v211: kutular normalde saydam; düzenleme modunda ince soluk fuşya görünür */
+#mapin.dz9k .kutu:not(.on):not(.parla):not(.kd9){ border-color:rgba(192,38,211,.45) !important; }
 .kutu.on{ border-color:#a21caf !important; background:transparent !important; box-shadow:0 0 0 calc(1.2px * var(--kz, 1)) #a21caf; }
-html.dark .kutu{ border-color:#f5d0fe !important; }
+html.dark .kutu{ border-color:transparent !important; }
 html.dark .kutu.on{ border-color:#c026d3 !important; box-shadow:0 0 0 calc(1.2px * var(--kz, 1)) #c026d3; }
 .ket6{ position:absolute; left:50%; bottom:calc(100% + 6px); transform-origin:50% 100%; background:#0f172a; color:#fff; font-size:12px; font-weight:700; padding:5px 10px; border-radius:8px; white-space:nowrap; box-shadow:0 6px 16px rgba(0,0,0,.3); display:flex; align-items:center; gap:6px; z-index:5; animation:ket6 .2s ease-out; }
 .ket6 i{ font-style:normal; color:#fb923c; }
@@ -2342,9 +2344,9 @@ function harita(){
   const j = secKutu ? byId(secKutu) : null;
   const kutular = [];
   ISLER.forEach(x => x.kutular.forEach((k, ki) => kutular.push([x.id, k, ki])));
-  return `<div class="mapwrap" id="mapwrap"><div class="mapin" id="mapin"><img src="${D.harita}" id="mapimg" alt="">
+  return `<div class="mapwrap" id="mapwrap"><div class="mapin${typeof DUZ9 !== "undefined" && DUZ9 && YON9 ? " dz9k" : ""}" id="mapin"><img src="${D.harita}" id="mapimg" alt="">
 ${kutular.map(([id, k, ki]) => { const ed = kd9Bu(id, ki); if(ed) k = KD9.k; const ote = otEski9(id, ki); return `<button class="kutu${secKutu === id && !ote ? " on" : ""}${ed ? " kd9" : ""}${ote ? " ot9e" : ""}" data-kutu="${esc(id)}" data-ki="${ki}" style="left:${k[0]}%;top:${k[1]}%;width:${k[2]}%;height:${k[3]}%" aria-label="${esc(byId(id).ad)}">${ed ? ["nw", "ne", "sw", "se"].map(c => `<i class="kh9 ${c}" data-kh="${c}"></i>`).join("") : ""}</button>`; }).join("")}${KD9 && KD9.ciz && KD9.k ? `<div class="kc9" id="kc9" style="left:${KD9.k[0]}%;top:${KD9.k[1]}%;width:${KD9.k[2]}%;height:${KD9.k[3]}%"></div>` : ""}${otOner9()}</div>
-${haritaUst()}<div class="zoom"><button class="sfr9" data-hsifir aria-label="Haritayı sıfırla"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button><button data-zoom="1.5">+</button><button data-zoom="0.667">−</button>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && !KD9 && !OT9 ? `<button class="kyeni9" data-kd9yeni aria-label="Yeni kutu">▭<b>+</b></button><button class="kot9" data-ot9bas aria-label="Kutuları resimdeki dikdörtgenlere oturt"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/><rect x="8.5" y="8.5" width="7" height="7" rx="1"/></svg></button>` : ""}</div>
+${haritaUst()}<div class="zoom"><button class="sfr9" data-hsifir aria-label="Haritayı sıfırla"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button><button data-zoom="1.5">+</button><button data-zoom="0.667">−</button>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && !KD9 && !OT9 ? `<button class="kyeni9" data-kd9yeni aria-label="Yeni kutu">▭<b>+</b></button>` : ""}</div>
 ${KD9 ? kd9Cubuk() : ""}${OT9 && !KD9 ? otCubuk9() : ""}${j && !KD9 && !OT9 ? `<div class="sheet"><div class="handle"></div><button class="x" data-kutukapat aria-label="Kapat">${IK("x")}</button><button class="nm nmac" data-is="${esc(j.id)}">${esc(j.ad)}<span>›</span></button><div class="mt" style="margin-bottom:0">${esc([j.il.join(" · "), j.firma].filter(Boolean).join(" · "))}</div>
 ${stdSatirlari(j, true)}
 <div class="hdalt">${daDugmeler(j)}</div>${typeof DUZ9 !== "undefined" && DUZ9 && YON9 && j.kutular.length ? `<button class="eb kd9ac" data-kd9duz>▭ Kutuyu düzenle${j.kutular.length > 1 ? ` <span>(${Math.min(secKi9 || 0, j.kutular.length - 1) + 1}/${j.kutular.length})</span>` : ""}</button>` : ""}</div>` : ""}
@@ -6372,7 +6374,7 @@ function kd9Cubuk(){
   }
   const j = byId(KD9.id);
   return `<div class="kd9bar"><div class="kd9t">${esc(j ? j.ad : "")}</div><div class="kd9a">Ortasından sürükle: taşı · Köşesinden sürükle: boyutlandır</div>
-<div class="kd9d"><button class="eb sil" data-kd9="sil">Sil</button><button class="eb" data-kd9="oturt">Oturt</button><button class="eb" data-kd9="iptal">İptal</button><button class="eb ana" data-kd9="tamam"${kd9Degisti() ? "" : " disabled"}>Tamam</button></div></div>`;
+<div class="kd9d"><button class="eb sil" data-kd9="sil">Sil</button><button class="eb" data-kd9="iptal">İptal</button><button class="eb ana" data-kd9="tamam"${kd9Degisti() ? "" : " disabled"}>Tamam</button></div></div>`;
 }
 // v190: dokunma işi açar (kart); alan düzenleme kartdaki "Kutuyu düzenle" düğmesiyle
 var secKi9 = 0;

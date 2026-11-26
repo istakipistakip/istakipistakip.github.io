@@ -10027,11 +10027,39 @@ const kmBicim9 = inp => { const v = inp.value, d = v.replace(/\D/g, "");
   if(yeni !== v){ inp.value = yeni; try{ inp.setSelectionRange(yeni.length, yeni.length); }catch(_){} } };
 let YT9 = null;                      // { tarih, ad, raw, duz: {kod: proje}, yeni: {kod: jobId} }
 let ytHazir9 = null;
+// v222: itinererlerin yapısı uygulamanın kendi (şifreli) verisinde durur: D.itiYapi = { p: {kod: proje}, yeni: {kod: işId}, t }.
+// Yol Takip verisi (yol_veri.json) bir kez yüklenince yapı veriye taşınır; sonra hiçbir telefonda gerekmez.
+// Bu telefonda yüklü Yol Takip verisi varsa (yöneticinin düzenlemeleri dahil) o kullanılır, yoksa veridekinden çizilir.
+function ytVeridenYap9(){
+  const y = D && D.itiYapi; if(!y || !y.p) return null;
+  return { tarih: null, ad: "", raw: { veriler: { ...y.p } }, duz: {}, yeni: { ...(y.yeni || {}) }, veri9: y.t || 1 };
+}
 function ytOku9(){
   if(!ytHazir9) ytHazir9 = idbOku("yt9").then(v => { YT9 = v || null; return YT9; }).catch(() => null);
-  return ytHazir9;
+  return ytHazir9.then(() => {
+    if((!YT9 || YT9.veri9) && D && D.itiYapi && D.itiYapi.p && (!YT9 || YT9.veri9 !== (D.itiYapi.t || 1))) YT9 = ytVeridenYap9();
+    return YT9;
+  });
 }
-async function ytYaz9(){ try{ await idbYaz9("yt9", YT9); }catch(_){ } }
+let ytVeriZ9 = 0;
+async function ytYaz9(){
+  // yönetici veriden gelen itinereri düzenlerse bu telefonda kendi kopyası olur (düzenlemeleri kaybolmasın)
+  if(YT9 && YT9.veri9 && YON9){ delete YT9.veri9; YT9.ad = YT9.ad || "Uygulama verisi"; }
+  try{ if(YT9 && !YT9.veri9) await idbYaz9("yt9", YT9); }catch(_){ }
+  // yöneticinin telefonunda: itinerer yapısı uygulama verisine de yazılır (Veri Aktar / diğer telefonlar dosyasıyla gider)
+  clearTimeout(ytVeriZ9); ytVeriZ9 = setTimeout(() => { itiYapiVeriye9().catch(() => {}); }, 800);
+}
+async function itiYapiVeriye9(){
+  if(!YON9 || !YT9 || YT9.veri9) return 0;
+  const kodlar = new Set([...Object.keys(ytProjeler9()), ...Object.keys(YT9.duz || {})]);
+  const p = {}; kodlar.forEach(k => { const q = ytProje9(k); if(q) p[k] = JSON.parse(JSON.stringify(q)); });
+  if(!Object.keys(p).length) return 0;
+  const y = { p, yeni: { ...(YT9.yeni || {}) }, t: Date.now() };
+  const eski = D && D.itiYapi; if(eski && JSON.stringify({ p: eski.p, yeni: eski.yeni }) === JSON.stringify({ p: y.p, yeni: y.yeni })) return Object.keys(p).length;
+  await hamAl9(); HAM9.itiYapi = y; await hamKaydet9();
+  if(D) D.itiYapi = y;
+  return Object.keys(p).length;
+}
 const ytProjeler9 = () => (YT9 && YT9.raw && YT9.raw.veriler) || {};
 // v147: Yol Takip'e elle "Bu yıl biten" girilmiş kayıtlar 2026 yapımıdır (Yol Takip artık kullanılmıyor);
 // 2027 ve sonrasında kendiliğinden "Önceki yıllar" sayılır, yeni yılın yapılanına katılmaz
@@ -10251,7 +10279,8 @@ function ytYukle9(){
       YT9 = { tarih: raw._tarih || null, ad: f.name, yuklendi: Date.now(), raw, duz: eski.duz || {}, yeni: eski.yeni || {} };
       await ytYaz9(); ytHazir9 = Promise.resolve(YT9); ytBagla9();
       const dz = Object.keys(YT9.duz).length + Object.keys(YT9.yeni).length;
-      bildir(`Yol Takip verisi yüklendi: ${n} proje${dz ? ` · telefonda düzenlenen ${dz} itinerer korundu` : ""}`);
+      clearTimeout(ytVeriZ9); const tas = await itiYapiVeriye9().catch(() => 0);
+      bildir(`Yol Takip verisi yüklendi: ${n} proje${dz ? ` · telefonda düzenlenen ${dz} itinerer korundu` : ""}${tas ? ` · ${tas} itinerer uygulama verisine taşındı` : ""}`);
       itiMenu9();
     }catch(e){ bildir(e.message || "Dosya okunamadı"); }
   });
@@ -10259,7 +10288,8 @@ function ytYukle9(){
 }
 async function itiMenu9(){
   await ytOku9();
-  const t = YT9 ? `${esc(YT9.ad || "yol_veri.json")}${YT9.tarih ? " · " + esc(String(YT9.tarih).slice(0, 10).split("-").reverse().join(".")) : ""}` : "Henüz yüklenmedi";
+  const nV = D && D.itiYapi && D.itiYapi.p ? Object.keys(D.itiYapi.p).length : 0;
+  const t = nV ? `${nV} itinerer uygulama verisinde · yeniden yüklemek gerekmez` : YT9 && !YT9.veri9 ? `${esc(YT9.ad || "yol_veri.json")}${YT9.tarih ? " · " + esc(String(YT9.tarih).slice(0, 10).split("-").reverse().join(".")) : ""}` : "Henüz yüklenmedi";
   const ov = altSayfa(IK("iti"), "İtinerer", "Yol Takip verisi yalnız bu telefonda saklanır", `<div class="exm9">
 <button data-it9="yukle"><b>Yol Takip Verisi Yükle</b><small>${t}</small></button>
 </div>
@@ -10955,7 +10985,7 @@ itiCiz = function(){
   return r;
 };
 // açılışta bu telefonun Yol Takip verisi okunur, yeni itinererler işlere bağlanır
-hazir9.then(() => ytOku9()).then(() => { if(YT9 && D){ ytBagla9(); try{ yenidenKur9(); }catch(_){} } }).catch(() => {});
+hazir9.then(() => ytOku9()).then(() => { if(YT9 && D){ ytBagla9(); try{ yenidenKur9(); }catch(_){} } }).then(() => setTimeout(() => { itiYapiVeriye9().catch(() => {}); }, 3000)).catch(() => {});
 
 // düzenleme modunda itinereri olmayan işte İtinerer düğmesi "oluştur" olarak açılır
 const _daDugmeler99 = daDugmeler;
@@ -12453,6 +12483,8 @@ kilitYaz = async function(k){
 const _veriYukle213 = veriYukle;
 veriYukle = async function(v){
   try{ const d = await idbOku("kulyon9"); if(d && v && d.erisim) v.erisim = JSON.parse(JSON.stringify(d.erisim)); }catch(_){}
+  // v222: itinerer yapısı olmayan dosya (masaüstünden) yüklenince eldeki yapı korunur
+  try{ if(v && !v.itiYapi){ const h = D && D.itiYapi || (await idbOku("son") || {}).itiYapi; if(h) v.itiYapi = h; } }catch(_){}
   // v216: işleri kısıtlı kullanıcının telefonuna görmediği işlerin verisi hiç kaydedilmez
   try{ const k = oturumK9(); if(k && v && v.erisim && !(await yonKod9(k))){ const y = (v.erisim.yetki || {})[await GIRIS.kulKod(k)]; if(y && y.i && y.i.t === "sec") v = suzVeri9(v, y); } }catch(_){}
   return _veriYukle213.call(this, v);
@@ -12469,6 +12501,8 @@ function suzVeri9(v, y){
   delete n.excelBag;
   if(v.iti && v.iti.projeler){ const pr = {}; Object.keys(v.iti.projeler).forEach(k => { if(kod.has(k)) pr[k] = v.iti.projeler[k]; }); n.iti = { ...v.iti, projeler: pr }; }
   if(Array.isArray(v.itiKodlar)) n.itiKodlar = v.itiKodlar.filter(k => kod.has(k));
+  if(v.itiYapi && v.itiYapi.p){ const yeni = {}; Object.keys(v.itiYapi.yeni || {}).forEach(k => { if(ids.has(String(v.itiYapi.yeni[k])) || ids.has(v.itiYapi.yeni[k])){ yeni[k] = v.itiYapi.yeni[k]; kod.add(k); } });
+    const pp = {}; Object.keys(v.itiYapi.p).forEach(k => { if(kod.has(k)) pp[k] = v.itiYapi.p[k]; }); n.itiYapi = { ...v.itiYapi, p: pp, yeni }; }
   if(v.hResim){ const r = {}, ort = new Set(); Object.keys(v.hResim).forEach(k => { if(!ids.has(k)) return; r[k] = v.hResim[k]; if(typeof r[k] === "string" && r[k][0] === "#") ort.add(r[k].slice(1)); }); n.hResim = r;
     if(v.hResimOrtak){ const o = {}; ort.forEach(k => { if(v.hResimOrtak[k] != null) o[k] = v.hResimOrtak[k]; }); n.hResimOrtak = o; } }
   else if(v.hResimOrtak) n.hResimOrtak = null;

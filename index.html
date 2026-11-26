@@ -1832,6 +1832,10 @@ html.dark .krs9 .sw{ color:#e6ebf3; } html.dark .krs9 .sw span{ background:#3341
 .ksl9{ margin-top:6px; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff; }
 .ksl9 button{ display:flex; width:100%; align-items:center; gap:8px; font:inherit; font-size:14.5px; font-weight:700; text-align:left; background:none; border:0; border-bottom:1px solid #eef1f6; padding:11px 12px; color:#0f172a; }
 .ksl9 button:last-child{ border-bottom:0; } .ksl9 button span{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .ksl9 small{ flex:none; font-size:12.5px; font-weight:700; color:#64748b; }
+.ksg9{ display:grid; grid-template-columns:1fr 1fr; gap:10px; } .ksg9 > div{ min-width:0; } .ksg9 > div:only-child{ grid-column:1 / -1; } .ksg9 label{ display:block; }
+.ksg9 + .ksl9, .ksl9 + .ksl9{ margin-top:8px; } .ks9 input::placeholder{ font-weight:500; }
+.ksl9 button.js9 span{ white-space:normal; } .ksl9 button.js9 em{ display:block; font-style:normal; font-size:12px; font-weight:600; color:#64748b; margin-top:2px; }
+.ksc9 button.is9{ background:#1d4ed8; border-color:#1d4ed8; color:#fff; } html.dark .ksc9 button.is9{ background:#1e40af; border-color:#1e40af; }
 .ksl9 p{ margin:0; padding:11px 12px; font-size:13.5px; color:#64748b; } .ksc9:empty{ display:none; } .krfg9 .ksc9{ margin-top:8px; }
 html.dark .ks9 input, html.dark .ksl9{ background:#0b1220; border-color:#334155; color:#e2e8f0; } html.dark .ksl9 button{ color:#e2e8f0; border-color:#1e293b; }
 .krfs9{ margin-top:12px; font:inherit; font-size:13px; font-weight:700; color:#b91c1c; background:none; border:0; padding:0; }
@@ -8923,6 +8927,7 @@ function raporVeri9(a, b, F){
     if(j.ekleme) return;
     const bk = String(j.birim || "").trim() || BIRSIZ9; if(fB && !fB.has(bk)) return;
     if(F.k && F.k.size && !F.k.has(sefK9(j.sef))) return;
+    if(F.j && F.j.size && !F.j.has(String(j.id))) return;
     const iL = (j.il || []).filter(Boolean), iS = fI ? iL.filter(x => fI.has(x)) : iL;
     if(fI && !iS.length) return;
     const oran = fI ? iS.length / iL.length : 1;   // il filtresinde birden fazla ildeki işin yalnız seçilen illerin payı
@@ -9104,6 +9109,7 @@ function fMetin9(F){
   if(F.i && F.i.size) p.push("İl: " + [...F.i].join(", "));
   if(F.s && F.s.size) p.push("Standart: " + [...F.s].join(", "));
   if(F.k && F.k.size) p.push("Kontrol Şefi: " + [...F.k].map(k => (F.kAd && F.kAd.get(k)) || k).join(", "));
+  if(F.j && F.j.size) p.push("İş: " + [...F.j].map(k => (F.jAd && F.jAd.get(k)) || k).join(", "));
   return p.join(" · ");
 }
 // tarih aralığı başlığı: "16 – 22 Kasım", "28 Ekim – 3 Kasım", "16 Kasım"
@@ -9286,7 +9292,7 @@ function kartGoster9(blob, a, b){
 
 // ---------- rapor ekranı: PDF Rapor / Görsel Kart + filtre ----------
 kmRaporSayfa9 = function(){
-  const [a0, b0] = raporAralik9("ay"), O = fSecenek9(), F = { b: new Set(), i: new Set(), s: new Set(), k: new Set(), kAd: new Map() };
+  const [a0, b0] = raporAralik9("ay"), O = fSecenek9(), F = { b: new Set(), i: new Set(), s: new Set(), k: new Set(), kAd: new Map(), j: new Set(), jAd: new Map() };
   // kontrol şefleri: ad ve iş sayısı (aynı kişinin farklı yazılışları birleşir)
   const SEF = new Map();
   ISLER.forEach(j => { if(j.ekleme) return; const k = sefK9(j.sef), ad = k === "-" ? SEFSIZ9 : String(j.sef).replace(/\s+/g, " ").trim();
@@ -9299,7 +9305,7 @@ kmRaporSayfa9 = function(){
 <label>Tarih aralığı</label><div class="krd9"><input type="date" id="kr9a" value="${isoG9(a0)}"><span>→</span><input type="date" id="kr9b" value="${isoG9(b0)}"></div>
 <div class="krc9">${[["hafta", "Bu hafta"], ["gecenhafta", "Geçen hafta"], ["ay", "Bu ay"], ["gecenay", "Geçen ay"], ["yil", "Yıl başından"]].map(([k, t]) => `<button type="button" data-kr9="${k}"${k === "ay" ? ' class="on"' : ""}>${t}</button>`).join("")}</div>
 <button type="button" class="krf9" data-kr9f><span>Filtrele</span><em id="kr9fo">Tümü</em><i>▾</i></button>
-<div class="krfg9" id="kr9fg" hidden>${grup("Birim", "b", O.bir)}${grup("İl", "i", O.il)}${grup("Standart", "s", O.std)}${SEFL.length ? `<div class="fg9"><label>Kontrol Şefi</label><div class="ks9"><input type="search" id="kr9ks" placeholder="Şef adı yazın" autocomplete="off" enterkeyhint="search"><div class="ksl9" id="kr9ksl" hidden></div></div><div class="krc9 ksc9" id="kr9ksc"></div></div>` : ""}<button type="button" class="krfs9" data-kr9fsil>Filtreyi temizle</button></div>
+<div class="krfg9" id="kr9fg" hidden>${grup("Birim", "b", O.bir)}${grup("İl", "i", O.il)}${grup("Standart", "s", O.std)}${`<div class="fg9"><div class="ksg9">${SEFL.length ? `<div><label>Kontrol Şefi</label><div class="ks9"><input type="search" id="kr9ks" placeholder="Şef adı yazın" autocomplete="off" enterkeyhint="search"></div></div>` : ""}<div><label>İş</label><div class="ks9"><input type="search" id="kr9js" placeholder="İş veya firma" autocomplete="off" enterkeyhint="search"></div></div></div><div class="ksl9" id="kr9ksl" hidden></div><div class="ksl9" id="kr9jsl" hidden></div><div class="krc9 ksc9" id="kr9ksc"></div></div>`}<button type="button" class="krfs9" data-kr9fsil>Filtreyi temizle</button></div>
 <label class="sw" id="kr9sw"><input type="checkbox" id="kr9ar"><span></span>KM aralıklarını göster</label>
 <label class="sw" id="kr9isw" hidden><input type="checkbox" id="kr9is" checked><span></span>İşleri göster</label>
 <p class="krn9">KM aralığının tarihine göre hesaplanır. "Yarısı" girilen aralıklar yarım sayılır. Birden fazla ildeki işte il filtresi seçilirse o ilin payı sayılır.</p>
@@ -9320,7 +9326,11 @@ kmRaporSayfa9 = function(){
     if(ka){ const x = SEF.get(ka.dataset.kr9ks); if(x){ F.k.add(x.k); F.kAd.set(x.k, x.ad); } $("#kr9ks").value = ""; sefAra(); sefCip(); fOzet(); $("#kr9h").hidden = true; return; }
     const kx = e.target.closest("[data-kr9ksx]");
     if(kx){ F.k.delete(kx.dataset.kr9ksx); F.kAd.delete(kx.dataset.kr9ksx); sefCip(); sefAra(); fOzet(); $("#kr9h").hidden = true; return; }
-    if(e.target.closest("[data-kr9fsil]")){ Object.values(F).forEach(S => S.clear()); ov.querySelectorAll("[data-kr9fc]").forEach(x => x.classList.remove("on")); if($("#kr9ks")){ $("#kr9ks").value = ""; sefAra(); sefCip(); } fOzet(); return; }
+    const ja = e.target.closest("[data-kr9js]");
+    if(ja){ const j = ISLER.find(x => String(x.id) === ja.dataset.kr9js); if(j){ F.j.add(String(j.id)); F.jAd.set(String(j.id), j.ad); } $("#kr9js").value = ""; isAra9(); sefCip(); fOzet(); $("#kr9h").hidden = true; return; }
+    const jx = e.target.closest("[data-kr9jsx]");
+    if(jx){ F.j.delete(jx.dataset.kr9jsx); F.jAd.delete(jx.dataset.kr9jsx); sefCip(); isAra9(); fOzet(); $("#kr9h").hidden = true; return; }
+    if(e.target.closest("[data-kr9fsil]")){ Object.values(F).forEach(S => S.clear()); ov.querySelectorAll("[data-kr9fc]").forEach(x => x.classList.remove("on")); if($("#kr9ks")) $("#kr9ks").value = ""; $("#kr9js").value = ""; sefAra(); isAra9(); sefCip(); fOzet(); return; }
     if(e.target.closest("#kr9git")){
       let a = $("#kr9a").value, b = $("#kr9b").value; const h = $("#kr9h");
       const hata = m => { h.textContent = m; h.hidden = false; };
@@ -9339,8 +9349,9 @@ kmRaporSayfa9 = function(){
   ["#kr9a", "#kr9b"].forEach(s => $(s).addEventListener("change", () => { ov.querySelectorAll("[data-kr9]").forEach(x => x.classList.remove("on")); $("#kr9h").hidden = true; }));
   // Kontrol Şefi araması: 2 harften sonra eşleşenler (iş sayısıyla) listelenir
   function sefAra(){
-    const inp = $("#kr9ks"), l = $("#kr9ksl"); if(!inp) return;
+    const inp = $("#kr9ks"), l = $("#kr9ksl"); if(!inp){ l.hidden = true; return; }
     const q = fold(inp.value).trim().split(/\s+/).filter(Boolean);
+    if(q.length){ $("#kr9jsl").hidden = true; }
     if(!q.length || q.join("").length < 2){ l.hidden = true; l.innerHTML = ""; return; }
     const L = SEFL.filter(x => !F.k.has(x.k) && q.every(w => fold(x.ad).includes(w))).slice(0, 8);
     l.innerHTML = L.length ? L.map(x => `<button type="button" data-kr9ks="${esc(x.k)}"><span>${esc(x.ad)}</span><small>${x.n} iş</small></button>`).join("") : `<p>Eşleşen şef yok</p>`;
@@ -9349,8 +9360,22 @@ kmRaporSayfa9 = function(){
   }
   function sefCip(){
     const c = $("#kr9ksc"); if(!c) return;
-    c.innerHTML = [...F.k].map(k => `<button type="button" class="on" data-kr9ksx="${esc(k)}" aria-label="Kaldır">${esc(F.kAd.get(k) || k)} ✕</button>`).join("");
+    c.innerHTML = [...F.k].map(k => `<button type="button" class="on" data-kr9ksx="${esc(k)}" aria-label="Kaldır">${esc(F.kAd.get(k) || k)} ✕</button>`).join("")
+      + [...F.j].map(k => `<button type="button" class="on is9" data-kr9jsx="${esc(k)}" aria-label="Kaldır">${esc(F.jAd.get(k) || k)} ✕</button>`).join("");
   }
+  // İş araması: iş adı ya da firma adı (2 harften sonra)
+  function isAra9(){
+    const inp = $("#kr9js"), l = $("#kr9jsl");
+    const q = fold(inp.value).trim().split(/\s+/).filter(Boolean);
+    if(!q.length || q.join("").length < 2){ l.hidden = true; l.innerHTML = ""; return; }
+    const ks = $("#kr9ksl"); if(ks) ks.hidden = true;
+    const L = ISLER.filter(j => !j.ekleme && !F.j.has(String(j.id)) && q.every(w => fold((j.ad || "") + " " + (j.firma || "")).includes(w))).sort((a, b) => String(a.ad).localeCompare(String(b.ad), "tr")).slice(0, 10);
+    l.innerHTML = L.length ? L.map(j => `<button type="button" class="js9" data-kr9js="${esc(String(j.id))}"><span>${esc(j.ad)}${j.firma ? `<em>${esc(j.firma)}</em>` : ""}</span></button>`).join("") : `<p>Eşleşen iş yok</p>`;
+    l.hidden = false;
+    requestAnimationFrame(() => { try{ l.scrollIntoView({ block: "nearest", behavior: "smooth" }); }catch(_){} });
+  }
+  $("#kr9js").addEventListener("input", isAra9);
+  $("#kr9js").addEventListener("keydown", ev => { if(ev.key === "Enter"){ ev.preventDefault(); const b = $("#kr9jsl [data-kr9js]"); if(b) b.click(); else ev.target.blur(); } });
   $("#kr9ks")?.addEventListener("input", sefAra);
   $("#kr9ks")?.addEventListener("keydown", ev => { if(ev.key === "Enter"){ ev.preventDefault(); const b = $("#kr9ksl [data-kr9ks]"); if(b) b.click(); else ev.target.blur(); } });
 };

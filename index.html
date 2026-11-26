@@ -1832,6 +1832,7 @@ html.dark .krs9 .sw{ color:#e6ebf3; } html.dark .krs9 .sw span{ background:#3341
 .ksl9{ margin-top:6px; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff; }
 .ksl9 button{ display:flex; width:100%; align-items:center; gap:8px; font:inherit; font-size:14.5px; font-weight:700; text-align:left; background:none; border:0; border-bottom:1px solid #eef1f6; padding:11px 12px; color:#0f172a; }
 .ksl9 button:last-child{ border-bottom:0; } .ksl9 button span{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .ksl9 small{ flex:none; font-size:12.5px; font-weight:700; color:#64748b; }
+.ksl9{ overflow-y:auto !important; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; } .krs9.klv9{ padding-bottom:70vh; }
 .ksg9{ display:grid; grid-template-columns:1fr 1fr; gap:10px; } .ksg9 > div{ min-width:0; } .ksg9 > div:only-child{ grid-column:1 / -1; } .ksg9 label{ display:block; }
 .ksg9 + .ksl9, .ksl9 + .ksl9{ margin-top:8px; } .ks9 input::placeholder{ font-weight:500; }
 .ksl9 button.js9 span{ white-space:normal; } .ksl9 button.js9 em{ display:block; font-style:normal; font-size:12px; font-weight:600; color:#64748b; margin-top:2px; }
@@ -9355,8 +9356,7 @@ kmRaporSayfa9 = function(){
     if(!q.length || q.join("").length < 2){ l.hidden = true; l.innerHTML = ""; return; }
     const L = SEFL.filter(x => !F.k.has(x.k) && q.every(w => fold(x.ad).includes(w))).slice(0, 8);
     l.innerHTML = L.length ? L.map(x => `<button type="button" data-kr9ks="${esc(x.k)}"><span>${esc(x.ad)}</span><small>${x.n} iş</small></button>`).join("") : `<p>Eşleşen şef yok</p>`;
-    l.hidden = false;
-    requestAnimationFrame(() => { try{ l.scrollIntoView({ block: "nearest", behavior: "smooth" }); }catch(_){} });
+    l.hidden = false; listeBoy9(l);
   }
   function sefCip(){
     const c = $("#kr9ksc"); if(!c) return;
@@ -9371,9 +9371,24 @@ kmRaporSayfa9 = function(){
     const ks = $("#kr9ksl"); if(ks) ks.hidden = true;
     const L = ISLER.filter(j => !j.ekleme && !F.j.has(String(j.id)) && q.every(w => fold((j.ad || "") + " " + (j.firma || "")).includes(w))).sort((a, b) => String(a.ad).localeCompare(String(b.ad), "tr")).slice(0, 10);
     l.innerHTML = L.length ? L.map(j => `<button type="button" class="js9" data-kr9js="${esc(String(j.id))}"><span>${esc(j.ad)}${j.firma ? `<em>${esc(j.firma)}</em>` : ""}</span></button>`).join("") : `<p>Eşleşen iş yok</p>`;
-    l.hidden = false;
-    requestAnimationFrame(() => { try{ l.scrollIntoView({ block: "nearest", behavior: "smooth" }); }catch(_){} });
+    l.hidden = false; listeBoy9(l);
   }
+  // v224: arama kutusuna dokununca kutu satırı sayfanın üstüne gelir; yazarken sayfa kımıldamaz, liste klavyenin üstüne sığar
+  const bb = ov.querySelector(".bb"), krs = ov.querySelector(".krs9");
+  function listeBoy9(l){
+    const vv = window.visualViewport, H = vv ? vv.height + vv.offsetTop : innerHeight;
+    const top = l.getBoundingClientRect().top;
+    l.style.maxHeight = Math.max(120, H - top - 10) + "px";
+  }
+  function satiraGit9(){
+    const row = ov.querySelector(".ksg9"); if(!row || !bb) return;
+    krs.classList.add("klv9");
+    const hedef = bb.scrollTop + row.getBoundingClientRect().top - bb.getBoundingClientRect().top - 6;
+    try{ bb.scrollTo({ top: hedef, behavior: "smooth" }); }catch(_){ bb.scrollTop = hedef; }
+    setTimeout(() => ov.querySelectorAll(".ksl9:not([hidden])").forEach(listeBoy9), 380);
+  }
+  ["#kr9ks", "#kr9js"].forEach(sel => { const i = $(sel); if(i) i.addEventListener("focus", () => { satiraGit9(); setTimeout(satiraGit9, 350); }); });
+  if(window.visualViewport) visualViewport.addEventListener("resize", () => { if(!document.body.contains(ov)) return; ov.querySelectorAll(".ksl9:not([hidden])").forEach(listeBoy9); });
   $("#kr9js").addEventListener("input", isAra9);
   $("#kr9js").addEventListener("keydown", ev => { if(ev.key === "Enter"){ ev.preventDefault(); const b = $("#kr9jsl [data-kr9js]"); if(b) b.click(); else ev.target.blur(); } });
   $("#kr9ks")?.addEventListener("input", sefAra);

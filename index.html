@@ -1832,7 +1832,7 @@ html.dark .krs9 .sw{ color:#e6ebf3; } html.dark .krs9 .sw span{ background:#3341
 .ksl9{ margin-top:6px; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; background:#fff; }
 .ksl9 button{ display:flex; width:100%; align-items:center; gap:8px; font:inherit; font-size:14.5px; font-weight:700; text-align:left; background:none; border:0; border-bottom:1px solid #eef1f6; padding:11px 12px; color:#0f172a; }
 .ksl9 button:last-child{ border-bottom:0; } .ksl9 button span{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .ksl9 small{ flex:none; font-size:12.5px; font-weight:700; color:#64748b; }
-#mapwrap .zoom, #mapwrap .hust{ transition:opacity .25s ease; } #mapwrap.say9 .zoom:not(.tam9), #mapwrap.say9 .hust.kucuk9:not(.tam9){ opacity:.45; }
+#mapwrap .zoom, #mapwrap .hust{ transition:opacity .25s ease; } #mapwrap.say9 .zoom, #mapwrap.say9 .hust.kucuk9{ opacity:.65; }
 .ksl9{ overflow-y:auto !important; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; } .krs9.klv9{ padding-bottom:70vh; }
 .ksg9{ display:grid; grid-template-columns:1fr 1fr; gap:10px; } .ksg9 > div{ min-width:0; } .ksg9 > div:only-child{ grid-column:1 / -1; } .ksg9 label{ display:block; }
 .ksg9 + .ksl9, .ksl9 + .ksl9{ margin-top:8px; } .ks9 input::placeholder{ font-weight:500; }
@@ -6916,10 +6916,7 @@ function hustKucult9(){
   // v225: yakınlaştırılmışken Ara · Filtre ile yenile / + / − yarı saydam (arama / filtre açıkken değil)
   const w = document.getElementById("mapwrap"); if(w) w.classList.toggle("say9", mz.s > 1.01 && !hustAcik9 && !ara);
 }
-document.addEventListener("pointerdown", e => {
-  const b = e.target.closest && e.target.closest("#mapwrap .zoom, #mapwrap .hust.kucuk9"); if(!b) return;
-  b.classList.add("tam9"); clearTimeout(b._tam9); b._tam9 = setTimeout(() => b.classList.remove("tam9"), 700);
-}, true);
+
 const _mapUygula37 = mapUygula;
 mapUygula = function(){ const r = _mapUygula37.apply(this, arguments); hustKucult9(); zoomYer9(); return r; };
 function zoomYer9(){ const w = document.getElementById("mapwrap"); if(!w) return; const z = w.querySelector(".zoom"); if(!z) return;

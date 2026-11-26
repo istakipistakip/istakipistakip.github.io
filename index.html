@@ -5034,6 +5034,15 @@ function trSayi(v){
   const r = e + t.replace(/,/g, ".") + (o ? "," + o : "");
   return y ? "%" + r : r;
 }
+// KMZ renk düzeni: siyah / gri / beyaz (renksiz), kırmızı, mavi – açık mavi. Diğer renkler (sarı, yeşil, turuncu, mor…) gizlenir.
+function kmzRenkUygun9(r){
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(r || "").trim()); if(!m) return true;
+  const n = parseInt(m[1], 16), R = (n >> 16) / 255, G = ((n >> 8) & 255) / 255, B = (n & 255) / 255;
+  const mx = Math.max(R, G, B), mn = Math.min(R, G, B), d = mx - mn;
+  if(mx < 0.25 || d < 0.18) return true;                     // siyah, gri, beyaz
+  let h = mx === R ? ((G - B) / d) % 6 : mx === G ? (B - R) / d + 2 : (R - G) / d + 4; h *= 60; if(h < 0) h += 360;
+  return h < 22 || h >= 335 || (h >= 175 && h <= 265);       // kırmızı ya da mavi tonları
+}
 function duzelt(v){
   if(!(v.v >= 3)) (v.isler || []).forEach(j => { if(Array.isArray(j.ek)) j.ek = j.ek.map(([b, x]) => [baslikGuzel(b), trSayi(x)]); });
   (v.isler || []).forEach(j => {
@@ -5042,6 +5051,8 @@ function duzelt(v){
     j.uz = Array.isArray(j.uz) ? j.uz : []; j.ek = Array.isArray(j.ek) ? j.ek : []; j.iti = Array.isArray(j.iti) ? j.iti : [];
     if(!Array.isArray(j.kutular)) j.kutular = j.pin ? [[j.pin[0] - 1.5, j.pin[1] - 1.5, 3, 3]] : [];
     if(Array.isArray(j.hat)) j.hat = { cizgi: j.hat.map(p => ({ r: "#dc2626", i: 0, p })), nok: [] };
+    // v230: KMZ'de renk düzeni dışındaki çizgiler (sarı, yeşil, turuncu, mor…: ör. mevcut yol / taslak) yol çizgisi sayılmaz
+    if(j.hat && Array.isArray(j.hat.cizgi) && j.hat.cizgi.length){ const k = j.hat.cizgi.filter(c => kmzRenkUygun9(c.r)); if(k.length) j.hat.cizgi = k; }
     if(j.hat && !(j.hat.cizgi.length || j.hat.nok.length)) j.hat = null;
   });
   return v;

@@ -9573,6 +9573,11 @@ function bkModel9(j){
   const pbN = nok.filter(q => PBRX.test(q[2] || "")).map(q => [q[0], q[1]]);
   par.forEach(q => q.k = kmN.filter(n => bkYakin9(n.p, q.p).d < 80).length);
   const pbYakin = pt => pbN.some(b => mesafe6(b, pt) < 150);
+  // v228 teşhis: yalnız teşhis istenince (j.__bkT9 dizisi varken) birleştirme kararları yazılır
+  const TL = Array.isArray(j.__bkT9) ? j.__bkT9 : null; let AN = "";
+  const PID = new Map(); par.forEach((q, i) => PID.set(q, i + 1));
+  const kN9 = v => v == null ? "?" : kmT9(v), pt9 = q => q ? `${(+q[0]).toFixed(5)},${(+q[1]).toFixed(5)}` : "?";
+  const yakKm9 = pt => kmN.map(n => ({ v: n.v, d: mesafe6(n.p, pt) })).filter(x => x.d < 400).sort((a, b) => a.d - b.d).slice(0, 3).map(x => `${kN9(x.v)}@${Math.round(x.d)}m`).join(" ") || "-";
   // v135: iki parça uç uca gelse de ayrı yol mu? Birleşme yerinde 0+000 / proje başı varsa ya da km iki yana doğru da
   // artıyor / azalıyorsa (yolun bir ucu değil iki yolun başı) ayrı yoldur. Km eşitliği yakınındaysa ayırmaz.
   const kmEgim = p => { const L = [], c = bkKum9(p), T = c[c.length - 1];   // v143: uçlardaki 0+000 / PB yazıları (kavşakta başlayan yollarındır) sayılmaz
@@ -9582,7 +9587,7 @@ function bkModel9(j){
     const jt = zSon ? zp[zp.length - 1] : zp[0];
     // v140: önce km sürekliliğine bakılır; proje başı / sonu yazısı tek başına yolu bölmez (yol PB'den önce de sürebilir).
     // Gerçek km eşitliği yakınında km atladığı için ayırmaz; PB/PS yazılı eşitlik ("PS= G:36+000/İ:39+000") sayılmaz.
-    if(esN.some(e => !PBRX.test(e.q[2] || "") && mesafe6(e.p, jt) < 150)) return false;
+    if(esN.some(e => !PBRX.test(e.q[2] || "") && mesafe6(e.p, jt) < 150)){ AN = "km eşitliği yakını → devam"; return false; }
     // v138: birleşme yerinin iki yanındaki en yakın KM yazıları km'nin kesintisiz devam ettiğini göstermeli.
     // İki yanda da km birleşme yerinden sayılıyorsa (iki yolun 0+000'ı) ya da km atlıyorsa bunlar ayrı yollardır.
     // v139: aradaki boşluk da hesaba katılır ve km'nin yönü (artıyor / azalıyor) birleşmeden sonra da aynı kalmalı
@@ -9600,11 +9605,13 @@ function bkModel9(j){
       const surer = t => { const jA = A[0].v + t * A[0].s / 1000, jB = B[0].v - t * B[0].s / 1000;
         if((t < 0 && (jA < 0.12 || jB < 0.12)) || jA < -0.05 || jB < -0.05) return false;
         return Math.abs(B[0].v - A[0].v - t * D) <= tol; };
-      return tr ? !surer(tr) : !(surer(1) || surer(-1));
+      const sn9 = tr ? !surer(tr) : !(surer(1) || surer(-1));
+      AN = `km: bu yanda ${kN9(A[0].v)} (uca ${Math.round(A[0].s)} m)${A[1] ? ", " + kN9(A[1].v) + " (" + Math.round(A[1].s) + " m)" : ""} · öbür yanda ${kN9(B[0].v)} (uca ${Math.round(B[0].s)} m)${B[1] ? ", " + kN9(B[1].v) + " (" + Math.round(B[1].s) + " m)" : ""} · boşluk ${Math.round(bosluk)} m · beklenen fark ${D.toFixed(3)} · pay ${tol.toFixed(3)} · yön ${tr || "?"} → ${sn9 ? "AYRI" : "devam"}`;
+      return sn9;
     }
-    if(kmN.some(n => Math.abs(n.v) < 0.005 && mesafe6(n.p, jt) < 60) || pbN.some(b => mesafe6(b, jt) < 60)) return true;
-    const ez = kmEgim(zp), eq = kmEgim(qp); if(!ez || !eq) return false;
-    return (zSon ? ez > 0 : ez < 0) !== (qBas ? eq > 0 : eq < 0);
+    if(kmN.some(n => Math.abs(n.v) < 0.005 && mesafe6(n.p, jt) < 60) || pbN.some(b => mesafe6(b, jt) < 60)){ AN = "birleşmede 0+000 / PB yazısı → AYRI"; return true; }
+    const ez = kmEgim(zp), eq = kmEgim(qp); if(!ez || !eq){ AN = `iki yanda km yazısı yetersiz (bu yan ${A.length}, öbür ${B.length}) → devam`; return false; }
+    const sn8 = (zSon ? ez > 0 : ez < 0) !== (qBas ? eq > 0 : eq < 0); AN = `km eğimi (${ez > 0 ? "+" : "-"} / ${eq > 0 ? "+" : "-"}) → ${sn8 ? "AYRI" : "devam"}`; return sn8;
   };
   const yakinKm = pt => { let en = null, bd = 800; kmN.forEach(n => { const d = mesafe6(n.p, pt); if(d < bd){ bd = d; en = n.v; } }); return en; };
   const yon = (a, b) => Math.atan2(b[0] - a[0], (b[1] - a[1]) * Math.cos(a[0] * Math.PI / 180));
@@ -9626,21 +9633,25 @@ function bkModel9(j){
     for(;;){
       let en = null; const sec = [];
       rem.forEach(q => {
-        if(icDokun(q)) return;
-        if(yollar.length && Math.min(yolUzak(q.p[0]), yolUzak(q.p[q.p.length - 1])) < 300) return;   // önceki bir yolun kolu
+        const nq = q.p.length - 1, yak9 = TL ? [[z[z.length - 1], q.p[0]], [z[z.length - 1], q.p[nq]], [z[0], q.p[nq]], [z[0], q.p[0]]].some(([a, b2]) => mesafe6(a, b2) < 300) : false;
+        const L9 = m => { if(yak9) TL.push(`yol${yollar.length + 1}+parça#${PID.get(q)}: ${m}`); };
+        if(icDokun(q)){ L9("parçanın ucu yolun ortasına değiyor → yan yol sayıldı"); return; }
+        if(yollar.length && Math.min(yolUzak(q.p[0]), yolUzak(q.p[q.p.length - 1])) < 300){ L9("önceki bir yola 300 m'den yakın → onun kolu"); return; }   // önceki bir yolun kolu
         const s = z[z.length - 1], b = z[0], n = q.p.length - 1;
         [[s, q.p[0], "son", false], [s, q.p[n], "son", true], [b, q.p[n], "bas", false], [b, q.p[0], "bas", true]].forEach(([zu, qu, uc, ters]) => {
-          const d = mesafe6(zu, qu);
-          if(ayriYol(z, uc === "son", q.p, qu === q.p[0])) return;   // v135
+          const d = mesafe6(zu, qu), L8 = m => { if(TL && d < 300) TL.push(`yol${yollar.length + 1} ${uc === "son" ? "sonu" : "başı"} ${pt9(zu)} ↔ parça#${PID.get(q)} ${qu === q.p[0] ? "başı" : "sonu"} · ${Math.round(d)} m: ${m}`); };
+          AN = "";
+          if(ayriYol(z, uc === "son", q.p, qu === q.p[0])){ L8("AYRI YOL · " + AN); return; }   // v135
           // parçanın ÖBÜR ucu birleşme yerine değiyorsa bu bir kol / ayrı yoldur; uzak ucundan boşlukla eklenmez
-          if(d >= 40 && mesafe6(qu === q.p[0] ? q.p[n] : q.p[0], zu) < 60) return;
+          if(d >= 40 && mesafe6(qu === q.p[0] ? q.p[n] : q.p[0], zu) < 60){ L8("parçanın öbür ucu da burada → kol"); return; }
           if(d >= 40){
             // arada boşluk var: proje başı/sonu ucuna eklenmez; iki yanda KM varsa boşlukla uyuşmalı, yoksa en çok 300 m
-            if(pbYakin(zu) || pbYakin(qu)) return;
+            if(pbYakin(zu) || pbYakin(qu)){ L8("boşluk + PB/PS yakın → eklenmez"); return; }
             const v1 = yakinKm(zu), v2 = yakinKm(qu);
-            if(v1 !== null && v2 !== null){ if(d > 5000 || Math.abs(v2 - v1) > d / 1000 + 0.8) return; }
-            else if(d > 300) return;
+            if(v1 !== null && v2 !== null){ if(d > 5000 || Math.abs(v2 - v1) > d / 1000 + 0.8){ L8(`boşluk km uymuyor (${kN9(v1)} / ${kN9(v2)})`); return; } }
+            else if(d > 300){ L8("boşluk > 300 m"); return; }
           }
+          L8("aday · " + (AN || "km kontrolü yok"));
           const zy = uc === "son" ? ucYon(z, true) : ucYon(z, false), qy = ters ? ucYon(q.p, true) : ucYon(q.p, false);
           let aci = Math.abs(((zy - qy + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI); aci = Math.PI - aci;
           sec.push({ q, d, uc, ters, puan: (d < 40 ? 0 : d) + aci * 200 - (q.k ? 1e5 : 0) });
@@ -9649,6 +9660,7 @@ function bkModel9(j){
       const deg = sec.filter(o => o.d < 40), havuz = deg.length ? deg : sec;
       havuz.forEach(o => { if(!en || o.puan < en.puan) en = o; });
       if(!en) break;
+      if(TL) TL.push(`→ yol${yollar.length + 1}'e eklendi: parça#${PID.get(en.q)} (${en.uc}, ${Math.round(en.d)} m)`);
       rem = rem.filter(x => x !== en.q); let p = en.ters ? en.q.p.slice().reverse() : en.q.p;
       if(en.q.a) adS.add(en.q.a);
       const ust9 = q => bkHatUzak9(q, z) < 25;   // birleşimde üst üste binen kısım iki kez sayılmasın
@@ -9683,11 +9695,13 @@ function bkModel9(j){
         const e0 = mesafe6(s, o.p[0]), e1 = mesafe6(s, o.p[o.p.length - 1]);
         if(Math.min(e0, e1) < 40 && !ayriYol(p, true, e1 < e0 ? o.p.slice().reverse() : o.p, true)){ p = p.concat(e1 < e0 ? o.p.slice().reverse() : o.p); if(o.a) adlar.push(o.a); kal.splice(i, 1); ek = true; break; } } }
     if(uz(p) < 50) continue;
+    const KID9 = `parça#${PID.get(q)}` + (adlar.length > 1 ? "+" : "");
     { // v139: parçanın ÖBÜR ucu bir yolun ucuna değiyor ve km kesintisiz sürüyorsa parça o yolun parçasıdır
       // (ör. kavşaktaki 0+000'dan başlayıp 1+200'de yolun geri kalanına bağlanan kısım)
       const uzak = p[p.length - 1], ters = p.slice().reverse(); let hit = null;
       yollar.forEach(y => { if(hit) return; [[true, y.p[y.p.length - 1]], [false, y.p[0]]].forEach(([sonda, E]) => {
         if(!hit && mesafe6(uzak, E) < 40 && !ayriYol(y.p, sonda, ters, true)) hit = { y, sonda }; }); });
+      if(TL) yollar.forEach((y, yi) => [[true, y.p[y.p.length - 1]], [false, y.p[0]]].forEach(([sonda, E]) => { const dd = mesafe6(uzak, E); if(dd < 300){ AN = ""; const ay = ayriYol(y.p, sonda, ters, true); TL.push(`${KID9} uzak ucu ↔ yol${yi + 1} ${sonda ? "sonu" : "başı"} · ${Math.round(dd)} m: ${dd < 40 && !ay ? "yola katıldı" : (ay ? "AYRI · " + AN : "40 m'den uzak")}`); } }));
       if(hit){ const y = hit.y;
         if(hit.sonda) y.p = y.p.concat(ters);
         else { const N = p.length; y.kop = new Set([...y.kop].map(k => k + N)); y.p = p.concat(y.p); }
@@ -9696,6 +9710,7 @@ function bkModel9(j){
       const { y } = enYakinYol(p[0]), sonda = mesafe6(p[0], y.p[y.p.length - 1]) < mesafe6(p[0], y.p[0]), E = sonda ? y.p[y.p.length - 1] : y.p[0];
       const uzak = p[p.length - 1], yd = ucYon(y.p, sonda), pd = yon(E, uzak);
       let aci = Math.abs(((yd - pd + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI);
+      if(TL && mesafe6(p[0], E) < 300){ AN = ""; const ay = ayriYol(y.p, sonda, p, true); TL.push(`${KID9} yakın ucu ↔ yol${yollar.indexOf(y) + 1} ${sonda ? "sonu" : "başı"} · ${Math.round(mesafe6(p[0], E))} m · açı ${(aci * 180 / Math.PI).toFixed(0)}° · ${ay ? "AYRI · " + AN : "km uygun"}`); }
       if(mesafe6(p[0], E) < 250 && mesafe6(uzak, E) > 40 && aci < 0.9 && bkYakin9(uzak, y.p).d > 30 && !ayriYol(y.p, sonda, p, true)){
         let q = p.slice(), i = 0; while(i < q.length - 2 && bkHatUzak9(q[i], y.p) < 25) i++; if(i) q = q.slice(Math.max(0, i - 1));
         if(q.length >= 2){
@@ -9710,6 +9725,7 @@ function bkModel9(j){
       const orn = p.filter((_, i) => i % Math.max(1, Math.floor(p.length / 60)) === 0).concat([p[p.length - 1]]);
       const dd = orn.map(o => yolUzak(o)), yakin = dd.filter(d => d < 150).length / dd.length;
       if(yakin >= 0.6 || Math.max(...dd) < 150) continue; }
+    if(TL) TL.push(`${KID9} → KOL (yakın uç ${pt9(p[0])}, uzunluk ${Math.round(uz(p))} m)`);
     let ad = adlar.find(a => !genel.test(a) && !yolAdlari.has(a) && !KMRX9.test(a)) || "";
     if(!ad){ const orn = p.filter((_, i) => i % Math.max(1, Math.floor(p.length / 40)) === 0);
       const n = nok.filter(x => x[2] && !KMRX9.test(x[2]) && !PBRX.test(x[2]) && String(x[2]).trim().length > 1 && orn.some(o => mesafe6(o, [x[0], x[1]]) < 120) && yolUzak([x[0], x[1]]) > 120);
@@ -9766,7 +9782,30 @@ function bkModel9(j){
   kollar.sort((a, b) => a.c - b.c);
   let adsiz = 0; kollar.forEach(k => { if(!k.ad) k.ad = "Kol " + (++adsiz); });
   const paket = h => ({ p: h.p, kop: h.kop, etik: h.et, L: h.L, kmF: h.kmF, esit: h.E, ad: h.ad, ayr: h.ayr || null, kol: h === yollar[0] ? 0 : 1, yol: h.yol ? 1 : 0 });
+  if(TL){
+    TL.unshift(...par.map((q, i) => `parça#${i + 1}: ${Math.round(q.u)} m · baş ${pt9(q.p[0])} [${yakKm9(q.p[0])}] · son ${pt9(q.p[q.p.length - 1])} [${yakKm9(q.p[q.p.length - 1])}]`), "— kararlar —");
+    TL.push("— sonuç —");
+    yollar.forEach((y, i) => TL.push(`${y.ad}: ${Math.round(uz(y.p))} m · ${y.kmF ? kmAdi(y, 0) + " → " + kmAdi(y, y.kum[y.kum.length - 1]) : "km yok"} · baş ${pt9(y.p[0])} · son ${pt9(y.p[y.p.length - 1])}`));
+    kollar.forEach(k => TL.push(`${k.ad}: ${Math.round(uz(k.p))} m · ayrılış ${k.ayr || "?"} · baş ${pt9(k.p[0])} · son ${pt9(k.p[k.p.length - 1])}`));
+    TL.push(`KM eşitlikleri: ${esN.map(e => `${e.q[2]} @ ${pt9(e.p)}`).join(" | ") || "yok"}`);
+  }
   return (j._bkM9 = { h: j.hat, ana: paket(yollar[0]), kollar: yollar.slice(1).map(paket).concat(kollar.map(paket)), esitN: esN });
+}
+// v228: boy kesit / KMZ teşhisi (yalnız yöneticinin düzenleme modunda): yol modelinin kararları yazı olarak kopyalanır
+function bkTeshis9(j, ek){
+  const jj = bkJ9 ? bkJ9(j) : j; if(!jj || !jj.hat) return "Bu işte KMZ hattı yok";
+  const eski = jj._bkM9; delete jj._bkM9; jj.__bkT9 = [];
+  let L = []; try{ bkModel9(jj); L = jj.__bkT9; }catch(e){ L = ["HATA: " + (e.message || e)]; }
+  delete jj.__bkT9; if(eski) jj._bkM9 = eski;
+  let Y = []; try{ Y = kbYollar9(jj).map(y => `${y.ad}${y.ana ? " (ana)" : ""}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))}`); }catch(_){}
+  return [`İşTakip boy kesit teşhisi · ${j.ad} · v228`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
+}
+async function teshisKopyala9(metin){
+  try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
+  const ov = document.createElement("div"); ov.className = "on9"; ov.id = "on9";
+  ov.innerHTML = `<div class="kut"><b>Teşhis</b><p>Yazıyı seçip kopyalayın.</p><textarea style="width:100%;height:40vh;font:11px/1.35 ui-monospace,Menlo,monospace" readonly></textarea><div class="dg"><button class="ana" data-x>Kapat</button></div></div>`;
+  ov.querySelector("textarea").value = metin; document.getElementById("on9")?.remove(); document.body.appendChild(ov);
+  ov.querySelector("[data-x]").onclick = () => ov.remove();
 }
 bkZincir9 = function(j){ const M = bkModel9(j); return M ? M.ana : null; };
 let bkSec9 = { id: null, k: -1 };
@@ -9873,8 +9912,9 @@ boyKesit = async function(j){
     const sec = bkSec9.id === j.id ? bkSec9.k : -1;
     const d = document.createElement("div"); d.className = "bkk9";
     d.innerHTML = `<button type="button" data-bkkol="-1" class="${sec < 0 ? "on" : ""}"><b>${esc(M.ana.ad || "Ana yol")}</b></button>` + M.kollar.map((k, i) => `<button type="button" data-bkkol="${i}" class="${sec === i ? "on" : ""}"><b>${esc(k.ad)}</b>${k.ayr ? `<small>${esc(k.ayr)}'de ayrılıyor</small>` : ""}</button>`).join("");
+    if(typeof DUZ9 !== "undefined" && DUZ9 && YON9) d.insertAdjacentHTML("beforeend", `<button type="button" data-bkteshis><b>Teşhis kopyala</b></button>`);
     (p.querySelector(".bkb9") || p.querySelector(".b1")).after(d);
-    d.addEventListener("click", e => { const b = e.target.closest("[data-bkkol]"); if(!b) return; e.stopPropagation(); bkKolSec9(Number(b.dataset.bkkol)); });
+    d.addEventListener("click", e => { if(e.target.closest("[data-bkteshis]")){ e.stopPropagation(); teshisKopyala9(bkTeshis9(j)); return; } const b = e.target.closest("[data-bkkol]"); if(!b) return; e.stopPropagation(); bkKolSec9(Number(b.dataset.bkkol)); });
     requestAnimationFrame(() => { const on = d.querySelector(".on"); if(on) on.scrollIntoView({ block: "nearest", inline: "center" }); });
     { const h = bkSecHat9(j); bkVurgula9(h && !h.kol && B && (bkBol9.id === j.id ? bkBol9.b : 0) > 0 ? { ...h, kol: 1 } : h); } bkHaritaBagla9();
     p.querySelector("[data-bkkapat]")?.addEventListener("click", () => { bkVurguTemizle9(); bkSec9 = { id: null, k: -1 }; });
@@ -12377,7 +12417,8 @@ function kbCiz10(m, hedef, j, W, WB, o){
     try{ if(typeof DUZ9 !== "undefined" && DUZ9 && !o.tik) ly.on("click", ev => { L.DomEvent.stopPropagation(ev);
       const f = v => v == null ? "?" : mKm9(Math.round(v));
       const yz = t => t ? `${f(Math.min(t.m0 ?? NaN, t.m1 ?? NaN))}–${f(Math.max(t.m0 ?? NaN, t.m1 ?? NaN))}` : "yok";
-      onay9("KMZ teşhis", `Boyanmamış parça · ${Math.round(uz)} m<br>Baş ucu: ${u0 ? "boyalı parça " + yz(u0.t) + " · uç km " + f(u0.mv) : "boyalı parçaya değmiyor"}<br>Son ucu: ${u1 ? "boyalı parça " + yz(u1.t) + " · uç km " + f(u1.mv) : (u0 ? "boyalı parçaya değmiyor" : "–")}<br>Yollar: ${(YY || []).map(y => `${esc(y.ad)} ${f(y.lo)}–${f(y.hi)}`).join(" · ")}`, [{ t: "Tamam", v: true }]); }); }catch(_){}
+      const htm9 = `Boyanmamış parça · ${Math.round(uz)} m<br>Baş ucu: ${u0 ? "boyalı parça " + yz(u0.t) + " · uç km " + f(u0.mv) : "boyalı parçaya değmiyor"}<br>Son ucu: ${u1 ? "boyalı parça " + yz(u1.t) + " · uç km " + f(u1.mv) : (u0 ? "boyalı parçaya değmiyor" : "–")}<br>Yollar: ${(YY || []).map(y => `${esc(y.ad)} ${f(y.lo)}–${f(y.hi)}`).join(" · ")}`;
+      onay9("KMZ teşhis", htm9, [{ t: "Kopyala", v: "k" }, { t: "Tamam", v: true, ana: 1 }]).then(v => { if(v === "k") teshisKopyala9(bkTeshis9(j, htm9.replace(/<br>/g, "\n").replace(/<[^>]+>/g, ""))); }); }); }catch(_){}
   }));
   dolgu.forEach(d => parcalar.push(d));
   // 4) boyalı parçalar — boyasız yarı: yakındaki KMZ çizgisinin rengi

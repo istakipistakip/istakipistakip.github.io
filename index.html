@@ -9591,8 +9591,10 @@ function bkModel9(j){
     // v138: birleşme yerinin iki yanındaki en yakın KM yazıları km'nin kesintisiz devam ettiğini göstermeli.
     // İki yanda da km birleşme yerinden sayılıyorsa (iki yolun 0+000'ı) ya da km atlıyorsa bunlar ayrı yollardır.
     // v139: aradaki boşluk da hesaba katılır ve km'nin yönü (artıyor / azalıyor) birleşmeden sonra da aynı kalmalı
+    // v229: birleşme yerinden bakınca km eşitliğinin ÖTESİNDEKİ yazılar sayılmaz (eşitlikte km sıçrar; yön ve süreklilik yanlış çıkıyordu)
     const yan = (p, ucSon) => { const c = bkKum9(p), T = c[c.length - 1], L = [];
-      kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d >= 80) return; const s = ucSon ? T - c[r.i] : c[r.i]; if(s >= 60 && (T - s >= 60 || Math.abs(n.v) > 0.005) && s < 4000) L.push({ s, v: n.v }); }); return L.sort((a, b) => a.s - b.s); };   // v143: parçanın öbür ucundaki 0+000 / PB yazısı (kavşakta başlayan yollarındır) o parçanın sayılmaz   // birleşme yerindeki yazı iki yana da düşer: sayılmaz
+      let esS = Infinity; esN.forEach(e => { if(PBRX.test(e.q[2] || "")) return; const r = bkIz9(e.p, p, c, new Set()); if(!(r.d < 80)) return; const s = ucSon ? T - r.c : r.c; if(s < esS) esS = s; });
+      kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d >= 80) return; const s = ucSon ? T - c[r.i] : c[r.i]; if(s >= esS - 20) return; if(s >= 60 && (T - s >= 60 || Math.abs(n.v) > 0.005) && s < 4000) L.push({ s, v: n.v }); }); return L.sort((a, b) => a.s - b.s); };   // v143: parçanın öbür ucundaki 0+000 / PB yazısı (kavşakta başlayan yollarındır) o parçanın sayılmaz   // birleşme yerindeki yazı iki yana da düşer: sayılmaz
     const A = yan(zp, zSon), B = yan(qp, !qBas);
     if(A.length && B.length){
       // v142: pay yeniden geniş (v141'deki dar pay gerçek yolları böldü); km'nin 0'a indiği başlangıç kuralı ayrı
@@ -9798,7 +9800,7 @@ function bkTeshis9(j, ek){
   let L = []; try{ bkModel9(jj); L = jj.__bkT9; }catch(e){ L = ["HATA: " + (e.message || e)]; }
   delete jj.__bkT9; if(eski) jj._bkM9 = eski;
   let Y = []; try{ Y = kbYollar9(jj).map(y => `${y.ad}${y.ana ? " (ana)" : ""}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))}`); }catch(_){}
-  return [`İşTakip boy kesit teşhisi · ${j.ad} · v228`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
+  return [`İşTakip boy kesit teşhisi · ${j.ad} · v229`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}

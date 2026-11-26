@@ -5036,8 +5036,13 @@ function trSayi(v){
 }
 // KMZ renk düzeni: siyah / gri / beyaz (renksiz), kırmızı, mavi – açık mavi. Diğer renkler (sarı, yeşil, turuncu, mor…) gizlenir.
 function kmzRenkUygun9(r){
-  const m = /^#?([0-9a-f]{6})$/i.exec(String(r || "").trim()); if(!m) return true;
-  const n = parseInt(m[1], 16), R = (n >> 16) / 255, G = ((n >> 8) & 255) / 255, B = (n & 255) / 255;
+  // renk "#rrggbb" ya da masaüstünün KMZ'den çevirdiği "rgba(r,g,b,a)" biçiminde gelir
+  const t = String(r || "").trim(); let R, G, B;
+  let m = /^#?([0-9a-f]{6})([0-9a-f]{2})?$/i.exec(t);
+  if(m){ const n = parseInt(m[1], 16); R = (n >> 16) / 255; G = ((n >> 8) & 255) / 255; B = (n & 255) / 255; }
+  else if((m = /^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i.exec(t))){ R = +m[1] / 255; G = +m[2] / 255; B = +m[3] / 255; }
+  else if((m = /^#?([0-9a-f]{3})$/i.exec(t))){ R = parseInt(m[1][0], 16) / 15; G = parseInt(m[1][1], 16) / 15; B = parseInt(m[1][2], 16) / 15; }
+  else return !/^(yellow|gold|green|lime|orange|purple|violet|magenta|fuchsia|olive)$/i.test(t);
   const mx = Math.max(R, G, B), mn = Math.min(R, G, B), d = mx - mn;
   if(mx < 0.25 || d < 0.18) return true;                     // siyah, gri, beyaz
   let h = mx === R ? ((G - B) / d) % 6 : mx === G ? (B - R) / d + 2 : (R - G) / d + 4; h *= 60; if(h < 0) h += 360;

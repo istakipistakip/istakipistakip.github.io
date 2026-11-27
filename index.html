@@ -3110,6 +3110,23 @@ function itiYazi9(t){
     .replace(/(\d)([A-ZÇĞİÖŞÜ]{3,})/g, "$1 $2")
     .replace(/([^\s(+\-·])\(/g, "$1 (");
 }
+// v258: yapı (köprü vb.) yazısından inen noktalı çizgi şeritlerin içinden geçip alta kadar uzamasın — yazı üstteyse şeridin üstünde biter
+function itiYapiKes9(svg){
+  const L1 = [...svg.querySelectorAll("g.yapi-etiket line")]; if(!L1.length) return false;
+  const PB = [...svg.querySelectorAll("text")].filter(t => /Proje başı/i.test(t.textContent)).map(t => t.getBoundingClientRect().top).sort((a, b) => a - b);
+  const bant = y => { let i = 0; for(let k = 0; k < PB.length; k++) if(PB[k] - 4 <= y) i = k; return i; };
+  const SB = new Map();
+  svg.querySelectorAll("rect").forEach(r => { if(!r.querySelector(":scope > title")) return; const b = r.getBoundingClientRect(); if(!b.height) return; const k = bant(b.top);
+    const o = SB.get(k) || { t: Infinity, b: -Infinity }; o.t = Math.min(o.t, b.top); o.b = Math.max(o.b, b.bottom); SB.set(k, o); });
+  let d = false;
+  L1.forEach(l => { const M = l.getScreenCTM(); if(!M) return; const pt = (x, y) => { const p = svg.createSVGPoint(); p.x = x; p.y = y; return p.matrixTransform(M); };
+    const x1 = +l.getAttribute("x1"), y1 = +l.getAttribute("y1"), x2 = +l.getAttribute("x2"), y2 = +l.getAttribute("y2"); if(Math.abs(x1 - x2) > 1) return;
+    const a = pt(x1, y1), b = pt(x2, y2), ustA = a.y <= b.y, u = Math.min(a.y, b.y), al = Math.max(a.y, b.y);
+    const o = SB.get(bant(u + 2)) || SB.get(bant(al)); if(!o) return;
+    if(u < o.t - 2 && al > o.t + 2){ const p = svg.createSVGPoint(); p.x = 0; p.y = o.t; const yn = p.matrixTransform(M.inverse()).y; l.setAttribute(ustA ? "y2" : "y1", yn.toFixed(1)); d = true; }   // yazı üstte: şeridin üstünde biter
+  });
+  return d;
+}
 // v250: birbirinin devamı olan yolların (KMZ'de km eşitliğiyle teyitli) birleşim km'leri — { bas: Map(km → öbür yolun sonu), son: Map(km → öbür yolun başı) }
 let ITI_ES9 = null;
 function zincirEtiket9(j){
@@ -3147,6 +3164,7 @@ function itiDuzelt9(kok, j){
     try{ if(itiOkAd9(svg)) degisti = true; }catch(_){}
     try{ if(itiPbUc9(svg)) degisti = true; }catch(_){}
     try{ if(itiYapiDal9(svg)) degisti = true; }catch(_){}
+    try{ if(itiYapiKes9(svg)) degisti = true; }catch(_){}
     try{ if(itiSigdir9(svg)) degisti = true; }catch(_){} });
   return degisti;
 }
@@ -4795,7 +4813,7 @@ function tumIslerCiz(){
   tumSecili = hatIs.id;
 }
 // ---------- v254: Tüm İşler KMZ önbelleği ----------
-const KBV9 = "kbc1";                  // boyama kuralları değişince artırılır: bütün kayıtlar yeniden hesaplanır
+const KBV9 = "kbc2";                  // boyama kuralları değişince artırılır: bütün kayıtlar yeniden hesaplanır
 let KBC9 = null, kbcZam9 = 0, tumYarim9 = [], tumAlt9 = {}, kbcSira9 = [], kbcCalis9 = false;
 async function kbcAl9(){ if(KBC9) return KBC9; let v = null; try{ v = await idbOku("kbc9"); }catch(_){} KBC9 = v && v._v === KBV9 ? v : { _v: KBV9 }; return KBC9; }
 function kbcKaydet9(){ clearTimeout(kbcZam9); kbcZam9 = setTimeout(() => { try{ idbYaz9("kbc9", KBC9); }catch(_){} }, 2000); }
@@ -10120,7 +10138,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v257`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v258`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -11472,12 +11490,16 @@ function kbAralik9(h, S, a, e, zc, yb){
   const Es = (h.esit || []).slice().sort((x, y) => x.c - y.c), kes = s => { if(s.n != null) return Math.min(s.n, Es.length); let n = 0; for(const x of Es) if(x.c <= s.c) n++; return n; };
   const K = Es.map(() => null).concat([null]).map(() => ({ lo: Infinity, hi: -Infinity }));
   S.forEach(s => { if(Es.some(x => Math.abs(x.c - s.c) < 50)) return; const k = K[kes(s)]; k.lo = Math.min(k.lo, s.m); k.hi = Math.max(k.hi, s.m); });   // eşitliğin dibi kesim aralığına katılmaz
-  let izin = null;
-  if(yb && Es.length){ const iou = k => { const o = Math.min(k.hi, yb[1]) - Math.max(k.lo, yb[0]), u = Math.max(k.hi, yb[1]) - Math.min(k.lo, yb[0]); return u > 0 ? Math.max(0, o) / u : 0; };
-    let en = -1, ev = 0; K.forEach((k, n) => { const v = iou(k); if(v > ev){ ev = v; en = n; } });
-    if(en >= 0 && ev >= 0.3) izin = en; else if(yb.ikinci) return []; }
+  // v258: başka itinerer yolunun kaydı yalnız o yola en çok uyan kesime boyanır; ana yolun kaydı ana yolun bütün kesimlerine
+  // (yalnız başka yollara ait kesimler hariç) — tek yolda birden çok km eşitliği olan işlerde (ör. Samsun-Bafra) hepsi boyansın
+  let izin = null; const haric = new Set();
+  const enIyi = r => { const iou = k => { const o = Math.min(k.hi, r[1]) - Math.max(k.lo, r[0]), u = Math.max(k.hi, r[1]) - Math.min(k.lo, r[0]); return u > 0 ? Math.max(0, o) / u : 0; };
+    let en = -1, ev = 0; K.forEach((k, n) => { const v = iou(k); if(v > ev){ ev = v; en = n; } }); return ev >= 0.3 ? en : -1; };
+  if(yb && Es.length){
+    if(yb.ikinci){ const en = enIyi(yb); if(en < 0) return []; izin = en; }
+    else (yb.diger || []).forEach(r => { const en = enIyi(r); if(en >= 0) haric.add(en); }); }
   const ic = (s) => { if(s.m < a - 0.5 || s.m > e + 0.5) return false;
-    const n = kes(s); if(izin !== null) return n === izin;
+    const n = kes(s); if(izin !== null) return n === izin; if(haric.has(n)) return false;
     // komşu iki kesimin ortak km'si → eşitlik öncesi (geri) / sonrası (ileri)
     if(n > 0){ const o = K[n - 1], b = K[n], lo = Math.max(o.lo, b.lo), hi = Math.min(o.hi, b.hi); if(hi - lo > 1 && s.m >= lo - 0.5 && s.m <= hi + 0.5 && (zc || "geri") !== "ileri") return false; }
     if(n < K.length - 1){ const o = K[n + 1], b = K[n], lo = Math.max(o.lo, b.lo), hi = Math.min(o.hi, b.hi); if(hi - lo > 1 && s.m >= lo - 0.5 && s.m <= hi + 0.5 && (zc || "geri") === "ileri") return false; }
@@ -11511,7 +11533,8 @@ function itiKm9(j){
       if(r._km9 || r._taban9 || !YOLTUR9.has(r.tur) || (r.durum !== "eski" && r.durum !== "buyil")) return;
       let yb = null;
       if(r.yolId && ana && r.yolId !== ana){ const y = yolu(r.yolId); if(!y || y.sekil === "L" || y.sekil === "T" || y.sekil === "+") return; yb = [+y.bas, +y.bit]; yb.ikinci = 1; }
-      else { const y = yolu(ana); if(y && Number.isFinite(+y.bas) && Number.isFinite(+y.bit)) yb = [+y.bas, +y.bit]; }
+      else { const y = yolu(ana); if(y && Number.isFinite(+y.bas) && Number.isFinite(+y.bit)){ yb = [+y.bas, +y.bit];
+        yb.diger = (q.yollar || []).filter(o => o.id !== ana && !(o.sekil === "L" || o.sekil === "T" || o.sekil === "+") && Number.isFinite(+o.bas) && Number.isFinite(+o.bit)).map(o => [+o.bas, +o.bit]); } }
       const a = +r.bas, e = +r.bit; if(!(e > a)) return;
       const yan = r.konum === "SOL" ? "sol" : r.konum === "SAG" ? "sağ" : "";
       out.push({ a, e, yil: ytYil9(r), k: { s: `${r.sinif === "TY" ? "TY" : "BY"}-${r.tur}`, y: yan ? 1 : 0, ac: yan, zc: r.zincir || "", _iti9: 1, yid: r.yolId || "", ...(yb ? { yb } : {}) } });

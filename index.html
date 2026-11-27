@@ -9539,12 +9539,20 @@ function bkOrtukEsit9(nok, cz){
   if(!nok || !nok.length || nok._ort9) return nok;
   const K = []; nok.forEach(q => { if(bkEsit9(q[2])) return; const m = KMRX9.exec(q[2] || ""); if(!m) return; const v = kmSayi(m[1] + "+" + m[2]); if(v !== null) K.push({ q, v, p: [q[0], q[1]] }); });
   if(K.length < 2) return nok;
-  const uclar = []; (cz || []).forEach(c => { if(c && c.p && c.p.length > 1){ uclar.push(c.p[0], c.p[c.p.length - 1]); } });
+  // v237: kavşak denetimi uç SAYISIYLA değil, noktadan çıkan YÖNLERLE yapılır (üst üste çizilmiş aynı yol tek yön sayılır):
+  // tam iki yön (yolun gelişi ve devamı) → eşitlik olabilir; üç ve daha çok yön → kavşak
+  const L9 = (cz || []).filter(c => c && c.p && c.p.length > 1).map(c => c.p);
+  const yonlar = P => { const Y = [];
+    const ekle = (p, i0, adim) => { let i = i0, d = 0; while(i + adim >= 0 && i + adim < p.length && d < 80){ d += mesafe6(p[i], p[i + adim]); i += adim; } if(d < 15) return;
+      const a = p[i0], b = p[i], y = Math.atan2((b[1] - a[1]) * Math.cos(a[0] * Math.PI / 180), b[0] - a[0]); if(!Y.some(x => Math.abs(Math.atan2(Math.sin(x - y), Math.cos(x - y))) < 0.45)) Y.push(y); };
+    L9.forEach(p => { let en = -1, ed = Infinity; p.forEach((q, i) => { const d = mesafe6(q, P); if(d < ed){ ed = d; en = i; } }); if(ed > 40) return;
+      if(en > 0) ekle(p, en, -1); if(en < p.length - 1) ekle(p, en, 1); });
+    return Y.length; };
   const at = new Set(), ek = [];
   K.forEach((a, ai) => { if(at.has(a.q)) return;
     let en = null; K.forEach((b2, bi) => { if(bi === ai || at.has(b2.q) || Math.abs(a.v - b2.v) < 0.05) return; const d = mesafe6(a.p, b2.p); if(d <= 25 && (!en || d < en.d)) en = { b: b2, d }; });
     if(!en) return; const b2 = en.b, P = [(a.p[0] + b2.p[0]) / 2, (a.p[1] + b2.p[1]) / 2];
-    if(uclar.length){ const n = uclar.filter(u => mesafe6(u, P) < 35).length; if(n !== 2) return; }   // yalnız iki çizginin uç uca geldiği yer
+    if(L9.length && yonlar(P) > 2) return;   // kavşak: eşitlik sayılmaz
     // G / İ: en yakın başka km yazısı hangi değere yakınsa o taraftadır; ondan küçükse o taraf öncedir (G)
     let g = Math.max(a.v, b2.v), i = Math.min(a.v, b2.v), kom = null;
     K.forEach(o => { if(o === a || o === b2) return; const d = mesafe6(o.p, P); if(d < 40 || d > 3000) return; const ya = Math.abs(o.v - a.v), yb = Math.abs(o.v - b2.v); const yk = Math.min(ya, yb); if(yk > d / 1000 * 1.6 + 0.4) return; if(!kom || d < kom.d) kom = { o, d, x: ya <= yb ? a : b2 }; });
@@ -9654,7 +9662,9 @@ function bkModel9(j){
   // v228 teşhis: yalnız teşhis istenince (j.__bkT9 dizisi varken) birleştirme kararları yazılır
   const TL = Array.isArray(j.__bkT9) ? j.__bkT9 : null; let AN = "";
   const PID = new Map(); par.forEach((q, i) => PID.set(q, i + 1));
-  const kN9 = v => v == null ? "?" : kmT9(v), pt9 = q => q ? `${(+q[0]).toFixed(5)},${(+q[1]).toFixed(5)}` : "?";
+  // v237: teşhiste gerçek koordinat yazılmaz; noktalar ilk parçanın başına göre metre (D: doğu, K: kuzey)
+  const O9 = par.length ? par[0].p[0] : [0, 0];
+  const kN9 = v => v == null ? "?" : kmT9(v), pt9 = q => { if(!q) return "?"; const dx = (q[1] - O9[1]) * 111320 * Math.cos(O9[0] * Math.PI / 180), dy = (q[0] - O9[0]) * 110540; return `(${dx >= 0 ? "+" : ""}${Math.round(dx)} D, ${dy >= 0 ? "+" : ""}${Math.round(dy)} K)`; };
   const yakKm9 = pt => kmN.map(n => ({ v: n.v, d: mesafe6(n.p, pt) })).filter(x => x.d < 400).sort((a, b) => a.d - b.d).slice(0, 3).map(x => `${kN9(x.v)}@${Math.round(x.d)}m`).join(" ") || "-";
   // v135: iki parça uç uca gelse de ayrı yol mu? Birleşme yerinde 0+000 / proje başı varsa ya da km iki yana doğru da
   // artıyor / azalıyorsa (yolun bir ucu değil iki yolun başı) ayrı yoldur. Km eşitliği yakınındaysa ayırmaz.
@@ -9880,7 +9890,7 @@ function bkTeshis9(j, ek){
   let L = []; try{ bkModel9(jj); L = jj.__bkT9; }catch(e){ L = ["HATA: " + (e.message || e)]; }
   delete jj.__bkT9; if(eski) jj._bkM9 = eski;
   let Y = []; try{ Y = kbYollar9(jj).map(y => `${y.ad}${y.ana ? " (ana)" : ""}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))}`); }catch(_){}
-  return [`İşTakip boy kesit teşhisi · ${j.ad} · v236`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
+  return [`İşTakip boy kesit teşhisi · v237`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}

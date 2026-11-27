@@ -9579,9 +9579,9 @@ function bkOrtukEsit9(nok, cz, IE){
     let en = null; K.forEach((b2, bi) => { if(bi === ai || at.has(b2.q) || Math.abs(a.v - b2.v) < 0.05) return; const d = mesafe6(a.p, b2.p); if(d <= 25 && (!en || d < en.d)) en = { b: b2, d }; });
     if(!en) return; const b2 = en.b, P = [(a.p[0] + b2.p[0]) / 2, (a.p[1] + b2.p[1]) / 2];
     if(L9.length && yonlar(P) > 2) return;   // kavşak: eşitlik sayılmaz
-    // v241: işin itinereri varsa eşitlik ancak itinererde de varsa sayılır; G / İ itinererden alınır
-    if(IE){ const t = 0.3, uy = IE.find(p => (Math.abs(p.g - a.v) <= t && Math.abs(p.i - b2.v) <= t) || (Math.abs(p.g - b2.v) <= t && Math.abs(p.i - a.v) <= t));
-      if(!uy) return;
+    // v241: itinererde de varsa G / İ itinererden alınır. v246: itinererde yoksa da eşitlik sayılır (G / İ yanındaki km yazısından)
+    const uy = IE ? IE.find(p => (Math.abs(p.g - a.v) <= 0.3 && Math.abs(p.i - b2.v) <= 0.3) || (Math.abs(p.g - b2.v) <= 0.3 && Math.abs(p.i - a.v) <= 0.3)) : null;
+    if(uy){
       const [g2, i2] = Math.abs(uy.g - a.v) + Math.abs(uy.i - b2.v) <= Math.abs(uy.g - b2.v) + Math.abs(uy.i - a.v) ? [a.v, b2.v] : [b2.v, a.v];
       at.add(a.q); at.add(b2.q); const q = [P[0], P[1], `${kmT9(g2)} = ${kmT9(i2)}`]; q._e9 = 1; ek.push(q); return; }
     // G / İ: en yakın başka km yazısı hangi değere yakınsa o taraftadır; ondan küçükse o taraf öncedir (G)
@@ -9952,7 +9952,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v245`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v246`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}

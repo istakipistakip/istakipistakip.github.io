@@ -751,6 +751,10 @@ html.dark .hara, html.dark .honer{ background:#141c2b; } html.dark .hara input, 
 .olckart .bt{ display:grid; grid-template-columns:1fr 1fr 1.2fr; gap:6px; margin-top:8px; }
 .olckart .bt button{ border:1px solid #e2e8f0; background:#fff; border-radius:10px; padding:8px 4px; font-size:12.5px; font-weight:700; color:#334155; }
 .olckart .bt button.p{ background:#0f2440; color:#fff; border-color:#0f2440; }
+.olckart .bt button.k{ background:#facc15; color:#422006; border-color:#eab308; }
+.olckart .mod9{ margin:0 0 8px; } .olckart .sec9{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.olckart .sec9 button{ border:1px solid #e2e8f0; background:#f8fafc; border-radius:12px; padding:12px 10px; text-align:left; display:flex; flex-direction:column; gap:3px; color:#0f172a; } .olckart .sec9 b{ font-size:15px; } .olckart .sec9 small{ font-size:11px; color:#64748b; }
+html.dark .olckart .sec9 button{ background:#0b1220; border-color:#334155; color:#e6ebf3; }
 .olcet{ display:inline-block; transform:translate(-50%,-50%); background:#422006; color:#fde68a; font-size:11px; font-weight:800; border-radius:6px; padding:2px 6px; white-space:nowrap; }
 html.dark .olckart{ background:#141c2b; color:#e6ebf3; }
 /* itinerer genel bakış şeridi */
@@ -1388,12 +1392,12 @@ html, body{ touch-action:manipulation; }
 .hatv .sagk button{ width:48px; height:auto; min-height:36px; padding:4px 0 3px !important; flex-direction:column; gap:1px !important; }
 .hatv .sagk button svg, .hatv .sagk button svg.ik{ width:18px !important; height:18px !important; flex:none; }
 .hatv .sagk button[data-et]::after{ content:attr(data-et); display:block; font-size:8.5px !important; line-height:1.05; font-weight:700; letter-spacing:-.1px; color:#cbd5e1; white-space:nowrap; }
-.hatv .sagk button.on[data-et]::after, .hatv .sagk button.acik[data-et]::after{ color:#fff; }
+.hatv .sagk button.on[data-et]::after, .hatv .sagk button.acik[data-et]::after{ color:#fff; } .hatv .sagk button.olc-on[data-et]::after{ color:#422006; }
 .hatv .sagk .kat i{ top:0; right:4px; }
 /* v256: KMZ + itinerer çift ekran */
 .itp9{ position:absolute; left:0; right:0; bottom:0; height:42%; z-index:1002; background:#fff; color:#0f172a; border-radius:16px 16px 0 0; box-shadow:0 -6px 24px rgba(0,0,0,.35); display:flex; flex-direction:column; padding-bottom:env(safe-area-inset-bottom); }
 .itp9b{ display:flex; align-items:center; gap:6px; padding:2px 10px 7px; border-bottom:1px solid #e2e8f0; touch-action:none; }
-.itp9u{ position:absolute; left:0; right:0; top:-20px; height:20px; touch-action:none; } .itp9b{ position:relative; } .itp9d{ position:absolute; left:0; right:0; top:100%; height:20px; z-index:3; touch-action:none; }
+.itp9u{ position:absolute; left:0; right:0; height:20px; z-index:1003; touch-action:none; display:block; } .itp9b{ position:relative; } .itp9d{ position:absolute; left:0; right:0; top:100%; height:20px; z-index:3; touch-action:none; }
 .itp9g{ display:block; width:42px; height:5px; border-radius:3px; background:#cbd5e1; margin:7px auto 3px; flex:none; touch-action:none; cursor:ns-resize; } .itp9.cek{ transition:none; user-select:none; } .itp9b b{ flex:1; min-width:0; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .itp9b .itp9t{ flex:1; min-width:0; display:flex; flex-direction:column; } .itp9b .itp9t small{ font-size:10.5px; font-weight:700; color:#c2410c; } .itp9b .km{ font-size:13px; font-weight:800; color:#c2410c; white-space:nowrap; } .itp9b button{ width:30px; height:30px; flex:none; border:none; border-radius:9px; background:#f1f5f9; color:#334155; font-size:16px; font-weight:800; display:grid; place-items:center; padding:0; } .itp9b button svg{ width:16px; height:16px; }
 .itp9s{ display:flex; gap:6px; padding:6px 10px 0; overflow-x:auto; } .itp9s button{ flex:none; height:28px; padding:0 10px; border-radius:14px; border:1px solid #e2e8f0; background:#fff; font-size:12px; font-weight:700; color:#334155; } .itp9s button.on{ background:#1e3a5f; color:#fff; border-color:#1e3a5f; }
@@ -4980,7 +4984,7 @@ let olc = null;
 function olcBaslat(){
   const m = hatHarita; if(!m || !hatIs) return;
   if(olc){ olcBitir(); return; }
-  olc = { nok: [], tur: "kus", g: L.layerGroup().addTo(m) };
+  olc = { nok: [], tur: "kus", mod: null, kapali: false, g: L.layerGroup().addTo(m) };   // v263: mod: "uz" uzunluk / "alan"
   document.querySelector("[data-olc]")?.classList.add("olc-on");
   const v = document.getElementById("hatv");
   v.insertAdjacentHTML("beforeend", `<div class="olcust" id="olcust"><b>Mesafe ölçme açık</b><small>Haritaya dokunarak nokta ekleyin</small></div><div class="olckart" id="olckart"></div>`);
@@ -4996,7 +5000,21 @@ function olcBitir(){
   document.getElementById("olcust")?.remove(); document.getElementById("olckart")?.remove();
   const kk = document.getElementById("konumkart"); if(kk && kk.dataset.gizli !== undefined){ kk.style.display = kk.dataset.gizli; delete kk.dataset.gizli; }
 }
-function olcTik(e){ if(!olc) return; olc.nok.push([e.latlng.lat, e.latlng.lng]); olcCiz(); }
+function olcTik(e){
+  if(!olc || !olc.mod) return;
+  if(olc.mod === "alan"){
+    if(olc.kapali) return;
+    // ilk noktaya yakın (30 px) dokunuş alanı kapatır
+    if(olc.nok.length >= 3 && hatHarita){ const a = hatHarita.latLngToContainerPoint(olc.nok[0]), b = hatHarita.latLngToContainerPoint(e.latlng); if(a.distanceTo(b) < 30){ olc.kapali = true; olcCiz(); return; } }
+  }
+  olc.nok.push([e.latlng.lat, e.latlng.lng]); olcCiz();
+}
+// v263: alan (yerel düzlemde, metrekare) ve gösterimi
+function olcAlan9(P){ if(P.length < 3) return 0; const la0 = P[0][0] * Math.PI / 180, kx = 111320 * Math.cos(la0), ky = 110540; let t = 0;
+  for(let i = 0; i < P.length; i++){ const a = P[i], b = P[(i + 1) % P.length]; t += (a[1] * kx) * (b[0] * ky) - (b[1] * kx) * (a[0] * ky); } return Math.abs(t) / 2; }
+function alanYaz9(m2){ const f = (v, d) => v.toLocaleString("tr-TR", { maximumFractionDigits: d });
+  return m2 < 10000 ? f(Math.round(m2), 0) + " m²" : f(m2 / 10000, 2) + " ha"; }
+function alanAyrinti9(m2){ const f = (v, d) => v.toLocaleString("tr-TR", { maximumFractionDigits: d }); return `${f(Math.round(m2), 0)} m² · ${f(m2 / 1000, 2)} dönüm · ${f(m2 / 10000, 3)} ha`; }
 // Hatta yapış: v256 — noktalar işin birleştirilmiş yol modeline (boy kesitteki; parçalar birleşik, kollar ayrı) izdüşürülür,
 // mesafe aynı yol üzerinde yol boyunca; iki nokta farklı yollardaysa o aralık kuş uçuşu
 function hatYollari9(){
@@ -5030,6 +5048,27 @@ function olcCiz(){
   if(!olc) return;
   olc.g.clearLayers();
   const k = document.getElementById("olckart");
+  const ust0 = document.getElementById("olcust");
+  const modSec = `<div class="seg2 mod9"><button data-olcmod="uz"${olc.mod === "uz" ? ' class="on"' : ""}>Uzunluk</button><button data-olcmod="alan"${olc.mod === "alan" ? ' class="on"' : ""}>Alan</button></div>`;
+  if(!olc.mod){ if(ust0) ust0.innerHTML = "<b>Ölç</b><small>Ne ölçmek istiyorsunuz?</small>";
+    if(k) k.innerHTML = `<div class="sec9"><button data-olcmod="uz"><b>Uzunluk</b><small>Kuş uçuşu ya da yol boyunca</small></button><button data-olcmod="alan"><b>Alan</b><small>Köşelere dokunarak çevir</small></button></div><div class="bt"><span></span><span></span><button class="p" data-olcbitir>Kapat</button></div>`; return; }
+  if(olc.mod === "alan"){
+    const P = olc.nok, n = P.length, A = olcAlan9(P);
+    let cevre = 0; for(let i = 1; i < n; i++) cevre += haversine(P[i - 1], P[i]); if(olc.kapali && n > 2) cevre += haversine(P[n - 1], P[0]);
+    if(n >= 3) L.polygon(P, { color: "#facc15", weight: olc.kapali ? 3 : 0, fillColor: "#facc15", fillOpacity: olc.kapali ? .3 : .14, interactive: false }).addTo(olc.g);
+    if(n > 1) L.polyline(P, { color: "#facc15", weight: 3 }).addTo(olc.g);
+    if(n >= 3 && !olc.kapali) L.polyline([P[n - 1], P[0]], { color: "#facc15", weight: 2, dashArray: "6 6", opacity: .8 }).addTo(olc.g);
+    const kenar = (a, b) => { const ort = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; L.marker(ort, { icon: L.divIcon({ className: "", html: `<span class="olcet">${mesafe(haversine(a, b))}</span>`, iconSize: null }), interactive: false }).addTo(olc.g); };
+    for(let i = 1; i < n; i++) kenar(P[i - 1], P[i]); if(olc.kapali && n > 2) kenar(P[n - 1], P[0]);
+    P.forEach((q, i) => { if(i === 0 && !olc.kapali && n >= 3) L.circleMarker(q, { radius: 13, color: "#facc15", weight: 3, fillColor: "#422006", fillOpacity: .35, interactive: false }).addTo(olc.g);
+      L.circleMarker(q, { radius: i === 0 ? 8 : 6, color: "#422006", weight: 2, fillColor: "#facc15", fillOpacity: 1, interactive: false }).addTo(olc.g); });
+    if(ust0) ust0.innerHTML = olc.kapali ? "<b>Alan çevrildi</b><small>Geri al ile kapanış açılır</small>" : "<b>Alan ölçme açık</b><small>Köşelere dokunun · ilk noktaya dokununca kapanır</small>";
+    if(k) k.innerHTML = `${modSec}<div class="t"><b>${n >= 3 ? alanYaz9(A) : "–"}</b><span>${n} köşe · çevre ${n > 1 ? mesafe(cevre) : "–"}</span></div>
+<div class="s">${n >= 3 ? alanAyrinti9(A) + (olc.kapali ? "" : " (kapanınca kesinleşir)") : n ? "En az 3 köşe ekleyin" : "İlk köşeye dokunun"}</div>
+<div class="bt"><button data-olcgeri>↶ Geri al</button><button data-olcsil>Temizle</button>${!olc.kapali && n >= 3 ? `<button class="k" data-olckapat>Kapat</button>` : `<button class="p" data-olcbitir>Bitir</button>`}</div>`;
+    if(n && hatHarita && !olc.kapali){ const son = P[n - 1], pt = hatHarita.latLngToContainerPoint(son), H = document.getElementById("hatmap").clientHeight; if(pt.y > H - 250) hatHarita.panBy([0, pt.y - (H - 280)]); }
+    return;
+  }
   let toplam = 0, parca = [], kmA = null, kmB = null;
   if(olc.tur === "kus"){
     if(olc.nok.length > 1) L.polyline(olc.nok, { color: "#facc15", weight: 3, dashArray: "7 6" }).addTo(olc.g);
@@ -5052,7 +5091,7 @@ function olcCiz(){
   }
   const ust = document.getElementById("olcust");
   if(ust) ust.innerHTML = olc.tur === "kus" ? "<b>Mesafe ölçme açık</b><small>Haritaya dokunarak nokta ekleyin</small>" : "<b>Hatta yapış açık</b><small>Noktalar işin hattına oturur</small>";
-  if(k) k.innerHTML = `<div class="t"><b>${olc.nok.length > 1 ? mesafe(toplam) : "–"}</b><span>${olc.nok.length} nokta · ${olc.tur === "kus" ? "kuş uçuşu" : "yol boyunca" + (olc.kusVar ? " (farklı yollar arası kuş uçuşu)" : "")}</span></div>
+  if(k) k.innerHTML = `${modSec}<div class="t"><b>${olc.nok.length > 1 ? mesafe(toplam) : "–"}</b><span>${olc.nok.length} nokta · ${olc.tur === "kus" ? "kuş uçuşu" : "yol boyunca" + (olc.kusVar ? " (farklı yollar arası kuş uçuşu)" : "")}</span></div>
 <div class="s">${olc.tur === "hat" && kmA !== null && kmB !== null && kmA !== undefined && kmB !== undefined ? `Yaklaşık ${kmYaz(Math.min(kmA, kmB))} → ${kmYaz(Math.max(kmA, kmB))} arası` : parca.length > 1 ? "Parçalar: " + parca.map(mesafe).join(" · ") : olc.nok.length ? "Bir nokta daha ekleyin" : "İlk noktaya dokunun"}</div>
 <div class="seg2"><button data-olctur="kus"${olc.tur === "kus" ? ' class="on"' : ""}>Kuş uçuşu</button><button data-olctur="hat"${olc.tur === "hat" ? ' class="on"' : ""}>Hatta yapış</button></div>
 <div class="bt"><button data-olcgeri>↶ Geri al</button><button data-olcsil>Temizle</button><button class="p" data-olcbitir>Bitir</button></div>`;
@@ -5062,9 +5101,11 @@ function olcCiz(){
 document.addEventListener("click", e => {
   if(e.target.closest("[data-olc]")){ olcBaslat(); return; }
   if(!olc) return;
+  const md = e.target.closest("[data-olcmod]"); if(md){ if(olc.mod !== md.dataset.olcmod){ olc.mod = md.dataset.olcmod; olc.nok = []; olc.kapali = false; } olcCiz(); return; }
+  if(e.target.closest("[data-olckapat]")){ if(olc.nok.length >= 3){ olc.kapali = true; olcCiz(); } return; }
   const t = e.target.closest("[data-olctur]"); if(t){ olc.tur = t.dataset.olctur; olcCiz(); return; }
-  if(e.target.closest("[data-olcgeri]")){ olc.nok.pop(); olcCiz(); return; }
-  if(e.target.closest("[data-olcsil]")){ olc.nok = []; olcCiz(); return; }
+  if(e.target.closest("[data-olcgeri]")){ if(olc.kapali) olc.kapali = false; else olc.nok.pop(); olcCiz(); return; }
+  if(e.target.closest("[data-olcsil]")){ olc.nok = []; olc.kapali = false; olcCiz(); return; }
   if(e.target.closest("[data-olcbitir]")){ olcBitir(); }
 });
 
@@ -10139,7 +10180,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v262`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v263`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -13089,7 +13130,7 @@ function itiBandBul9(B, y){ let en = null, ed = Infinity; B.forEach((b, i) => { 
 let ITP9 = null;   // { j, kodlar, i, z, B, isaret }
 { const _hk256 = hatKapat; hatKapat = function(){ try{ itp9Kapat(); }catch(_){} return _hk256.apply(this, arguments); }; }
 function itp9Kapat(){
-  const p = document.getElementById("itp9"); if(p) p.remove();
+  const p = document.getElementById("itp9"); if(p) p.remove(); document.getElementById("itp9u")?.remove();
   const m = hatHarita; if(m && ITP9){ m.off("moveend", itp9Senk); if(ITP9.isaret) try{ m.removeLayer(ITP9.isaret); }catch(_){} }
   ITP9 = null; document.querySelector(".hatv [data-iti]")?.classList.remove("on");
   const kk = document.getElementById("konumkart"); if(kk && kk.dataset.gizli9 !== undefined){ kk.style.display = kk.dataset.gizli9; delete kk.dataset.gizli9; }
@@ -13101,7 +13142,7 @@ async function itp9Ac(j, git){
   itp9Kapat(); document.getElementById("bk6")?.remove(); try{ bkTemizle9(); }catch(_){}
   const kk = document.getElementById("konumkart"); if(kk){ kk.dataset.gizli9 = kk.style.display || ""; kk.style.display = "none"; }
   const p = document.createElement("div"); p.className = "itp9"; p.id = "itp9";
-  p.innerHTML = `<i class="itp9u"></i><i class="itp9g"></i><div class="itp9b"><i class="itp9d"></i><span class="itp9t"><b id="itp9ad"></b><small>Dokun → haritada göster</small></span><span class="km" id="itp9km"></span><button data-itp9z="0.8" aria-label="Uzaklaştır">−</button><button data-itp9z="1.25" aria-label="Yakınlaştır">+</button><button data-itp9tam aria-label="Tam ekran">⤢</button><button data-itp9x aria-label="Kapat">${IK("x")}</button></div>
+  p.innerHTML = `<i class="itp9g"></i><div class="itp9b"><i class="itp9d"></i><span class="itp9t"><b id="itp9ad"></b><small>Dokun → haritada göster</small></span><span class="km" id="itp9km"></span><button data-itp9z="0.8" aria-label="Uzaklaştır">−</button><button data-itp9z="1.25" aria-label="Yakınlaştır">+</button><button data-itp9tam aria-label="Tam ekran">⤢</button><button data-itp9x aria-label="Kapat">${IK("x")}</button></div>
 ${kodlar.length > 1 ? `<div class="itp9s">${kodlar.map((k, i) => `<button data-itp9s="${i}"${i ? "" : ' class="on"'}>${esc(kisaAd(D.iti.projeler[k].ad))}</button>`).join("")}</div>` : ""}
 <div class="itp9a" id="itp9a"><div class="itp9i" id="itp9i"><div id="itp9h"></div><i class="itp9c" id="itp9c"></i></div></div>`;
   hv.appendChild(p);
@@ -13173,9 +13214,14 @@ function itp9Dokun(a){
 // Tuşa dokunup çekmeden bırakmak tuşa basmaktır; parmak oynarsa panel kayar. İtinererin içi yalnız kendi içinde kayar.
 function itp9Cek(p){
   let y0 = null, h0 = 0, aday = null, kaydi = false;
-  const git = y => { const hv = document.getElementById("hatv"), H = hv ? hv.clientHeight : window.innerHeight; p.style.height = Math.max(70, Math.min(H * .85, h0 - (y - y0))) + "px"; };
+  const git = y => { const hv = document.getElementById("hatv"), H = hv ? hv.clientHeight : window.innerHeight; p.style.height = Math.max(70, Math.min(H * .85, h0 - (y - y0))) + "px"; if(p._ustYer9) p._ustYer9(); };
   const bit = () => { if(y0 === null) return; y0 = null; p.classList.remove("cek"); const h = p.getBoundingClientRect().height; if(h < 110){ itp9Kapat(); return; } itp9Boyut(); itp9Senk(); };
-  const alan = [p.querySelector(".itp9u"), p.querySelector(".itp9g"), p.querySelector(".itp9b")].filter(Boolean);   // v262: üstte 20 px (haritanın üstü), altta 20 px (itinererin en üstü) de tutma alanı
+  // v263: üstteki şerit panelin dışında, haritanın üstünde ayrı katman (iPhone panelin dışına taşan kısma dokunuşu vermiyor); panelin üst kenarını izler
+  document.getElementById("itp9u")?.remove();
+  const u = document.createElement("i"); u.className = "itp9u"; u.id = "itp9u"; (document.getElementById("hatv") || document.body).appendChild(u);
+  const ustYer = () => { if(!document.body.contains(p)){ u.remove(); return; } const r = p.getBoundingClientRect(), hv = (document.getElementById("hatv") || document.body).getBoundingClientRect(); u.style.top = (r.top - hv.top - 20) + "px"; };
+  ustYer(); p._ustYer9 = ustYer; try{ new ResizeObserver(ustYer).observe(p); }catch(_){}
+  const alan = [u, p.querySelector(".itp9g"), p.querySelector(".itp9b")].filter(Boolean);   // v262: üstte 20 px (haritanın üstü), altta 20 px (itinererin en üstü) de tutma alanı
   const dokundu = y => { aday = y; kaydi = false; };
   const hareket = y => { if(aday === null) return false; if(y0 === null){ if(Math.abs(y - aday) < 6) return false; y0 = aday; h0 = p.getBoundingClientRect().height; p.classList.add("cek"); kaydi = true; } git(y); return true; };
   const birak = () => { aday = null; bit(); };

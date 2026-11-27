@@ -12059,7 +12059,7 @@ function krSira9(L){
 }
 function krKart9(o, i){
   const j = o.j, cs = j.cats || [];
-  const bar = cs.map(c => { const yok = !(c.h > 0), p = yok ? 100 : Math.min(100, yuzde(c.b, c.h));
+  const bar = cs.map(c => { const yok = !(c.h > 0), p = yok ? (c.b > 0.004 ? 100 : 0) : Math.min(100, yuzde(c.b, c.h));
     return `<div class="kqb7"><div class="kqs7"><b>${esc(c.ad)}</b><i data-p="${yok ? -1 : yuzde(c.b, c.h)}">${yok ? "–" : "%0"}</i></div><div class="kqc7${yok ? " yok" : ""}"><i data-w="${p}"></i></div><small>Biten ${f2(c.b)} · Hedef ${c.h > 0 ? f2(c.h) : "–"} km</small></div>`; }).join("") || '<div class="kqbos7">Bu yıl için km bilgisi yok.</div>';
   const fh = fhYok9(j) ? '<span class="kqf7 yok">Fiziksel hedef yok</span>' : '';
   return `<div class="kqk7" data-kr9="${i}"><div class="kqh7"><div class="kqz7"><span>${esc(o.il || "")}</span></div><em class="kqil7">${esc(o.il || "–")}</em></div>
@@ -12192,15 +12192,15 @@ function krAc9(tur, kutu){
 .kqf7{ align-self:flex-start; font-size:11.5px; font-weight:800; color:#15803d; background:#dcfce7; border-radius:999px; padding:3px 9px; }
 .kqf7.yok{ color:#64748b; background:#f1f5f9; }
 .kqb7 .kqs7{ display:flex; justify-content:space-between; font-size:13px; color:#0f172a; } .kqb7 .kqs7 i{ font-style:normal; font-weight:800; color:#ea580c; }
-.kqb7 .kqc7{ height:8px; border-radius:6px; background:#e2e8f0; overflow:hidden; margin:4px 0 3px; } .kqb7 .kqc7 i{ display:block; height:100%; width:0; border-radius:6px; background:linear-gradient(90deg,#f97316,#ea580c); transition:width .7s cubic-bezier(.2,.8,.2,1); }
-.kqb7 .kqc7.yok i{ background:#94a3b8; }
+.kqb7 .kqc7{ height:8px; border-radius:6px; background:#2563eb; overflow:hidden; margin:4px 0 3px; } .kqb7 .kqc7 i{ display:block; height:100%; width:0; border-radius:6px 0 0 6px; background:#dc2626; transition:width .7s cubic-bezier(.2,.8,.2,1); }
+.kqb7 .kqc7 i[data-w="100"]{ border-radius:6px; } .kqb7 .kqc7.yok{ background:#e2e8f0; } .kqb7 .kqc7.yok i{ background:#dc2626; }
 .kqb7 small{ font-size:11.5px; color:#64748b; font-weight:600; }
 .kqbos7{ font-size:12.5px; color:#64748b; }
 .kqdt7{ font-size:12px; color:#ea580c; font-weight:700; margin-top:2px; }
 .isk117 .kqa7{ display:flex; align-items:center; gap:12px; padding:8px 22px 16px; color:#e2e8f0; font-size:12.5px; font-weight:700; opacity:0; transition:opacity .3s ease .1s; }
 .isk117.ac .kqa7{ opacity:1; }
 .kqi7{ flex:1; height:3px; border-radius:3px; background:rgba(255,255,255,.18); overflow:hidden; } .kqi7 i{ display:block; height:100%; width:0; background:#f97316; transition:width .25s ease; }
-html.dark .kqk7{ background:#0f172a; } html.dark .kqad7{ color:#f1f5f9; } html.dark .kqme7{ color:#94a3b8; } html.dark .kqb7 .kqs7{ color:#e2e8f0; } html.dark .kqb7 .kqc7{ background:#1e293b; } html.dark .kqf7.yok{ background:#1e293b; color:#94a3b8; } html.dark .kqf7{ background:#14532d; color:#bbf7d0; }
+html.dark .kqk7{ background:#0f172a; } html.dark .kqad7{ color:#f1f5f9; } html.dark .kqme7{ color:#94a3b8; } html.dark .kqb7 .kqs7{ color:#e2e8f0; } html.dark .kqb7 .kqc7.yok{ background:#1e293b; } html.dark .kqf7.yok{ background:#1e293b; color:#94a3b8; } html.dark .kqf7{ background:#14532d; color:#bbf7d0; }
 @media (prefers-reduced-motion: reduce){ .isk117 .kqt7, .kqz7 img, .kqb7 .kqc7 i{ transition:none !important; } }`;
   document.head.appendChild(st); })();
 

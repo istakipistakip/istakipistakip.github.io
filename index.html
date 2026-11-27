@@ -10011,6 +10011,12 @@ boyKesit = async function(j){
     { const h = bkSecHat9(j); bkVurgula9(h && !h.kol && B && (bkBol9.id === j.id ? bkBol9.b : 0) > 0 ? { ...h, kol: 1 } : h); } bkHaritaBagla9();
     p.querySelector("[data-bkkapat]")?.addEventListener("click", () => { bkVurguTemizle9(); bkSec9 = { id: null, k: -1 }; });
   }
+  // v239: tek yollu işte de (kol yokken) düzenleme modunda teşhis düğmesi
+  if(p && !(M && M.kollar.length) && typeof DUZ9 !== "undefined" && DUZ9 && YON9 && !p.querySelector("[data-bkteshis]")){
+    const d = document.createElement("div"); d.className = "bkk9"; d.innerHTML = `<button type="button" data-bkteshis><b>Teşhis kopyala</b></button>`;
+    (p.querySelector(".bkb9") || p.querySelector(".b1")).after(d);
+    d.addEventListener("click", e => { if(e.target.closest("[data-bkteshis]")){ e.stopPropagation(); teshisKopyala9(bkTeshis9(j)); } });
+  }
   if(p && B) p.querySelector("[data-bkkapat]")?.addEventListener("click", () => { bkVurguTemizle9(); bkBol9 = { id: null, b: 0 }; });
   return r;
 };

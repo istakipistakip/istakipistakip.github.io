@@ -9938,7 +9938,7 @@ function bkTeshis9(j, ek){
   let L = []; try{ bkModel9(jj); L = jj.__bkT9; }catch(e){ L = ["HATA: " + (e.message || e)]; }
   delete jj.__bkT9; if(eski) jj._bkM9 = eski;
   let Y = []; try{ Y = kbYollar9(jj).map(y => `${y.ad}${y.ana ? " (ana)" : ""}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))}`); }catch(_){}
-  return [`İşTakip boy kesit teşhisi · v242`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
+  return [`İşTakip boy kesit teşhisi · v243`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -10082,9 +10082,13 @@ function kmEsitDugme9(){
   v.querySelectorAll(".kes9, .kesl9").forEach(x => x.remove());
   const j = hatIs; if(!j || !j.hat) return;
   const kt = x => { const m = Math.round(x * 1000); return Math.floor(m / 1000) + "+" + String(m % 1000).padStart(3, "0"); };
-  const L = (j.hat.nok || []).map(q => { const e = bkEsit9(q[2]); return e ? { p: [q[0], q[1]], e } : null; }).filter(Boolean);
+  // v243: KMZ'de yazmayan, iki km yazısından bulunup itinererden teyit edilen eşitlikler de listelenir
+  let NK = j.hat.nok || []; try{ NK = bkOrtukEsit9(NK, anaCizgiler(j), itiEsit9(j)) || NK; }catch(_){}
+  const L = NK.map(q => { const e = bkEsit9(q[2]); return e ? { p: [q[0], q[1]], e } : null; }).filter(Boolean);
   if(!L.length) return;
   L.sort((a, b) => a.e.g - b.e.g);
+  // yol boyunca sırayla (ana yolun başından)
+  try{ const M = bkModel9(j); if(M && M.ana && M.ana.p){ const c = bkKum9(M.ana.p); L.forEach(x => { const r = bkYakin9(x.p, M.ana.p); x.s = r.d < 300 ? c[r.i] : Infinity; }); L.sort((a, b) => a.s - b.s || a.e.g - b.e.g); } }catch(_){}
   const solk = v.querySelector(".solk"); if(!solk) return;
   const b = document.createElement("button"); b.type = "button"; b.className = "kes9";
   b.innerHTML = `<span>=</span>Km eşitliği<i>${L.length}</i>`;

@@ -496,7 +496,9 @@ main.dolu > .pad{ display:flex; flex-direction:column; }
 .hsp{ flex:1; }
 .hb2 .hara.h9{ flex:1 1 0; min-width:0; cursor:pointer; } .hara.h9 .h9e{ flex:1; min-width:0; color:#e2e8f0; font-size:13.5px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
 .hara.h9 .h9t{ display:none; flex:none; margin-right:8px; font-style:normal; font-size:11px; font-weight:800; background:#ea580c; color:#fff; border-radius:7px; padding:2px 7px; pointer-events:none; } .hara.h9 .h9t.on{ display:block; }
-.hara.h9.acik .h9e, .hara.h9.acik .h9t{ display:none; } .honer button.h9o b{ color:#c2410c; } .honer button small mark{ background:#fef3c7; color:inherit; }
+.hara.h9.acik .h9e, .hara.h9.acik .h9t{ display:none; }
+.honer .h9b{ padding:10px; } .honer button.h9tb{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; height:42px; border-radius:11px; border:none; background:#ea580c; color:#fff; font-weight:800; font-size:14px; padding:0 12px; }
+.honer button.h9tb svg{ width:18px; height:18px; } .honer button.h9tb.on{ background:#fff7ed; color:#c2410c; border:1px solid #fdba74; } .honer button.h9o b{ color:#c2410c; } .honer button small mark{ background:#fef3c7; color:inherit; }
 .hseg{ display:flex; background:rgba(255,255,255,.12); border-radius:10px; padding:3px; flex:none; }
 .hseg button{ border:none; background:none; color:#cbd5e1; font-size:13px; font-weight:800; padding:6px 11px; border-radius:8px; }
 .hseg button.on{ background:#ea580c; color:#fff; }
@@ -3086,8 +3088,21 @@ function itiYazi9(t){
     .replace(/(\d)([A-ZÇĞİÖŞÜ]{3,})/g, "$1 $2")
     .replace(/([^\s(+\-·])\(/g, "$1 (");
 }
+// v250: birbirinin devamı olan yolların (KMZ'de km eşitliğiyle teyitli) birleşim km'leri — { bas: Map(km → öbür yolun sonu), son: Map(km → öbür yolun başı) }
+let ITI_ES9 = null;
+function zincirEtiket9(j){
+  const IE = itiEsit9(j); if(!IE || !IE.length || !j || !j.hat) return null;
+  const ME = []; (bkBolumler9(j) || [{ j }]).forEach(b => { const M = bkModel9(b.j); if(M) [M.ana].concat(M.kollar).forEach(h => (h.esit || []).forEach(e => ME.push(e))); });
+  const Y = []; try{ ytKodlar9(j).forEach(k => { const P = ytProje9(k); (P && Array.isArray(P.yollar) ? P.yollar : []).forEach(y => Y.push(y)); }); }catch(_){}
+  const bas = new Map(), son = new Map(), tek = (f, v) => Y.filter(y => Math.abs(+y[f] - v) < 1).length === 1;
+  IE.forEach(p => { if(!p.A || !p.B || !ME.some(e => Math.abs(e.g - p.g) <= 0.3 && Math.abs(e.i - p.i) <= 0.3)) return;
+    const g = Math.round(p.g * 1000), i = Math.round(p.i * 1000);
+    if(tek("bas", i)) bas.set(mKm9(i), mKm9(g)); if(tek("bit", g)) son.set(mKm9(g), mKm9(i)); });
+  return bas.size || son.size ? { bas, son } : null;
+}
 function itiDuzelt9(kok, j){
   if(!ITI_DUZ9 || !kok) return false;
+  ITI_ES9 = null; try{ ITI_ES9 = j ? zincirEtiket9(j) : null; }catch(_){}
   let degisti = false;
   kok.querySelectorAll("svg").forEach(svg => { if(svg.parentElement && svg.parentElement.closest("svg")) return;
     try{ if(j && itiBaslik9(svg, j)) degisti = true; }catch(_){}
@@ -3455,6 +3470,14 @@ function kmBirlestir9(kap, lab){
     const px = +P.getAttribute("x"); let en = null;
     lab.forEach(t => { if(!t.isConnected) return; const d = Math.abs(+t.getAttribute("x") - px); if(d <= 3 && (!en || d < en.d)) en = { t, d }; });
     if(!en) return; const eskiT = P.textContent; P.textContent = P.textContent.trim() + " " + en.t.textContent.trim();
+    // v250: birbirinin devamı olan yolların birleştiği uçta öbür yolun km'si km'nin altında, ortalı ve küçük: "(125+700)"
+    try{ const bas9 = /başı/i.test(eskiT), kmT = en.t.textContent.trim(), ob = ITI_ES9 && ITI_ES9[bas9 ? "bas" : "son"].get(kmT);
+      if(ob && dik){ const NS = "http://www.w3.org/2000/svg", fs = parseFloat(P.getAttribute("font-size")) || 12;
+        P.textContent = ""; const t1 = document.createElementNS(NS, "tspan"), t2 = document.createElementNS(NS, "tspan"), t3 = document.createElementNS(NS, "tspan");
+        t1.textContent = eskiT.trim() + " "; t2.textContent = kmT; t3.textContent = "(" + ob + ")"; P.append(t1, t2, t3);
+        t3.setAttribute("font-size", "78%"); t3.setAttribute("font-weight", "700"); t3.setAttribute("fill", "#475569"); t3.setAttribute("data-es9", "1");
+        const L2 = t2.getComputedTextLength(), W3 = t3.getComputedTextLength();
+        t3.setAttribute("dx", (-(L2 / 2) - W3 / 2 - 0).toFixed(1)); t3.setAttribute("dy", (fs * 1.05).toFixed(1)); } }catch(_){}
     if(!dik){ // v152: kol yolunda (ekranda yatay) — uzayan yazı şeride / başka yazıya binerse eski haline döner
       const sv = P.ownerSVGElement, r = P.getBoundingClientRect();
       const carp = [...sv.querySelectorAll("rect, text")].some(e => { if(e === P || e === en.t || e.closest("defs")) return false; const f = (e.getAttribute("fill") || "").trim();
@@ -4799,7 +4822,7 @@ function haraKapat9(){ const h = document.getElementById("hara"); if(!h) return;
 function haraOner9(ham){
   const o = document.getElementById("honer2"); if(!o) return;
   const q = fold(String(ham || "").trim());
-  const tum = `<button class="h9o" data-htum><b>${hatTum ? "Tüm İşler KMZ'yi kapat" : "Tüm İşler KMZ"}</b><small>${hatTum ? "açık" : "bütün işlerin hatları"}</small></button>`;
+  const tum = `<div class="h9b"><button class="h9tb${hatTum ? " on" : ""}" data-htum>${IK("lejant")}${hatTum ? "Tüm İşler KMZ'yi kapat" : "Tüm İşler KMZ"}</button></div>`;
   if(!q){ o.innerHTML = tum; return; }
   const l = ISLER.filter(x => x.hat && fold([x.ad, x.firma].join(" ")).includes(q)).slice(0, 8);
   o.innerHTML = l.length ? l.map(x => `<button data-hgit="${esc(x.id)}"><b>${vurgula(x.ad, ham.trim())}</b><small>${x.firma ? vurgula(x.firma, ham.trim()) : ""}</small></button>`).join("") : '<div class="hbos">KMZ\'si olan bu ad ya da firmayla iş yok</div>';
@@ -9966,7 +9989,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v249`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v250`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -11712,7 +11735,7 @@ function itiProje9(svg){
     return { x1, y1, x2, y2 }; };
   const T = [...svg.querySelectorAll("text")].filter(t => !t.closest("defs") && t.textContent.trim());
   let n = 0;
-  T.filter(t => /^(\d+\+\d{3}\s+)?Proje (başı|sonu)( \d+\+\d{3})?$/i.test(t.textContent.trim())).forEach(t => {
+  T.filter(t => /^(\d+\+\d{3}\s+)?Proje (başı|sonu)( \d+\+\d{3})?(\(\d+\+\d{3}\))?$/i.test(t.textContent.trim())).forEach(t => {
     const b = kutu(t), w = b.x2 - b.x1, h = b.y2 - b.y1; if(h < w) return;           // yalnız dik yazılar
     const yapisik = T.some(o => { if(o === t) return false; const c = kutu(o);
       return c.x1 < b.x2 - 1 && c.x2 > b.x1 + 1 && c.y1 < b.y2 + 8 && c.y2 > b.y1 - 8; });
@@ -11987,11 +12010,11 @@ function itiBoyut9(svg){
   // dik yazılar: Proje başı / sonu ve yapı yazıları
   T.forEach(t => {
     if(t.classList.contains("km-lab") || !/rotate\(\s*-?90/.test(t.getAttribute("transform") || "")) return;
-    const yapi = !!t.closest("g.yapi-etiket"), proje = /^(\d+\+\d{3}\s+)?Proje (başı|sonu)( \d+\+\d{3})?$/i.test(t.textContent.trim());
+    const yapi = !!t.closest("g.yapi-etiket"), proje = /^(\d+\+\d{3}\s+)?Proje (başı|sonu)( \d+\+\d{3})?(\(\d+\+\d{3}\))?$/i.test(t.textContent.trim());
     if(!yapi && !proje) return;
     const eski = +t.getAttribute("font-size") || 11, yeni = fsOf(t); if(!(yeni > eski + .5)) return;
     t.setAttribute("font-size", yeni);
-    const k = yeni / eski; t.querySelectorAll("tspan[dy]").forEach(x => x.setAttribute("dy", (+x.getAttribute("dy") * k).toFixed(1)));
+    const k = yeni / eski; t.querySelectorAll("tspan[dy]").forEach(x => x.setAttribute("dy", (+x.getAttribute("dy") * k).toFixed(1))); t.querySelectorAll("tspan[dx]").forEach(x => x.setAttribute("dx", (+x.getAttribute("dx") * k).toFixed(1)));
     n++;
   });
   return n > 0;

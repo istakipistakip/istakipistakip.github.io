@@ -496,7 +496,7 @@ main.dolu > .pad{ display:flex; flex-direction:column; }
 .hsp{ flex:1; }
 .hb2 .hara.h9{ flex:1 1 0; min-width:0; cursor:pointer; } .hara.h9 .h9e{ flex:1; min-width:0; color:#e2e8f0; font-size:13.5px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
 .hara.h9 .h9t{ display:none; flex:none; margin-right:8px; font-style:normal; font-size:11px; font-weight:800; background:#ea580c; color:#fff; border-radius:7px; padding:2px 7px; pointer-events:none; } .hara.h9 .h9t.on{ display:block; }
-.hara.h9.acik .h9e, .hara.h9.acik .h9t{ display:none; }
+.hara.h9 input{ display:block; color:#fff; } .hara.h9 input::placeholder{ color:#cbd5e1; } .hara.h9.acik input{ color:#0f172a; } .hara.h9.acik input::placeholder{ color:#94a3b8; }
 .honer .h9b{ padding:10px; } .honer button.h9tb{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; height:42px; border-radius:11px; border:none; background:#ea580c; color:#fff; font-weight:800; font-size:14px; padding:0 12px; }
 .honer button.h9tb svg{ width:18px; height:18px; } .honer button.h9tb.on{ background:#fff7ed; color:#c2410c; border:1px solid #fdba74; } .honer button.h9o b{ color:#c2410c; } .honer button small mark{ background:#fef3c7; color:inherit; }
 .hseg{ display:flex; background:rgba(255,255,255,.12); border-radius:10px; padding:3px; flex:none; }
@@ -2611,7 +2611,7 @@ async function hatGoster(id, korun){
   const katVar = (K.kmz && K.kmz.length) || (!document.body.classList.contains("y9-drone") && K.drone && K.drone.ucus && K.drone.ucus.length);
   const v = document.createElement("div"); v.className = "hatv"; v.id = "hatv";
   v.innerHTML = `<div class="hatbar hb2"><div class="hr1"><button class="x" data-hatkapat aria-label="Kapat">${IK("geri")}</button><div class="ad"><b>${hatTum ? "Tüm İşler KMZ" : esc(j.ad)}</b><small>${hatTum ? "Seçili: " + esc(j.ad) : esc([j.il.join(" · "), j.firma].filter(Boolean).join(" · ")) + " · KMZ"}</small></div></div>
-<div class="hr2"><div class="hara h9" id="hara"><button data-hara aria-label="İş ara">${IK("ara")}</button><span class="h9e">İş ara · Tüm İşler KMZ</span><i class="h9t${hatTum ? " on" : ""}">Tüm işler</i><input id="hara2" type="search" placeholder="İş ya da firma ara…" autocomplete="off"></div><button class="htum${hatTum ? " on" : ""}" data-htum style="display:none">${IK("lejant")}Tüm İşler KMZ</button><div class="hseg"><button data-hmod="2b"${hatMod === "2b" ? ' class="on"' : ""}>2B</button><button data-hmod="3b"${hatMod === "3b" ? ' class="on"' : ""}>3B</button></div></div><div class="honer" id="honer2"></div></div>
+<div class="hr2"><div class="hara h9" id="hara"><button data-hara aria-label="İş ara">${IK("ara")}</button><input id="hara2" type="search" placeholder="İş / firma ara" autocomplete="off"></div><button class="htum${hatTum ? " on" : ""}" data-htum>${IK("lejant")}Tüm İşler</button><div class="hseg"><button data-hmod="2b"${hatMod === "2b" ? ' class="on"' : ""}>2B</button><button data-hmod="3b"${hatMod === "3b" ? ' class="on"' : ""}>3B</button></div></div><div class="honer" id="honer2"></div></div>
 <div class="hatmap etiketsiz" id="hatmap"></div><div class="hat3b" id="hat3b" hidden></div>
 <div class="katman"><button data-katman="sokak">Sokak</button><button data-katman="uydu" class="on">Uydu</button></div>
 <div class="sagk">${katVar ? `<button class="kat" data-katlar aria-label="Katmanlar">${IK("katman")}Katmanlar<i id="katsay">0</i></button><span class="ayr"></span>` : ""}<button data-konumum aria-label="Konumum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 4 3.5 10.6l6.9 2.6 2.6 6.9z" fill="currentColor" fill-opacity=".18"/></svg></button><button data-yola aria-label="Yol hattına dön">${IK("yol")}</button><button data-boykesit aria-label="Boy kesit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="M3 16l4-6 4 3 4-7 6 10"/></svg></button>${(() => { try{ return itiVar(j) ? `<button data-iti="${esc(j.id)}" aria-label="İtinerer">${IK("iti")}</button>` : ""; }catch(_){ return ""; } })()}<span class="ayr"></span><button data-olc aria-label="Mesafe ölç">${IK("cetvel")}</button><button data-yt="${esc(j.id)}" aria-label="Yol tarifi">${IK("yt")}</button><button data-kmzindir aria-label="KMZ indir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></button><span class="ayr"></span><button class="egm" data-egim aria-label="Eğik / tepeden">${IK("egim")}</button><button data-gez aria-label="Yolu gez"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 9 3M19 21 15 3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></svg></button></div><button class="pus" data-kuzey aria-label="Kuzeyi yukarı al">${PUSULA}</button>
@@ -4756,18 +4756,27 @@ function tumIslerCiz(){
   if(tumGrup){ m.removeLayer(tumGrup); tumGrup = null; }
   if(!hatTum) return;
   tumGrup = L.layerGroup().addTo(m);
-  ISLER.forEach(x => { if(!x.hat || x === hatIs) return;
+  // v251: işler parça parça çizilir (ekran donmasın); önce haritanın ortasına yakın olanlar
+  const grp = tumGrup, tur = ++tumTur9, mc = m.getCenter();
+  const L0 = ISLER.filter(x => x.hat && x !== hatIs && x.hat.cizgi && x.hat.cizgi.length).map(x => { const q = (x.hat.cizgi[0].p || [])[0] || [0, 0]; return { x, d: (q[0] - mc.lat) ** 2 + (q[1] - mc.lng) ** 2 }; }).sort((a, b) => a.d - b.d).map(o => o.x);
+  let sira = 0;
+  const adim = () => { if(tur !== tumTur9 || tumGrup !== grp) return; const t0 = performance.now();
+    while(sira < L0.length && performance.now() - t0 < 30){ try{ ciz1(L0[sira]); }catch(_){} sira++; }
+    if(sira < L0.length) setTimeout(adim, 0); else if(uc) try{ uc.guncelle(); }catch(_){} };
+  const ciz1 = x => { const tumGrup = grp;
     const czP = (p, r, w) => { if(p.length < 2) return; L.polyline(p, { color: r, weight: w, opacity: .6, isId: x.id }).on("click", e => { L.DomEvent.stopPropagation(e); tumSec(x.id); }).addTo(tumGrup); };
     const cz = c => czP(c.p, c.r, c.i ? 2 : 5);
     const tik = e => { L.DomEvent.stopPropagation(e); tumSec(x.id); };
-    let ok10 = false; try{ ok10 = kbCiz10(m, tumGrup, x, 5, 2, { op: .6, isId: x.id, tik }); }catch(_){ ok10 = false; }
+    let ok10 = false; try{ ok10 = kbCiz10(m, tumGrup, x, 5, 2, { op: .6, isId: x.id, tik, hafif: 1 }); }catch(_){ ok10 = false; }
     if(!ok10){
       x.hat.cizgi.filter(c => !c.i).forEach(cz);
       try{ kmzBoya9(tumGrup, x, { w: 5, op: .6, isId: x.id, tik }); }catch(_){}
       x.hat.cizgi.filter(c => c.i).forEach(cz);
-    } });
+    } };
+  adim();
   tumSecili = hatIs.id;
 }
+let tumTur9 = 0;
 // Tüm İşler: bir hatta dokununca doğrudan o işe gidilir (pencere yok)
 function tumSec(id){ if(byId(id) && (!hatIs || id !== hatIs.id)) hatGoster(id, true); }
 // Hatta (2B ya da 3B) basılı tutunca: KM + Buraya yol tarifi + koordinat
@@ -4822,8 +4831,7 @@ function haraKapat9(){ const h = document.getElementById("hara"); if(!h) return;
 function haraOner9(ham){
   const o = document.getElementById("honer2"); if(!o) return;
   const q = fold(String(ham || "").trim());
-  const tum = `<div class="h9b"><button class="h9tb${hatTum ? " on" : ""}" data-htum>${IK("lejant")}${hatTum ? "Tüm İşler KMZ'yi kapat" : "Tüm İşler KMZ"}</button></div>`;
-  if(!q){ o.innerHTML = tum; return; }
+  if(!q){ o.innerHTML = ""; return; }
   const l = ISLER.filter(x => x.hat && fold([x.ad, x.firma].join(" ")).includes(q)).slice(0, 8);
   o.innerHTML = l.length ? l.map(x => `<button data-hgit="${esc(x.id)}"><b>${vurgula(x.ad, ham.trim())}</b><small>${x.firma ? vurgula(x.firma, ham.trim()) : ""}</small></button>`).join("") : '<div class="hbos">KMZ\'si olan bu ad ya da firmayla iş yok</div>';
 }
@@ -9989,7 +9997,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v250`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v251`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -12759,7 +12767,10 @@ function kbCiz10(m, hedef, j, W, WB, o){
   // v241: kırmızı / mavi yan yana: kırmızının yanında mavi yok
   // v242: işin itinereri varsa KMZ'nin kendi renklerine bakılmaz — boyanmayan her yer "yapılacak" mavisi, beyaz orta çizgi
   // bütün yol boyunca (TY değilse); kırmızı yalnız itinererden ve girilen KM'lerden gelir
-  const yarimK = [], iti9 = itiModu9(j), bz9 = iti9 && beyazOl9(j), cizK = iti9 ? (L0, f) => kmzItiMavi9(L0, renkli).forEach(x => f(x.p, x.r, 0, x)) : kmzKirMavi9;
+  // v251: Tüm İşler KMZ'deki öbür işler hafif çizilir (yan yana kırmızı / mavi incelemesi ve boşluk doldurma yalnız seçili işte) — donmasın
+  const mvH = ((renkli || []).find(c => kmzTon9(c.r) === "m") || {}).r || "#1e40ff";
+  const yarimK = [], iti9 = itiModu9(j), bz9 = iti9 && beyazOl9(j), cizK = o.hafif ? (L0, f) => L0.forEach(x => { if(iti9 && kmzTon9(x.r) === "k") return; f(x.p, iti9 ? mvH : x.r, 0, x); })
+    : iti9 ? (L0, f) => kmzItiMavi9(L0, renkli).forEach(x => f(x.p, x.r, 0, x)) : kmzKirMavi9;
   cizK(kalan, (pp, r, yan, x) => {
     if(bz9 && !yan) beyazK.push(pp);
     const { uz, u0, u1 } = x; let ly;
@@ -12775,7 +12786,7 @@ function kbCiz10(m, hedef, j, W, WB, o){
   dolgu.forEach(d => parcalar.push(d));
   // v248: KMZ'de çizgi olmayan boşluklar (proje başı / sonu ile çizginin ucu arası, yol ortasındaki kopukluklar) itinererde o km varsa
   // itinerer rengiyle düz çizgi olarak doldurulur
-  if(iti9) try{ kbBoslukDoldur9(j, bolgeler, YY).forEach(t => parcalar.push(t)); }catch(_){}
+  if(iti9 && !o.hafif) try{ kbBoslukDoldur9(j, bolgeler, YY).forEach(t => parcalar.push(t)); }catch(_){}
   // 4) boyalı parçalar — boyasız yarı: yakındaki KMZ çizgisinin rengi
   // boyasız yarı her zaman "yapılacak" mavisi (KMZ'deki maviye en yakın renk; yoksa standart mavi)
   const MAVI = (() => { let en = 1e9, r = "#1e40ff"; renkli.forEach(c => { const m2 = /^#?([0-9a-f]{6})$/i.exec(String(c.r || "").trim()); if(!m2) return; const n = parseInt(m2[1], 16), R = n >> 16, Gc = (n >> 8) & 255, B = n & 255;

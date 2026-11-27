@@ -752,7 +752,12 @@ html.dark .hara, html.dark .honer{ background:#141c2b; } html.dark .hara input, 
 .olckart .bt button{ border:1px solid #e2e8f0; background:#fff; border-radius:10px; padding:8px 4px; font-size:12.5px; font-weight:700; color:#334155; }
 .olckart .bt button.p{ background:#0f2440; color:#fff; border-color:#0f2440; }
 .olckart .bt button.k{ background:#facc15; color:#422006; border-color:#eab308; }
-.olckart .mod9{ margin:0 0 8px; } .olckart .sec9{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.olckart .mod9{ margin:0 0 8px; } .olckart{ z-index:1004 !important; }
+.olcsec9{ position:absolute; z-index:1005; display:flex; flex-direction:column; gap:2px; padding:5px; border-radius:16px; background:rgba(12,18,34,.92); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.14); box-shadow:0 10px 28px rgba(0,0,0,.45); width:214px; animation:olcsec9 .14s ease-out; }
+@keyframes olcsec9{ from{ opacity:0; transform:translateX(8px) scale(.97); } to{ opacity:1; transform:none; } }
+.olcsec9 button{ display:flex; align-items:center; gap:10px; padding:9px 10px; border:none; border-radius:11px; background:none; color:#e2e8f0; text-align:left; }
+.olcsec9 button:active{ background:rgba(250,204,21,.16); } .olcsec9 i{ width:34px; height:34px; flex:none; border-radius:10px; background:#facc15; color:#422006; display:grid; place-items:center; } .olcsec9 i svg{ width:19px; height:19px; }
+.olcsec9 span{ display:flex; flex-direction:column; gap:1px; min-width:0; } .olcsec9 b{ font-size:14px; } .olcsec9 small{ font-size:11px; color:#94a3b8; } .olckart .sec9{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .olckart .sec9 button{ border:1px solid #e2e8f0; background:#f8fafc; border-radius:12px; padding:12px 10px; text-align:left; display:flex; flex-direction:column; gap:3px; color:#0f172a; } .olckart .sec9 b{ font-size:15px; } .olckart .sec9 small{ font-size:11px; color:#64748b; }
 html.dark .olckart .sec9 button{ background:#0b1220; border-color:#334155; color:#e6ebf3; }
 .olcet{ display:inline-block; transform:translate(-50%,-50%); background:#422006; color:#fde68a; font-size:11px; font-weight:800; border-radius:6px; padding:2px 6px; white-space:nowrap; }
@@ -1397,7 +1402,7 @@ html, body{ touch-action:manipulation; }
 /* v256: KMZ + itinerer çift ekran */
 .itp9{ position:absolute; left:0; right:0; bottom:0; height:42%; z-index:1002; background:#fff; color:#0f172a; border-radius:16px 16px 0 0; box-shadow:0 -6px 24px rgba(0,0,0,.35); display:flex; flex-direction:column; padding-bottom:env(safe-area-inset-bottom); }
 .itp9b{ display:flex; align-items:center; gap:6px; padding:2px 10px 7px; border-bottom:1px solid #e2e8f0; touch-action:none; }
-.itp9u{ position:absolute; left:0; right:0; height:20px; z-index:1003; touch-action:none; display:block; } .itp9b{ position:relative; } .itp9d{ position:absolute; left:0; right:0; top:100%; height:20px; z-index:3; touch-action:none; }
+.itp9b{ position:relative; } .itp9d{ position:absolute; left:0; right:0; top:100%; height:20px; z-index:3; touch-action:none; }
 .itp9g{ display:block; width:42px; height:5px; border-radius:3px; background:#cbd5e1; margin:7px auto 3px; flex:none; touch-action:none; cursor:ns-resize; } .itp9.cek{ transition:none; user-select:none; } .itp9b b{ flex:1; min-width:0; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .itp9b .itp9t{ flex:1; min-width:0; display:flex; flex-direction:column; } .itp9b .itp9t small{ font-size:10.5px; font-weight:700; color:#c2410c; } .itp9b .km{ font-size:13px; font-weight:800; color:#c2410c; white-space:nowrap; } .itp9b button{ width:30px; height:30px; flex:none; border:none; border-radius:9px; background:#f1f5f9; color:#334155; font-size:16px; font-weight:800; display:grid; place-items:center; padding:0; } .itp9b button svg{ width:16px; height:16px; }
 .itp9s{ display:flex; gap:6px; padding:6px 10px 0; overflow-x:auto; } .itp9s button{ flex:none; height:28px; padding:0 10px; border-radius:14px; border:1px solid #e2e8f0; background:#fff; font-size:12px; font-weight:700; color:#334155; } .itp9s button.on{ background:#1e3a5f; color:#fff; border-color:#1e3a5f; }
@@ -4997,7 +5002,7 @@ function olcBitir(){
   if(olc && m){ m.removeLayer(olc.g); m.off("click", olcTik); }
   olc = null;
   document.querySelector("[data-olc]")?.classList.remove("olc-on");
-  document.getElementById("olcust")?.remove(); document.getElementById("olckart")?.remove();
+  document.getElementById("olcust")?.remove(); document.getElementById("olckart")?.remove(); document.getElementById("olcsec9")?.remove();
   const kk = document.getElementById("konumkart"); if(kk && kk.dataset.gizli !== undefined){ kk.style.display = kk.dataset.gizli; delete kk.dataset.gizli; }
 }
 function olcTik(e){
@@ -5008,6 +5013,11 @@ function olcTik(e){
     if(olc.nok.length >= 3 && hatHarita){ const a = hatHarita.latLngToContainerPoint(olc.nok[0]), b = hatHarita.latLngToContainerPoint(e.latlng); if(a.distanceTo(b) < 30){ olc.kapali = true; olcCiz(); return; } }
   }
   olc.nok.push([e.latlng.lat, e.latlng.lng]); olcCiz();
+}
+// v264: itinerer paneli açıksa ölçüm kartı ve üst yazı panelin hemen üstünde
+function olcKartYer9(){
+  const k = document.getElementById("olckart"); if(!k) return; const p = document.getElementById("itp9");
+  k.style.bottom = p ? (p.getBoundingClientRect().height + 10) + "px" : "";
 }
 // v263: alan (yerel düzlemde, metrekare) ve gösterimi
 function olcAlan9(P){ if(P.length < 3) return 0; const la0 = P[0][0] * Math.PI / 180, kx = 111320 * Math.cos(la0), ky = 110540; let t = 0;
@@ -5046,12 +5056,19 @@ function hatParcasi(a, b){
 }
 function olcCiz(){
   if(!olc) return;
-  olc.g.clearLayers();
+  olc.g.clearLayers(); setTimeout(() => { try{ olcKartYer9(); }catch(_){} }, 0);
   const k = document.getElementById("olckart");
   const ust0 = document.getElementById("olcust");
   const modSec = `<div class="seg2 mod9"><button data-olcmod="uz"${olc.mod === "uz" ? ' class="on"' : ""}>Uzunluk</button><button data-olcmod="alan"${olc.mod === "alan" ? ' class="on"' : ""}>Alan</button></div>`;
-  if(!olc.mod){ if(ust0) ust0.innerHTML = "<b>Ölç</b><small>Ne ölçmek istiyorsunuz?</small>";
-    if(k) k.innerHTML = `<div class="sec9"><button data-olcmod="uz"><b>Uzunluk</b><small>Kuş uçuşu ya da yol boyunca</small></button><button data-olcmod="alan"><b>Alan</b><small>Köşelere dokunarak çevir</small></button></div><div class="bt"><span></span><span></span><button class="p" data-olcbitir>Kapat</button></div>`; return; }
+  // v264: seçim Ölç tuşunun yanında küçük menü olarak; kart ve üst yazı seçimden sonra
+  document.getElementById("olcsec9")?.remove();
+  if(!olc.mod){ if(ust0) ust0.style.display = "none"; if(k) k.style.display = "none";
+    const bt = document.querySelector(".hatv [data-olc]"), hv = document.getElementById("hatv"); if(bt && hv){ const r = bt.getBoundingClientRect(), h = hv.getBoundingClientRect();
+      const d = document.createElement("div"); d.className = "olcsec9"; d.id = "olcsec9"; d.style.top = Math.max(8, r.top - h.top - 6) + "px"; d.style.right = (h.right - r.left + 8) + "px";
+      d.innerHTML = `<button data-olcmod="uz"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21z"/><path d="m7 13 2 2M10 10l2 2M13 7l2 2"/></svg></i><span><b>Uzunluk</b><small>Kuş uçuşu ya da yol boyunca</small></span></button><button data-olcmod="alan"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7 12 3l8 5-2 11-11 1z"/><circle cx="4" cy="7" r="1.6" fill="currentColor"/><circle cx="12" cy="3" r="1.6" fill="currentColor"/><circle cx="20" cy="8" r="1.6" fill="currentColor"/><circle cx="18" cy="19" r="1.6" fill="currentColor"/><circle cx="7" cy="20" r="1.6" fill="currentColor"/></svg></i><span><b>Alan</b><small>Köşelere dokunarak çevir</small></span></button>`;
+      hv.appendChild(d); }
+    return; }
+  if(ust0) ust0.style.display = ""; if(k) k.style.display = "";
   if(olc.mod === "alan"){
     const P = olc.nok, n = P.length, A = olcAlan9(P);
     let cevre = 0; for(let i = 1; i < n; i++) cevre += haversine(P[i - 1], P[i]); if(olc.kapali && n > 2) cevre += haversine(P[n - 1], P[0]);
@@ -5101,6 +5118,7 @@ function olcCiz(){
 document.addEventListener("click", e => {
   if(e.target.closest("[data-olc]")){ olcBaslat(); return; }
   if(!olc) return;
+  if(!olc.mod && !e.target.closest("#olcsec9")){ olcBitir(); return; }
   const md = e.target.closest("[data-olcmod]"); if(md){ if(olc.mod !== md.dataset.olcmod){ olc.mod = md.dataset.olcmod; olc.nok = []; olc.kapali = false; } olcCiz(); return; }
   if(e.target.closest("[data-olckapat]")){ if(olc.nok.length >= 3){ olc.kapali = true; olcCiz(); } return; }
   const t = e.target.closest("[data-olctur]"); if(t){ olc.tur = t.dataset.olctur; olcCiz(); return; }
@@ -10180,7 +10198,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v263`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v264`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -13130,7 +13148,7 @@ function itiBandBul9(B, y){ let en = null, ed = Infinity; B.forEach((b, i) => { 
 let ITP9 = null;   // { j, kodlar, i, z, B, isaret }
 { const _hk256 = hatKapat; hatKapat = function(){ try{ itp9Kapat(); }catch(_){} return _hk256.apply(this, arguments); }; }
 function itp9Kapat(){
-  const p = document.getElementById("itp9"); if(p) p.remove(); document.getElementById("itp9u")?.remove();
+  const p = document.getElementById("itp9"); if(p){ try{ p._temizle9 && p._temizle9(); }catch(_){} p.remove(); } setTimeout(() => { try{ olcKartYer9(); }catch(_){} }, 0);
   const m = hatHarita; if(m && ITP9){ m.off("moveend", itp9Senk); if(ITP9.isaret) try{ m.removeLayer(ITP9.isaret); }catch(_){} }
   ITP9 = null; document.querySelector(".hatv [data-iti]")?.classList.remove("on");
   const kk = document.getElementById("konumkart"); if(kk && kk.dataset.gizli9 !== undefined){ kk.style.display = kk.dataset.gizli9; delete kk.dataset.gizli9; }
@@ -13214,16 +13232,23 @@ function itp9Dokun(a){
 // Tuşa dokunup çekmeden bırakmak tuşa basmaktır; parmak oynarsa panel kayar. İtinererin içi yalnız kendi içinde kayar.
 function itp9Cek(p){
   let y0 = null, h0 = 0, aday = null, kaydi = false;
-  const git = y => { const hv = document.getElementById("hatv"), H = hv ? hv.clientHeight : window.innerHeight; p.style.height = Math.max(70, Math.min(H * .85, h0 - (y - y0))) + "px"; if(p._ustYer9) p._ustYer9(); };
+  const git = y => { const hv = document.getElementById("hatv"), H = hv ? hv.clientHeight : window.innerHeight; p.style.height = Math.max(70, Math.min(H * .85, h0 - (y - y0))) + "px"; try{ olcKartYer9(); }catch(_){} };
   const bit = () => { if(y0 === null) return; y0 = null; p.classList.remove("cek"); const h = p.getBoundingClientRect().height; if(h < 110){ itp9Kapat(); return; } itp9Boyut(); itp9Senk(); };
-  // v263: üstteki şerit panelin dışında, haritanın üstünde ayrı katman (iPhone panelin dışına taşan kısma dokunuşu vermiyor); panelin üst kenarını izler
-  document.getElementById("itp9u")?.remove();
-  const u = document.createElement("i"); u.className = "itp9u"; u.id = "itp9u"; (document.getElementById("hatv") || document.body).appendChild(u);
-  const ustYer = () => { if(!document.body.contains(p)){ u.remove(); return; } const r = p.getBoundingClientRect(), hv = (document.getElementById("hatv") || document.body).getBoundingClientRect(); u.style.top = (r.top - hv.top - 20) + "px"; };
-  ustYer(); p._ustYer9 = ustYer; try{ new ResizeObserver(ustYer).observe(p); }catch(_){}
-  const alan = [u, p.querySelector(".itp9g"), p.querySelector(".itp9b")].filter(Boolean);   // v262: üstte 20 px (haritanın üstü), altta 20 px (itinererin en üstü) de tutma alanı
+  // v264: panelin üst kenarının 24 px üstüne gelen dokunuş en dışta (KMZ ekranında, yakalama aşamasında) alınır — harita ya da başka katman
+  // dokunuşu önce kapmasın; hangi katmana denk gelirse gelsin panel kayar
+  const hv0 = document.getElementById("hatv");
+  const ustte = y => { const r = p.getBoundingClientRect(); return y >= r.top - 24 && y < r.top + 2; };
+  const yT = e => { if(e.touches.length !== 1 || !ustte(e.touches[0].clientY)) return; e.stopPropagation(); dokundu(e.touches[0].clientY); dis = true; };
+  const yM = e => { if(!dis) return; e.stopPropagation(); if(e.touches.length === 1 && hareket(e.touches[0].clientY, true)) e.preventDefault(); };
+  const yE = e => { if(!dis) return; dis = false; e.stopPropagation(); birak(); };
+  const yP = e => { if(e.pointerType !== "mouse" && ustte(e.clientY)) e.stopPropagation(); };
+  let dis = false;
+  if(hv0){ hv0.addEventListener("touchstart", yT, { capture: true, passive: true }); hv0.addEventListener("touchmove", yM, { capture: true, passive: false });
+    hv0.addEventListener("touchend", yE, true); hv0.addEventListener("touchcancel", yE, true); hv0.addEventListener("pointerdown", yP, true);
+    p._temizle9 = () => { hv0.removeEventListener("touchstart", yT, true); hv0.removeEventListener("touchmove", yM, true); hv0.removeEventListener("touchend", yE, true); hv0.removeEventListener("touchcancel", yE, true); hv0.removeEventListener("pointerdown", yP, true); }; }
+  const alan = [p.querySelector(".itp9g"), p.querySelector(".itp9b")].filter(Boolean);   // v262: üstte 20 px (haritanın üstü), altta 20 px (itinererin en üstü) de tutma alanı
   const dokundu = y => { aday = y; kaydi = false; };
-  const hareket = y => { if(aday === null) return false; if(y0 === null){ if(Math.abs(y - aday) < 6) return false; y0 = aday; h0 = p.getBoundingClientRect().height; p.classList.add("cek"); kaydi = true; } git(y); return true; };
+  const hareket = (y, dis) => { if(aday === null) return false; if(y0 === null){ const d = Math.abs(y - aday); if(d < (dis ? 2 : 6)) return d >= 3; y0 = aday; h0 = p.getBoundingClientRect().height; p.classList.add("cek"); kaydi = true; } git(y); return true; };
   const birak = () => { aday = null; bit(); };
   alan.forEach(el => {
     el.addEventListener("touchstart", e => { if(e.touches.length === 1) dokundu(e.touches[0].clientY); else aday = null; }, { passive: true });

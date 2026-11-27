@@ -9943,16 +9943,16 @@ function bkTeshis9(j, ek){
   try{ const IE = itiEsit9(jj); B.push("İtinerer: " + (IE === null ? "yok" : (IE.length ? IE.filter(p => p.m || p.A).slice(0, 12).map(p => `${kmT9(p.g)} = ${kmT9(p.i)}${p.m ? " (liste)" : ""}`).join(" | ") : "eşitlik yok")) + " · KMZ'yi itinerer boyar: " + (itiModu9(jj) ? "evet" : "hayır"));
     const YY = kbYollar9(jj), kmc = (yo, c) => { const S = yo.S; let k = 0; while(k < S.length - 2 && S[k + 1].c < c) k++; const a = S[k], b = S[k + 1] || a; return b.c > a.c ? a.m + (b.m - a.m) * (c - a.c) / (b.c - a.c) : a.m; };
     YY.forEach(yo => { const Es = (yo.h.esit || []).slice().sort((a, b) => a.c - b.c), K = Es.map(() => 0).concat([0]).map(() => [Infinity, -Infinity]);
-      yo.S.forEach(s => { let n = 0; Es.forEach(e => { if(e.c <= s.c) n++; }); K[n][0] = Math.min(K[n][0], s.m); K[n][1] = Math.max(K[n][1], s.m); });
+      yo.S.forEach(s => { let n = s.n != null ? Math.min(s.n, Es.length) : 0; if(s.n == null) Es.forEach(e => { if(e.c <= s.c) n++; }); K[n][0] = Math.min(K[n][0], s.m); K[n][1] = Math.max(K[n][1], s.m); });
       B.push(`${yo.ad} kesimleri: ` + K.map((k, n) => `${n}: ${Number.isFinite(k[0]) ? mKm9(Math.round(k[0])) + "–" + mKm9(Math.round(k[1])) : "-"}`).join(" | ")); });
     const gor = new Map();
     kbHesap9(jj).forEach(s => { const x = s.kay || {}, k = x.k || {}, yo = YY.find(y => y.h === s.h); if(!yo) return;
-      let n = 0; (s.h.esit || []).forEach(e => { if(e.c <= s.c0) n++; });
+      const cm = (s.c0 + s.c1) / 2, so = yo.S.reduce((b, q) => Math.abs(q.c - cm) < Math.abs(b.c - cm) ? q : b, yo.S[0]); const n = so && so.n != null ? so.n : 0;
       const ad = k._iti9 ? `itinerer ${k.yid || "yol1"} ${mKm9(x.a)}–${mKm9(x.e)}${k.ac ? " " + k.ac : ""}` : `KM girişi ${k.a || ""}–${k.e || ""}${k.ac ? " " + k.ac : ""}${k.t ? " " + String(k.t).slice(0, 10) : ""}${k.zc ? " (" + k.zc + ")" : ""}${k.yl ? " yol:" + k.yl : ""}`;
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v244`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v245`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -11284,9 +11284,10 @@ function kbAralik9(h, S, a, e, zc, yb){
   // v241: yol km eşitlikleriyle kesimlere ayrılır (eşitlikten eşitliğe). Aynı km iki kesimde de varsa (ör. 26+700 = 11+000:
   // 11+000–26+700 iki yerde) seçim: itinerer kaydında kaydın yolu (km aralığı en çok örtüşen kesim), KM girişinde
   // eşitlik öncesi / sonrası (zc). Yalnız bir kesimde olan km'ler (ör. 125+750 = 0+000'dan sonraki 0–11 km) her zaman boyanır.
-  const Es = (h.esit || []).slice().sort((x, y) => x.c - y.c), kes = s => { let n = 0; for(const x of Es) if(x.c <= s.c) n++; return n; };
+  // v245: bir örneğin kesimi km'siyle aynı hesaptan (s.n): eşitlik noktasının dibindeki örnek yanlış kesime sayılıp kesimin km aralığını bozmasın
+  const Es = (h.esit || []).slice().sort((x, y) => x.c - y.c), kes = s => { if(s.n != null) return Math.min(s.n, Es.length); let n = 0; for(const x of Es) if(x.c <= s.c) n++; return n; };
   const K = Es.map(() => null).concat([null]).map(() => ({ lo: Infinity, hi: -Infinity }));
-  S.forEach(s => { const k = K[kes(s)]; k.lo = Math.min(k.lo, s.m); k.hi = Math.max(k.hi, s.m); });
+  S.forEach(s => { if(Es.some(x => Math.abs(x.c - s.c) < 50)) return; const k = K[kes(s)]; k.lo = Math.min(k.lo, s.m); k.hi = Math.max(k.hi, s.m); });   // eşitliğin dibi kesim aralığına katılmaz
   let izin = null;
   if(yb && Es.length){ const iou = k => { const o = Math.min(k.hi, yb[1]) - Math.max(k.lo, yb[0]), u = Math.max(k.hi, yb[1]) - Math.min(k.lo, yb[0]); return u > 0 ? Math.max(0, o) / u : 0; };
     let en = -1, ev = 0; K.forEach((k, n) => { const v = iou(k); if(v > ev){ ev = v; en = n; } });
@@ -11431,10 +11432,10 @@ function kbYollar9(j){
   if(M) [M.ana].concat(M.kollar).forEach(h => {
     if(!h || !h.kmF || h.p.length < 2) return;
     if(!h.kum) h.kum = bkKum9(h.p, h.kop);
-    let f = h.kmF;
-    if(h.L && h.L.length){ const g = bkKmFn9(h.L.map(x => ({ c: kbNetC9(h, x.c), v: x.v })), (h.esit || []).map(e => ({ c: kbNetC9(h, e.c), g: e.g, i: e.i })), IE9); if(g) f = c => g(kbNetC9(h, c)); }
+    let f = h.kmF, nf = c => (h.kmF && h.kmF.esitNo ? h.kmF.esitNo(c) : 0);
+    if(h.L && h.L.length){ const g = bkKmFn9(h.L.map(x => ({ c: kbNetC9(h, x.c), v: x.v })), (h.esit || []).map(e => ({ c: kbNetC9(h, e.c), g: e.g, i: e.i })), IE9); if(g){ f = c => g(kbNetC9(h, c)); nf = c => g.esitNo(kbNetC9(h, c)); } }
     const T = h.kum[h.kum.length - 1], adim = Math.max(4, T / 6000), S = [];
-    for(let c = 0; c < T + adim; c += adim){ const cc = Math.min(c, T), v = f(cc); if(Number.isFinite(v)) S.push({ c: cc, m: v * 1000 }); if(cc === T) break; }
+    for(let c = 0; c < T + adim; c += adim){ const cc = Math.min(c, T), v = f(cc); if(Number.isFinite(v)) S.push({ c: cc, m: v * 1000, n: nf(cc) }); if(cc === T) break; }   // n: kaçıncı km eşitliğinden sonra (kesim) — km ile aynı hesaptan
     if(S.length < 2) return;
     const ms = S.map(s => s.m);
     Y.push({ h, ad: h.ad || (h === M.ana ? "Ana yol" : "Yol"), lo: Math.min(...ms), hi: Math.max(...ms), ana: h === M.ana, S });

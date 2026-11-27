@@ -4767,7 +4767,7 @@ function tumIslerCiz(){
     const czP = (p, r, w) => { if(p.length < 2) return; L.polyline(p, { color: r, weight: w, opacity: .6, isId: x.id }).on("click", e => { L.DomEvent.stopPropagation(e); tumSec(x.id); }).addTo(tumGrup); };
     const cz = c => czP(c.p, c.r, c.i ? 2 : 5);
     const tik = e => { L.DomEvent.stopPropagation(e); tumSec(x.id); };
-    let ok10 = false; try{ ok10 = kbCiz10(m, tumGrup, x, 5, 2, { op: .6, isId: x.id, tik, hafif: 1 }); }catch(_){ ok10 = false; }
+    let ok10 = false; try{ ok10 = kbCiz10(m, tumGrup, x, 5, 2, { op: .6, isId: x.id, tik }); }catch(_){ ok10 = false; }
     if(!ok10){
       x.hat.cizgi.filter(c => !c.i).forEach(cz);
       try{ kmzBoya9(tumGrup, x, { w: 5, op: .6, isId: x.id, tik }); }catch(_){}
@@ -10010,7 +10010,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v252`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v253`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}

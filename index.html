@@ -1393,7 +1393,7 @@ html, body{ touch-action:manipulation; }
 /* v256: KMZ + itinerer çift ekran */
 .itp9{ position:absolute; left:0; right:0; bottom:0; height:42%; z-index:1002; background:#fff; color:#0f172a; border-radius:16px 16px 0 0; box-shadow:0 -6px 24px rgba(0,0,0,.35); display:flex; flex-direction:column; padding-bottom:env(safe-area-inset-bottom); }
 .itp9b{ display:flex; align-items:center; gap:6px; padding:2px 10px 7px; border-bottom:1px solid #e2e8f0; touch-action:none; }
-.itp9g{ display:block; width:42px; height:5px; border-radius:3px; background:#cbd5e1; margin:7px auto 3px; flex:none; touch-action:none; cursor:ns-resize; } .itp9.cek{ transition:none; user-select:none; } .itp9b b{ flex:1; min-width:0; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.itp9u{ position:absolute; left:0; right:0; top:-26px; height:26px; touch-action:none; } .itp9g{ display:block; width:42px; height:5px; border-radius:3px; background:#cbd5e1; margin:7px auto 3px; flex:none; touch-action:none; cursor:ns-resize; } .itp9.cek{ transition:none; user-select:none; } .itp9b b{ flex:1; min-width:0; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .itp9b .itp9t{ flex:1; min-width:0; display:flex; flex-direction:column; } .itp9b .itp9t small{ font-size:10.5px; font-weight:700; color:#c2410c; } .itp9b .km{ font-size:13px; font-weight:800; color:#c2410c; white-space:nowrap; } .itp9b button{ width:30px; height:30px; flex:none; border:none; border-radius:9px; background:#f1f5f9; color:#334155; font-size:16px; font-weight:800; display:grid; place-items:center; padding:0; } .itp9b button svg{ width:16px; height:16px; }
 .itp9s{ display:flex; gap:6px; padding:6px 10px 0; overflow-x:auto; } .itp9s button{ flex:none; height:28px; padding:0 10px; border-radius:14px; border:1px solid #e2e8f0; background:#fff; font-size:12px; font-weight:700; color:#334155; } .itp9s button.on{ background:#1e3a5f; color:#fff; border-color:#1e3a5f; }
 .itp9a{ flex:1; overflow:auto; -webkit-overflow-scrolling:touch; position:relative; touch-action:pan-x pan-y; }
@@ -10138,7 +10138,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v259`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v260`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -13100,7 +13100,7 @@ async function itp9Ac(j, git){
   itp9Kapat(); document.getElementById("bk6")?.remove(); try{ bkTemizle9(); }catch(_){}
   const kk = document.getElementById("konumkart"); if(kk){ kk.dataset.gizli9 = kk.style.display || ""; kk.style.display = "none"; }
   const p = document.createElement("div"); p.className = "itp9"; p.id = "itp9";
-  p.innerHTML = `<i class="itp9g"></i><div class="itp9b"><span class="itp9t"><b id="itp9ad"></b><small>Dokun → haritada göster</small></span><span class="km" id="itp9km"></span><button data-itp9z="0.8" aria-label="Uzaklaştır">−</button><button data-itp9z="1.25" aria-label="Yakınlaştır">+</button><button data-itp9tam aria-label="Tam ekran">⤢</button><button data-itp9x aria-label="Kapat">${IK("x")}</button></div>
+  p.innerHTML = `<i class="itp9u"></i><i class="itp9g"></i><div class="itp9b"><span class="itp9t"><b id="itp9ad"></b><small>Dokun → haritada göster</small></span><span class="km" id="itp9km"></span><button data-itp9z="0.8" aria-label="Uzaklaştır">−</button><button data-itp9z="1.25" aria-label="Yakınlaştır">+</button><button data-itp9tam aria-label="Tam ekran">⤢</button><button data-itp9x aria-label="Kapat">${IK("x")}</button></div>
 ${kodlar.length > 1 ? `<div class="itp9s">${kodlar.map((k, i) => `<button data-itp9s="${i}"${i ? "" : ' class="on"'}>${esc(kisaAd(D.iti.projeler[k].ad))}</button>`).join("")}</div>` : ""}
 <div class="itp9a" id="itp9a"><div class="itp9i" id="itp9i"><div id="itp9h"></div><i class="itp9c" id="itp9c"></i></div></div>`;
   hv.appendChild(p);
@@ -13171,10 +13171,19 @@ function itp9Dokun(a){
 // v257: panel başlığından (ya da tutma çizgisinden) çekerek büyür / küçülür; en aşağı çekilince kapanır
 function itp9Cek(p){
   let y0 = null, h0 = 0;
-  const bas = (y, t) => { if(t.closest("button")) return; y0 = y; h0 = p.getBoundingClientRect().height; p.classList.add("cek"); };
+  const bas = (y, t) => { if(t && t.closest && t.closest("button")) return; y0 = y; h0 = p.getBoundingClientRect().height; p.classList.add("cek"); };
   const git = y => { if(y0 === null) return; const hv = document.getElementById("hatv"), H = hv ? hv.clientHeight : window.innerHeight; p.style.height = Math.max(70, Math.min(H * .85, h0 - (y - y0))) + "px"; };
   const bit = () => { if(y0 === null) return; y0 = null; p.classList.remove("cek"); const h = p.getBoundingClientRect().height; if(h < 110){ itp9Kapat(); return; } itp9Boyut(); itp9Senk(); };
-  [p.querySelector(".itp9g"), p.querySelector(".itp9b")].forEach(el => { if(!el) return;
+  p._cek9 = { bas, git, bit, aktif: () => y0 !== null };
+  // v260: itinererin içinden dikey çekiş: üst 40 pikselden ya da itinerer panele sığıyorsa (dikey kaydırma yoksa) her yerden
+  { const a = p.querySelector(".itp9a"); let s0 = null, karar = null;
+    a.addEventListener("touchstart", e => { if(e.touches.length !== 1){ s0 = null; return; } const r = a.getBoundingClientRect(); s0 = { x: e.touches[0].clientX, y: e.touches[0].clientY, ust: e.touches[0].clientY - r.top < 40, sigar: a.scrollHeight <= a.clientHeight + 2 }; karar = null; }, { passive: true });
+    a.addEventListener("touchmove", e => { if(!s0 || e.touches.length !== 1) return; const t = e.touches[0], dx = t.clientX - s0.x, dy = t.clientY - s0.y;
+      if(karar === null){ if(Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx) * 1.5 && (s0.ust || s0.sigar)){ karar = "cek"; bas(s0.y, null); } else if(Math.abs(dx) > 8 || Math.abs(dy) > 8) karar = "kay"; }
+      if(karar === "cek"){ e.preventDefault(); git(t.clientY); } }, { passive: false });
+    const son = () => { if(karar === "cek") bit(); s0 = null; karar = null; };
+    a.addEventListener("touchend", son); a.addEventListener("touchcancel", son); }
+  [p.querySelector(".itp9u"), p.querySelector(".itp9g"), p.querySelector(".itp9b")].forEach(el => { if(!el) return;
     el.addEventListener("touchstart", e => { if(e.touches.length === 1) bas(e.touches[0].clientY, e.target); }, { passive: true });
     el.addEventListener("touchmove", e => { if(y0 !== null){ e.preventDefault(); git(e.touches[0].clientY); } }, { passive: false });
     el.addEventListener("touchend", bit); el.addEventListener("touchcancel", bit);

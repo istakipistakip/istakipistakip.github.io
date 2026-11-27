@@ -9938,7 +9938,21 @@ function bkTeshis9(j, ek){
   let L = []; try{ bkModel9(jj); L = jj.__bkT9; }catch(e){ L = ["HATA: " + (e.message || e)]; }
   delete jj.__bkT9; if(eski) jj._bkM9 = eski;
   let Y = []; try{ Y = kbYollar9(jj).map(y => `${y.ad}${y.ana ? " (ana)" : ""}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))}`); }catch(_){}
-  return [`İşTakip boy kesit teşhisi · v243`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
+  // v244: kesimler (eşitlikten eşitliğe km aralıkları), itinerer eşitlikleri ve her boyalı parçanın kaynağı
+  const B = [];
+  try{ const IE = itiEsit9(jj); B.push("İtinerer: " + (IE === null ? "yok" : (IE.length ? IE.filter(p => p.m || p.A).slice(0, 12).map(p => `${kmT9(p.g)} = ${kmT9(p.i)}${p.m ? " (liste)" : ""}`).join(" | ") : "eşitlik yok")) + " · KMZ'yi itinerer boyar: " + (itiModu9(jj) ? "evet" : "hayır"));
+    const YY = kbYollar9(jj), kmc = (yo, c) => { const S = yo.S; let k = 0; while(k < S.length - 2 && S[k + 1].c < c) k++; const a = S[k], b = S[k + 1] || a; return b.c > a.c ? a.m + (b.m - a.m) * (c - a.c) / (b.c - a.c) : a.m; };
+    YY.forEach(yo => { const Es = (yo.h.esit || []).slice().sort((a, b) => a.c - b.c), K = Es.map(() => 0).concat([0]).map(() => [Infinity, -Infinity]);
+      yo.S.forEach(s => { let n = 0; Es.forEach(e => { if(e.c <= s.c) n++; }); K[n][0] = Math.min(K[n][0], s.m); K[n][1] = Math.max(K[n][1], s.m); });
+      B.push(`${yo.ad} kesimleri: ` + K.map((k, n) => `${n}: ${Number.isFinite(k[0]) ? mKm9(Math.round(k[0])) + "–" + mKm9(Math.round(k[1])) : "-"}`).join(" | ")); });
+    const gor = new Map();
+    kbHesap9(jj).forEach(s => { const x = s.kay || {}, k = x.k || {}, yo = YY.find(y => y.h === s.h); if(!yo) return;
+      let n = 0; (s.h.esit || []).forEach(e => { if(e.c <= s.c0) n++; });
+      const ad = k._iti9 ? `itinerer ${k.yid || "yol1"} ${mKm9(x.a)}–${mKm9(x.e)}${k.ac ? " " + k.ac : ""}` : `KM girişi ${k.a || ""}–${k.e || ""}${k.ac ? " " + k.ac : ""}${k.t ? " " + String(k.t).slice(0, 10) : ""}${k.zc ? " (" + k.zc + ")" : ""}${k.yl ? " yol:" + k.yl : ""}`;
+      const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
+      gor.set(sat, (gor.get(sat) || 0) + 1); });
+    B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
+  return [`İşTakip boy kesit teşhisi · v244`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -11315,7 +11329,7 @@ function itiKm9(j){
       else { const y = yolu(ana); if(y && Number.isFinite(+y.bas) && Number.isFinite(+y.bit)) yb = [+y.bas, +y.bit]; }
       const a = +r.bas, e = +r.bit; if(!(e > a)) return;
       const yan = r.konum === "SOL" ? "sol" : r.konum === "SAG" ? "sağ" : "";
-      out.push({ a, e, yil: ytYil9(r), k: { s: `${r.sinif === "TY" ? "TY" : "BY"}-${r.tur}`, y: yan ? 1 : 0, ac: yan, zc: r.zincir || "", _iti9: 1, ...(yb ? { yb } : {}) } });
+      out.push({ a, e, yil: ytYil9(r), k: { s: `${r.sinif === "TY" ? "TY" : "BY"}-${r.tur}`, y: yan ? 1 : 0, ac: yan, zc: r.zincir || "", _iti9: 1, yid: r.yolId || "", ...(yb ? { yb } : {}) } });
     });
   });
   return out;
@@ -11340,7 +11354,7 @@ function kbHesap9(j){
         const yan = t === "SOL" ? -1 : t === "SAG" ? 1 : 0, buyil = x.yil === D.yil;
         let tip = null; try{ tip = koyYolu9(j) ? "TY" : itiTip9(j, (x.a + x.e) / 2); }catch(_){}
         const by = tip ? tip === "BY" : !ty;
-        kbAralik9(h, S, x.a, x.e, x.k.zc, x.k.yb).forEach(([c0, c1]) => kbParca9(h, c0, c1).forEach(p => out.push({ p, r: buyil ? renk.buyil : renk.eski, yan, eski: !buyil, h, c0, c1, by })));
+        kbAralik9(h, S, x.a, x.e, x.k.zc, x.k.yb).forEach(([c0, c1]) => kbParca9(h, c0, c1).forEach(p => out.push({ p, r: buyil ? renk.buyil : renk.eski, yan, eski: !buyil, h, c0, c1, by, kay: x0 })));
       });
     });
   }

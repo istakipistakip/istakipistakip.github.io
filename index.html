@@ -12503,6 +12503,9 @@ function kbCiz10(m, hedef, j, W, WB, o){
       const ayniKaynak = KMx.some(x => { const a = Math.min(x.a, x.e), e = Math.max(x.a, x.e);
         const ust = t => t.m0 != null && t.m1 != null && Math.min(e, Math.max(t.m0, t.m1)) - Math.max(a, Math.min(t.m0, t.m1)) > 5; return ust(u0.t) && ust(u1.t); });
       if(ayniKaynak && u0.t.sol === u1.t.sol && u0.t.sag === u1.t.sag && uz < 1500){ dolgu.push({ p, sol: u0.t.sol, sag: u0.t.sag, by: u0.t.by || u1.t.by }); return; }
+      // (c) v238: iki AYRI yolun (ör. itinererin iki yolu) birleştiği yerdeki km'si bilinmeyen kısa ara parça:
+      // iki ucundaki boyalı parçalar aynı renkteyse ve aradaki km'yi bilemiyorsak o renkle doldurulur
+      if(uz < 1500 && u0.t.sol === u1.t.sol && u0.t.sag === u1.t.sag && (u0.t.sol || u0.t.sag) && (u0.mv == null || u1.mv == null || Math.abs(u1.mv - u0.mv) > uz * 1.5 + 300)){ dolgu.push({ p, sol: u0.t.sol, sag: u0.t.sag, by: u0.t.by || u1.t.by }); return; }
     }
     const ly = ekle(L.polyline(p, { ...ortak, color: c.r, weight: W, lineCap: "butt", lineJoin: "round" }));
     // teşhis (yalnız düzenleme modunda): boyanmayan parçaya dokununca neden boyanmadığı yazılır

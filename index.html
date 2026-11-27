@@ -2638,8 +2638,9 @@ async function hatGoster(id, korun){
   let ciz10 = false; try{ ciz10 = kbCiz10(m, m, j, 8, 3, {}); }catch(e){ ciz10 = false; }
   if(!ciz10){
     // v241: kırmızı / mavi yan yana ise kırmızının yanında mavi gösterilmez
-    const yk = [];
-    kmzKirMavi9(renkli.map(c => ({ p: c.p, r: c.r })), (pp, r, yan) => { if(!yan) L.polyline(pp, { color: r, weight: 8, opacity: 1 }).addTo(m);
+    const yk = [], iti9 = itiModu9(j), RL = renkli.map(c => ({ p: c.p, r: c.r }));
+    if(iti9){ kmzItiMavi9(RL, renkli).forEach(x => L.polyline(x.p, { color: x.r, weight: 8, opacity: 1 }).addTo(m)); if(beyazOl9(j)) RL.filter(x => kmzTon9(x.r) !== "k").forEach(x => L.polyline(x.p, { color: "#ffffff", weight: 3, opacity: 1 }).addTo(m)); }
+    else kmzKirMavi9(RL, (pp, r, yan) => { if(!yan) L.polyline(pp, { color: r, weight: 8, opacity: 1 }).addTo(m);
       else { let ilk = pp; try{ ilk = kbKaydir9(m, pp, yan * 2); }catch(_){} const ly = L.polyline(ilk, { color: r, weight: 4, opacity: 1, lineCap: "butt", uc3bHam: pp, uc3bOfs: yan * 2 }).addTo(m); yk.push([ly, pp, yan]); } });
     if(yk.length){ const f = () => yk.forEach(([ly, pp, yan]) => { try{ ly.setLatLngs(kbKaydir9(m, pp, yan * 2)); }catch(_){} }); m.on("zoomend", f); m.on("viewreset", f); }
     try{ kmzBoya9(m, j); }catch(_){}
@@ -9937,7 +9938,7 @@ function bkTeshis9(j, ek){
   let L = []; try{ bkModel9(jj); L = jj.__bkT9; }catch(e){ L = ["HATA: " + (e.message || e)]; }
   delete jj.__bkT9; if(eski) jj._bkM9 = eski;
   let Y = []; try{ Y = kbYollar9(jj).map(y => `${y.ad}${y.ana ? " (ana)" : ""}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))}`); }catch(_){}
-  return [`İşTakip boy kesit teşhisi · v241`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
+  return [`İşTakip boy kesit teşhisi · v242`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -12537,6 +12538,20 @@ function kmzKirMavi9(parcalar, ciz){
     ciz(x.p, x.r, 0, x);
   });
 }
+// v242: itinereri olan iş: KMZ renkleri yerine itinerer
+function itiModu9(j){ try{ return !!(YT9 && ytKodlar9(j).length); }catch(_){ return false; } }
+function beyazOl9(j){
+  try{ if(koyYolu9(j)) return false; for(const k of ytKodlar9(j)){ const q = ytProje9(k); if(q && q.yolTipi) return q.yolTipi !== "TY"; } }catch(_){}
+  return true;
+}
+// KMZ'nin renkli parçaları itinerer düzeninde: hepsi mavi; mavinin yanından giden kırmızı (KMZ'nin kendi "biten" çizgisi) çizilmez
+function kmzItiMavi9(parcalar, renkli){
+  const mv = ((renkli || []).find(c => kmzTon9(c.r) === "m") || {}).r || "#1e40ff";
+  const kir = parcalar.filter(x => kmzTon9(x.r) === "k"), dig = parcalar.filter(x => kmzTon9(x.r) !== "k"), out = [];
+  dig.forEach(x => out.push({ ...x, r: mv }));
+  kir.forEach(x => (dig.length ? kmzYanAyir9(x.p, dig) : [{ p: x.p, s: 0 }]).forEach(z => { if(!z.s) out.push({ ...x, p: z.p, r: mv }); }));
+  return out;
+}
 function kbCiz10(m, hedef, j, W, WB, o){
   o = o || {};
   const P = kbHesap9(j); if(!P.length) return false;
@@ -12612,7 +12627,7 @@ function kbCiz10(m, hedef, j, W, WB, o){
   // 3) KMZ'nin renkli çizgileri (boyalı koridor dışı). v132: iki boyalı parçanın ucunu birleştiren kısa açık parça
   // (km'si hiçbir yolun km'sine düşmeyen ara parça, ör. ana yolun sonu ile devam eden yolun ilk km etiketi arası)
   // aynı KM / itinerer aralığının içindeyse o da boyalı sayılır, kendi geometrisiyle boyanır.
-  const KMx = (j._kb9 && j._kb9.km) || [], dolgu = [], RK = kbRenk9(j), kalan = [];
+  const KMx = (j._kb9 && j._kb9.km) || [], dolgu = [], RK = kbRenk9(j), kalan = [], beyazK = [];
   // açık parçanın ucu hangi boyalı parçaya değiyor (parçanın herhangi bir noktasına 45 m'den yakın; en yakın uç km'si)
   const ucBul = q => { let en = null, ed = 45; const Q = xy(q);
     parcalar.forEach(t => { for(let i = 0; i < t.p.length; i++){ const A = xy(t.p[i]), d = Math.hypot(A[0] - Q[0], A[1] - Q[1]); if(d < ed){ ed = d;
@@ -12640,8 +12655,11 @@ function kbCiz10(m, hedef, j, W, WB, o){
     kalan.push({ p, r: c.r, uz, u0, u1 });
   }));
   // v241: kırmızı / mavi yan yana: kırmızının yanında mavi yok
-  const yarimK = [];
-  kmzKirMavi9(kalan, (pp, r, yan, x) => {
+  // v242: işin itinereri varsa KMZ'nin kendi renklerine bakılmaz — boyanmayan her yer "yapılacak" mavisi, beyaz orta çizgi
+  // bütün yol boyunca (TY değilse); kırmızı yalnız itinererden ve girilen KM'lerden gelir
+  const yarimK = [], iti9 = itiModu9(j), bz9 = iti9 && beyazOl9(j), cizK = iti9 ? (L0, f) => kmzItiMavi9(L0, renkli).forEach(x => f(x.p, x.r, 0, x)) : kmzKirMavi9;
+  cizK(kalan, (pp, r, yan, x) => {
+    if(bz9 && !yan) beyazK.push(pp);
     const { uz, u0, u1 } = x; let ly;
     if(!yan) ly = ekle(L.polyline(pp, { ...ortak, color: r, weight: W, lineCap: "butt", lineJoin: "round" }));
     else { ly = ekle(L.polyline(kbKaydir9(m, pp, yan * W / 4), { ...ortak, color: r, weight: W / 2, lineCap: "butt", lineJoin: "round", uc3bHam: pp, uc3bOfs: yan * W / 4 })); yarimK.push([ly, pp, yan]); }
@@ -12665,6 +12683,7 @@ function kbCiz10(m, hedef, j, W, WB, o){
   });
   // 5) KMZ'nin beyazı (koridor dışı) + boyalı yerlerde tam ortada kendi beyazımız
   beyaz.forEach(c => ayir(c).forEach(p => ekle(L.polyline(p, { ...ortak, color: c.r, weight: WB, lineCap: "butt", lineJoin: "round" }))));
+  beyazK.forEach(p => ekle(L.polyline(p, { ...ortak, color: "#ffffff", weight: WB, lineCap: "butt", lineJoin: "round" })));
   parcalar.forEach(t => { if(t.by) ekle(L.polyline(t.p, { ...ortak, color: "#ffffff", weight: WB, lineCap: "round", lineJoin: "round" })); });
   // yarımlar yalnız yakınlaştırma BİTİNCE yeniden yerleşir (sürerken çizim yenilenirse tuval kayar)
   if(yarim.length){ const f = () => yarim.forEach(([ly, p, y]) => { try{ ly.setLatLngs(kbKaydir9(m, p, y * W / 4)); }catch(_){} }); m.on("zoomend", f); m.on("viewreset", f); }
@@ -12697,9 +12716,11 @@ async function kmzIndir9(j){
     const grp = L.layerGroup(), cz = j.hat.cizgi || [], renkli = cz.filter(c => !c.i), beyaz = cz.filter(c => c.i);
     let ok = false; try{ ok = kbCiz10(m, grp, j, 8, 3, {}); }catch(_){ ok = false; }
     if(!ok){
-      kmzKirMavi9(renkli.map(c => ({ p: c.p, r: c.r })), (pp, r, yan) => { L.polyline(pp, { color: r, weight: yan ? 4 : 8, uc3bHam: yan ? pp : undefined, uc3bOfs: yan ? yan * 2 : undefined }).addTo(grp); });
+      if(itiModu9(j)){ kmzItiMavi9(renkli.map(c => ({ p: c.p, r: c.r })), renkli).forEach(x => L.polyline(x.p, { color: x.r, weight: 8 }).addTo(grp)); }
+      else kmzKirMavi9(renkli.map(c => ({ p: c.p, r: c.r })), (pp, r, yan) => { L.polyline(pp, { color: r, weight: yan ? 4 : 8, uc3bHam: yan ? pp : undefined, uc3bOfs: yan ? yan * 2 : undefined }).addTo(grp); });
       try{ kmzBoya9(grp, j); }catch(_){}
       beyaz.forEach(c => L.polyline(c.p, { color: c.r, weight: 3 }).addTo(grp));
+      if(itiModu9(j) && beyazOl9(j)) renkli.filter(c => kmzTon9(c.r) !== "k").forEach(c => L.polyline(c.p, { color: "#ffffff", weight: 3 }).addTo(grp));
     }
     const X = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const kor = p => p.map(q => (+q[1]).toFixed(7) + "," + (+q[0]).toFixed(7) + ",0").join(" ");

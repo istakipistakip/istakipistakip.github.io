@@ -300,7 +300,7 @@ tr.t td{ font-weight:800; background:#fff7ed; color:#7c2d12; }
 .itialan{ flex:1; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch; touch-action:pan-x pan-y; background:#fff; }
 .itihost{ display:inline-block; }
 .itialt{ flex:none; display:flex; justify-content:space-between; align-items:center; padding:6px 12px calc(6px + env(safe-area-inset-bottom)); border-top:1px solid #e5e7eb; font-size:12px; color:#64748b; background:#fff; }
-.itialt .iz{ display:flex; gap:6px; }
+.itialt .iz{ display:flex; gap:6px; } .itialt .ipu9, .itiozet .ipu9{ font-size:11px; font-weight:700; color:#c2410c; letter-spacing:0; text-transform:none; } .itiozet .lb .ipu9{ margin:0 10px 0 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
 .itialt .iz button{ width:34px; height:30px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; font-size:17px; font-weight:700; color:#374151; }
 .ljhost{ overflow:auto; margin-top:8px; }
 @media (max-height:500px){ .itiv .hatbar{ padding-top:max(6px, env(safe-area-inset-top)); padding-bottom:6px; } .itisek{ padding:5px 12px; } }
@@ -1394,7 +1394,7 @@ html, body{ touch-action:manipulation; }
 .itp9{ position:absolute; left:0; right:0; bottom:0; height:42%; z-index:1002; background:#fff; color:#0f172a; border-radius:16px 16px 0 0; box-shadow:0 -6px 24px rgba(0,0,0,.35); display:flex; flex-direction:column; padding-bottom:env(safe-area-inset-bottom); }
 .itp9b{ display:flex; align-items:center; gap:6px; padding:2px 10px 7px; border-bottom:1px solid #e2e8f0; touch-action:none; }
 .itp9g{ display:block; width:42px; height:5px; border-radius:3px; background:#cbd5e1; margin:7px auto 3px; flex:none; touch-action:none; cursor:ns-resize; } .itp9.cek{ transition:none; user-select:none; } .itp9b b{ flex:1; min-width:0; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.itp9b .km{ font-size:13px; font-weight:800; color:#c2410c; white-space:nowrap; } .itp9b button{ width:30px; height:30px; flex:none; border:none; border-radius:9px; background:#f1f5f9; color:#334155; font-size:16px; font-weight:800; display:grid; place-items:center; padding:0; } .itp9b button svg{ width:16px; height:16px; }
+.itp9b .itp9t{ flex:1; min-width:0; display:flex; flex-direction:column; } .itp9b .itp9t small{ font-size:10.5px; font-weight:700; color:#c2410c; } .itp9b .km{ font-size:13px; font-weight:800; color:#c2410c; white-space:nowrap; } .itp9b button{ width:30px; height:30px; flex:none; border:none; border-radius:9px; background:#f1f5f9; color:#334155; font-size:16px; font-weight:800; display:grid; place-items:center; padding:0; } .itp9b button svg{ width:16px; height:16px; }
 .itp9s{ display:flex; gap:6px; padding:6px 10px 0; overflow-x:auto; } .itp9s button{ flex:none; height:28px; padding:0 10px; border-radius:14px; border:1px solid #e2e8f0; background:#fff; font-size:12px; font-weight:700; color:#334155; } .itp9s button.on{ background:#1e3a5f; color:#fff; border-color:#1e3a5f; }
 .itp9a{ flex:1; overflow:auto; -webkit-overflow-scrolling:touch; position:relative; touch-action:pan-x pan-y; }
 .itp9i{ position:relative; display:inline-block; vertical-align:top; } .itp9c{ position:absolute; display:none; width:3px; border-radius:2px; background:#ea580c; box-shadow:0 0 0 1.5px rgba(255,255,255,.9); pointer-events:none; }
@@ -3664,7 +3664,7 @@ async function itinererGoster(j){
   v.innerHTML = `<div class="hatbar"><button class="x" data-itikapat>${IK("x")}Kapat</button><div class="ad" id="itiAd"></div>${j && j.hat ? `<button class="lj" data-itikmz aria-label="KMZ">${IK("kmz")}KMZ</button>` : ""}<button class="lj" data-lejant>${IK("lejant")}Lejant</button></div>
 ${kodlar.length > 1 ? `<div class="itisek">${kodlar.map((k, i) => `<button data-itisek="${i}"${i ? "" : ' class="on"'}>${esc(kisaAd(D.iti.projeler[k].ad))}</button>`).join("")}</div>` : ""}
 <div class="itialan" id="itialan"><div class="itihost" id="itihost"></div></div>
-<div class="itialt"><span></span><span class="iz"><button data-itizoom="0.8" aria-label="Uzaklaştır">−</button><button data-itizoom="1.25" aria-label="Yakınlaştır">+</button></span></div>`;
+<div class="itialt"><span class="ipu9">${j && j.hat ? "Basılı tut → haritada göster" : ""}</span><span class="iz"><button data-itizoom="0.8" aria-label="Uzaklaştır">−</button><button data-itizoom="1.25" aria-label="Yakınlaştır">+</button></span></div>`;
   document.body.appendChild(v);
   history.pushState({ iti: 1 }, "");
   itiDurum = { kodlar, i: 0, z: 1, j };
@@ -5073,7 +5073,7 @@ function itiSerit(){
   let s = document.getElementById("itiserit");
   if(!a || !host || !host.shadowRoot) return;
   if(!s){
-    a.insertAdjacentHTML("afterend", `<div class="itiozet"><div class="lb"><span>GENEL BAKIŞ</span><span id="itiozad"></span></div><div class="itiserit" id="itiserit"><div class="ic" id="itimini"></div><div class="fr" id="itifr"></div></div></div>`);
+    a.insertAdjacentHTML("afterend", `<div class="itiozet"><div class="lb"><span>GENEL BAKIŞ</span><span id="itiozad"></span>${itiDurum && itiDurum.j && itiDurum.j.hat ? '<span class="ipu9">Basılı tut → haritada göster</span>' : ""}</div><div class="itiserit" id="itiserit"><div class="ic" id="itimini"></div><div class="fr" id="itifr"></div></div></div>`);
     s = document.getElementById("itiserit");
     // v204: − / + düğmeleri GENEL BAKIŞ satırının sağına; alttaki satır kalkar
     { const oz = s.parentNode, alt = oz.parentNode && oz.parentNode.querySelector(".itialt"), iz = alt && alt.querySelector(".iz"), lb = oz.querySelector(".lb");
@@ -10138,7 +10138,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v258`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v259`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -13100,7 +13100,7 @@ async function itp9Ac(j, git){
   itp9Kapat(); document.getElementById("bk6")?.remove(); try{ bkTemizle9(); }catch(_){}
   const kk = document.getElementById("konumkart"); if(kk){ kk.dataset.gizli9 = kk.style.display || ""; kk.style.display = "none"; }
   const p = document.createElement("div"); p.className = "itp9"; p.id = "itp9";
-  p.innerHTML = `<i class="itp9g"></i><div class="itp9b"><b id="itp9ad"></b><span class="km" id="itp9km"></span><button data-itp9z="0.8" aria-label="Uzaklaştır">−</button><button data-itp9z="1.25" aria-label="Yakınlaştır">+</button><button data-itp9tam aria-label="Tam ekran">⤢</button><button data-itp9x aria-label="Kapat">${IK("x")}</button></div>
+  p.innerHTML = `<i class="itp9g"></i><div class="itp9b"><span class="itp9t"><b id="itp9ad"></b><small>Dokun → haritada göster</small></span><span class="km" id="itp9km"></span><button data-itp9z="0.8" aria-label="Uzaklaştır">−</button><button data-itp9z="1.25" aria-label="Yakınlaştır">+</button><button data-itp9tam aria-label="Tam ekran">⤢</button><button data-itp9x aria-label="Kapat">${IK("x")}</button></div>
 ${kodlar.length > 1 ? `<div class="itp9s">${kodlar.map((k, i) => `<button data-itp9s="${i}"${i ? "" : ' class="on"'}>${esc(kisaAd(D.iti.projeler[k].ad))}</button>`).join("")}</div>` : ""}
 <div class="itp9a" id="itp9a"><div class="itp9i" id="itp9i"><div id="itp9h"></div><i class="itp9c" id="itp9c"></i></div></div>`;
   hv.appendChild(p);

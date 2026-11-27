@@ -1383,6 +1383,17 @@ html, body{ touch-action:manipulation; }
 .hatv:has(#bk6) .konumkart{ display:none !important; }
 /* v37: KMZ sağ çubuktaki bütün simgeler aynı boyda (Yol Tarifi dahil) */
 .hatv .sagk button svg, .hatv .sagk button svg.ik{ width:20px !important; height:20px !important; }
+/* v255: sağdaki tuşların altında küçük adı; ikonlar %10 küçük */
+.hatv .sagk{ width:54px; }
+.hatv .sagk button{ width:48px; height:auto; min-height:36px; padding:4px 0 3px !important; flex-direction:column; gap:1px !important; }
+.hatv .sagk button svg, .hatv .sagk button svg.ik{ width:18px !important; height:18px !important; flex:none; }
+.hatv .sagk button[data-et]::after{ content:attr(data-et); display:block; font-size:8.5px !important; line-height:1.05; font-weight:700; letter-spacing:-.1px; color:#cbd5e1; white-space:nowrap; }
+.hatv .sagk button.on[data-et]::after, .hatv .sagk button.acik[data-et]::after{ color:#fff; }
+.hatv .sagk .kat i{ top:0; right:4px; }
+/* v255: ilk işe dönüş */
+.hatv .solk .ilk9{ pointer-events:auto; display:flex; align-items:center; gap:6px; height:34px; max-width:62vw; padding:0 13px; border-radius:17px; background:rgba(12,18,34,.8); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.16); color:#fdba74; font-size:13px; font-weight:800; }
+.hatv .solk .ilk9 span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.kmpop .tsec9{ display:flex; flex-direction:column; gap:4px; min-width:170px; } .kmpop .tsec9 b{ font-size:12px; color:#64748b; } .kmpop .tsec9 button{ text-align:left; border:1px solid #e2e8f0; background:#fff; border-radius:9px; padding:8px 10px; font-weight:700; font-size:13px; color:#0f172a; }
 /* boy kesit işareti */
 .bk9t{ background:#0f172a !important; color:#fff !important; border:none !important; border-radius:7px !important; font-weight:800; font-size:11.5px; padding:3px 7px !important; box-shadow:0 4px 10px rgba(0,0,0,.35) !important; }
 .bk9t::before{ border-top-color:#0f172a !important; }
@@ -2614,7 +2625,7 @@ async function hatGoster(id, korun){
 <div class="hr2"><div class="hara h9" id="hara"><button data-hara aria-label="İş ara">${IK("ara")}</button><input id="hara2" type="search" placeholder="İş / firma ara" autocomplete="off"></div><button class="htum${hatTum ? " on" : ""}" data-htum>${IK("lejant")}Tüm İşler</button><div class="hseg"><button data-hmod="2b"${hatMod === "2b" ? ' class="on"' : ""}>2B</button><button data-hmod="3b"${hatMod === "3b" ? ' class="on"' : ""}>3B</button></div></div><div class="honer" id="honer2"></div></div>
 <div class="hatmap etiketsiz" id="hatmap"></div><div class="hat3b" id="hat3b" hidden></div>
 <div class="katman"><button data-katman="sokak">Sokak</button><button data-katman="uydu" class="on">Uydu</button></div>
-<div class="sagk">${katVar ? `<button class="kat" data-katlar aria-label="Katmanlar">${IK("katman")}Katmanlar<i id="katsay">0</i></button><span class="ayr"></span>` : ""}<button data-konumum aria-label="Konumum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 4 3.5 10.6l6.9 2.6 2.6 6.9z" fill="currentColor" fill-opacity=".18"/></svg></button><button data-yola aria-label="Yol hattına dön">${IK("yol")}</button><button data-boykesit aria-label="Boy kesit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="M3 16l4-6 4 3 4-7 6 10"/></svg></button>${(() => { try{ return itiVar(j) ? `<button data-iti="${esc(j.id)}" aria-label="İtinerer">${IK("iti")}</button>` : ""; }catch(_){ return ""; } })()}<span class="ayr"></span><button data-olc aria-label="Mesafe ölç">${IK("cetvel")}</button><button data-yt="${esc(j.id)}" aria-label="Yol tarifi">${IK("yt")}</button><button data-kmzindir aria-label="KMZ indir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></button><span class="ayr"></span><button class="egm" data-egim aria-label="Eğik / tepeden">${IK("egim")}</button><button data-gez aria-label="Yolu gez"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 9 3M19 21 15 3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></svg></button></div><button class="pus" data-kuzey aria-label="Kuzeyi yukarı al">${PUSULA}</button>
+<div class="sagk">${katVar ? `<button class="kat" data-katlar aria-label="Katmanlar" data-et="Katman">${IK("katman")}Katmanlar<i id="katsay">0</i></button><span class="ayr"></span>` : ""}<button data-konumum aria-label="Konumum" data-et="Konum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 4 3.5 10.6l6.9 2.6 2.6 6.9z" fill="currentColor" fill-opacity=".18"/></svg></button><button data-yola aria-label="Yol hattına dön" data-et="Yola dön">${IK("yol")}</button><button data-boykesit aria-label="Boy kesit" data-et="Kesit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="M3 16l4-6 4 3 4-7 6 10"/></svg></button>${(() => { try{ return itiVar(j) ? `<button data-iti="${esc(j.id)}" aria-label="İtinerer" data-et="İtinerer">${IK("iti")}</button>` : ""; }catch(_){ return ""; } })()}<span class="ayr"></span><button data-olc aria-label="Mesafe ölç" data-et="Ölç">${IK("cetvel")}</button><button data-yt="${esc(j.id)}" aria-label="Yol tarifi" data-et="Tarif">${IK("yt")}</button><button data-kmzindir aria-label="KMZ indir" data-et="İndir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></button><span class="ayr"></span><button class="egm" data-egim aria-label="Eğik / tepeden" data-et="Eğim">${IK("egim")}</button><button data-gez aria-label="Yolu gez" data-et="Gez"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 9 3M19 21 15 3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></svg></button></div><button class="pus" data-kuzey aria-label="Kuzeyi yukarı al">${PUSULA}</button>
 <div class="solk"><div class="hatnot" id="hatnot" style="display:none">Çevrimdışı · arka plan haritası yok</div><div class="chips" id="chips"></div></div>
 <div class="dserit" id="dserit" style="display:none"></div>
 <div class="konumkart" id="konumkart" style="display:none"><span class="nok"></span><div><b id="konumb"></b><small id="konums"></small></div></div>`;
@@ -4835,7 +4846,30 @@ async function kbcIsle9(){
 function kbcArka9(){ kbcAl9().then(C => { if(!hatHarita) return; const L1 = ISLER.filter(x => x.hat && x.hat.cizgi && x.hat.cizgi.length && (() => { try{ const c = C[x.id]; return !c || c.s !== kbImza9(x); }catch(_){ return false; } })()); kbcSiraEkle9(L1, false); }); }
 let tumTur9 = 0;
 // Tüm İşler: bir hatta dokununca doğrudan o işe gidilir (pencere yok)
-function tumSec(id){ if(byId(id) && (!hatIs || id !== hatIs.id)) hatGoster(id, true); }
+function tumSec(id){ if(byId(id) && (!hatIs || id !== hatIs.id)){ if(!tumIlk9 && hatIs) tumIlk9 = hatIs.id; window._tumGecis9 = true; hatGoster(id, true); } }
+// v255: Tüm İşler'den başka işe geçince solda "↩ ilk iş" düğmesi
+let tumIlk9 = null;
+function ilkDugme9(){
+  const v = document.getElementById("hatv"); if(!v) return; v.querySelectorAll(".ilk9").forEach(x => x.remove());
+  if(!tumIlk9 || !hatIs) return; if(String(tumIlk9) === String(hatIs.id)){ tumIlk9 = null; return; }
+  const j = byId(tumIlk9); if(!j){ tumIlk9 = null; return; }
+  const solk = v.querySelector(".solk"); if(!solk) return;
+  const b = document.createElement("button"); b.type = "button"; b.className = "ilk9"; b.innerHTML = `<b>↩</b><span>${esc(j.ad)}</span>`;
+  b.addEventListener("click", e => { e.stopPropagation(); window._tumGecis9 = true; hatGoster(tumIlk9, true); });
+  solk.prepend(b);
+}
+// v255: Tüm İşler'de çizginin tam üstüne basmak gerekmez — dokunulan yere 26 piksele kadar yakın iş bulunur
+function tumYakinTik9(e){
+  if(!hatTum || !tumGrup || olc || !e || !e.layerPoint) return;
+  const A = []; Object.keys(tumAlt9).forEach(id => { let en = Infinity; tumAlt9[id].eachLayer(ly => { if(!ly.closestLayerPoint || !ly._parts || !ly._parts.length) return; try{ const q = ly.closestLayerPoint(e.layerPoint); if(q && q.distance < en) en = q.distance; }catch(_){} }); if(en <= 26) A.push({ id, d: en }); });
+  if(!A.length) return; A.sort((a, b) => a.d - b.d);
+  const yakin = A.filter(a => a.d - A[0].d < 8).slice(0, 4);
+  if(yakin.length === 1){ tumSec(isTurDuzelt9(yakin[0].id)); return; }
+  const html = `<div class="tsec9"><b>Hangi iş?</b>${yakin.map(a => { const j = byId(isTurDuzelt9(a.id)); return j ? `<button data-tumsec="${esc(a.id)}">${esc(j.ad)}</button>` : ""; }).join("")}</div>`;
+  L.popup({ closeButton: false, className: "kmpop", offset: [0, -4] }).setLatLng(e.latlng).setContent(html).openOn(hatHarita);
+}
+const isTurDuzelt9 = id => { const j = ISLER.find(x => String(x.id) === String(id)); return j ? j.id : id; };
+document.addEventListener("click", e => { const b = e.target.closest && e.target.closest("[data-tumsec]"); if(!b) return; e.stopPropagation(); try{ hatHarita && hatHarita.closePopup(); }catch(_){} tumSec(isTurDuzelt9(b.dataset.tumsec)); }, true);
 // Hatta (2B ya da 3B) basılı tutunca: KM + Buraya yol tarifi + koordinat
 function basiliMenu(lat, lng, uc3){
   const j = hatIs; if(!j) return;
@@ -10067,7 +10101,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v254`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v255`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -10243,7 +10277,10 @@ function kmEsitDugme9(){
 }
 function L_vurgu9(p){ try{ return L.circleMarker(p, { radius: 16, color: "#f59e0b", weight: 3, fillColor: "#f59e0b", fillOpacity: .25, interactive: false, className: "kes9n" }).addTo(hatHarita); }catch(_){ return null; } }
 const _hatGoster83 = hatGoster;
-hatGoster = async function(){ const r = await _hatGoster83.apply(this, arguments); try{ kmEsitDugme9(); }catch(_){} setTimeout(() => { try{ kbcArka9(); }catch(_){} }, 4000); return r; };
+hatGoster = async function(){ const gecis = window._tumGecis9; window._tumGecis9 = false; if(!gecis) tumIlk9 = null;
+  const r = await _hatGoster83.apply(this, arguments); try{ kmEsitDugme9(); }catch(_){} try{ ilkDugme9(); }catch(_){}
+  try{ if(hatHarita && !hatHarita._tt9){ hatHarita._tt9 = 1; hatHarita.on("click", tumYakinTik9); } }catch(_){}
+  setTimeout(() => { try{ kbcArka9(); }catch(_){} }, 4000); return r; };
 
 // ---------- v88: Devam Eden / Biten yazılarında cümle cümle silme (onaylı, geri alınabilir) ----------
 const KISA9 = /(^|\s)(vb|vs|no|nr|km|m|bkz|yy|sn|dk|st|cad|sok|mah|mh|bul|kv|vd|örn|ör|ort|yak|max|min|tbl)\.$/i;

@@ -9650,8 +9650,10 @@ function bkModel9(j){
   const yakKm9 = pt => kmN.map(n => ({ v: n.v, d: mesafe6(n.p, pt) })).filter(x => x.d < 400).sort((a, b) => a.d - b.d).slice(0, 3).map(x => `${kN9(x.v)}@${Math.round(x.d)}m`).join(" ") || "-";
   // v135: iki parça uç uca gelse de ayrı yol mu? Birleşme yerinde 0+000 / proje başı varsa ya da km iki yana doğru da
   // artıyor / azalıyorsa (yolun bir ucu değil iki yolun başı) ayrı yoldur. Km eşitliği yakınındaysa ayırmaz.
-  const kmEgim = p => { const L = [], c = bkKum9(p), T = c[c.length - 1];   // v143: uçlardaki 0+000 / PB yazıları (kavşakta başlayan yollarındır) sayılmaz
-    kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d < 80 && ((c[r.i] >= 60 && T - c[r.i] >= 60) || Math.abs(n.v) > 0.005)) L.push([r.i, n.v]); }); if(L.length < 2) return 0;
+  const kmEgim = (p, ucSon) => { const L = [], c = bkKum9(p), T = c[c.length - 1];   // v143: uçlardaki 0+000 / PB yazıları (kavşakta başlayan yollarındır) sayılmaz
+    // v235: birleşme ucundan bakınca ilk km eşitliğinin ötesi sayılmaz (eşitlikte km sıçrar, eğim ters çıkıyordu)
+    let esS = Infinity; if(ucSon !== undefined) esN.forEach(e => { if(PBRX.test(e.q[2] || "")) return; const r = bkIz9(e.p, p, c, new Set()); if(!(r.d < 80)) return; const s2 = ucSon ? T - r.c : r.c; if(s2 < esS) esS = s2; });
+    kmN.forEach(n => { const r = bkYakin9(n.p, p); if(r.d < 80 && ((c[r.i] >= 60 && T - c[r.i] >= 60) || Math.abs(n.v) > 0.005) && (ucSon ? T - c[r.i] : c[r.i]) < esS - 20) L.push([r.i, n.v]); }); if(L.length < 2) return 0;
     const mi = L.reduce((t, x) => t + x[0], 0) / L.length, mv = L.reduce((t, x) => t + x[1], 0) / L.length; return L.reduce((t, x) => t + (x[0] - mi) * (x[1] - mv), 0); };
   const ayriYol = (zp, zSon, qp, qBas) => {
     const jt = zSon ? zp[zp.length - 1] : zp[0];
@@ -9682,7 +9684,7 @@ function bkModel9(j){
       return sn9;
     }
     if(kmN.some(n => Math.abs(n.v) < 0.005 && mesafe6(n.p, jt) < 60) || pbN.some(b => mesafe6(b, jt) < 60)){ AN = "birleşmede 0+000 / PB yazısı → AYRI"; return true; }
-    const ez = kmEgim(zp), eq = kmEgim(qp); if(!ez || !eq){ AN = `iki yanda km yazısı yetersiz (bu yan ${A.length}, öbür ${B.length}) → devam`; return false; }
+    const ez = kmEgim(zp, zSon), eq = kmEgim(qp, !qBas); if(!ez || !eq){ AN = `iki yanda km yazısı yetersiz (bu yan ${A.length}, öbür ${B.length}) → devam`; return false; }
     const sn8 = (zSon ? ez > 0 : ez < 0) !== (qBas ? eq > 0 : eq < 0); AN = `km eğimi (${ez > 0 ? "+" : "-"} / ${eq > 0 ? "+" : "-"}) → ${sn8 ? "AYRI" : "devam"}`; return sn8;
   };
   const yakinKm = pt => { let en = null, bd = 800; kmN.forEach(n => { const d = mesafe6(n.p, pt); if(d < bd){ bd = d; en = n.v; } }); return en; };
@@ -9870,7 +9872,7 @@ function bkTeshis9(j, ek){
   let L = []; try{ bkModel9(jj); L = jj.__bkT9; }catch(e){ L = ["HATA: " + (e.message || e)]; }
   delete jj.__bkT9; if(eski) jj._bkM9 = eski;
   let Y = []; try{ Y = kbYollar9(jj).map(y => `${y.ad}${y.ana ? " (ana)" : ""}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))}`); }catch(_){}
-  return [`İşTakip boy kesit teşhisi · ${j.ad} · v234`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
+  return [`İşTakip boy kesit teşhisi · ${j.ad} · v235`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}

@@ -9659,6 +9659,9 @@ function bkModel9(j){
   const pbN = nok.filter(q => PBRX.test(q[2] || "")).map(q => [q[0], q[1]]);
   par.forEach(q => q.k = kmN.filter(n => bkYakin9(n.p, q.p).d < 80).length);
   const pbYakin = pt => pbN.some(b => mesafe6(b, pt) < 150);
+  // v240: iki uç arasındaki boşluğu KMZ'nin beyaz (orta) çizgisi bağlıyor mu (yol orada devam ediyor, yalnız renkli çizgisi yok)
+  const BZ9 = ((j.hat && j.hat.cizgi) || []).filter(c => c && c.i && c.p && c.p.length >= 2);
+  const beyazKopru9 = (a, b) => BZ9.some(c => bkHatUzak9(a, c.p) < 80 && bkHatUzak9(b, c.p) < 80);
   // v228 teşhis: yalnız teşhis istenince (j.__bkT9 dizisi varken) birleştirme kararları yazılır
   const TL = Array.isArray(j.__bkT9) ? j.__bkT9 : null; let AN = "";
   const PID = new Map(); par.forEach((q, i) => PID.set(q, i + 1));
@@ -9741,7 +9744,7 @@ function bkModel9(j){
             if(pbYakin(zu) || pbYakin(qu)){ L8("boşluk + PB/PS yakın → eklenmez"); return; }
             const v1 = yakinKm(zu), v2 = yakinKm(qu);
             if(v1 !== null && v2 !== null){ if(d > 5000 || Math.abs(v2 - v1) > d / 1000 + 0.8){ L8(`boşluk km uymuyor (${kN9(v1)} / ${kN9(v2)})`); return; } }
-            else if(d > 300){ L8("boşluk > 300 m"); return; }
+            else if(d > 300 && !(d < 2500 && beyazKopru9(zu, qu))){ L8("boşluk > 300 m"); return; }
           }
           L8("aday · " + (AN || "km kontrolü yok"));
           const zy = uc === "son" ? ucYon(z, true) : ucYon(z, false), qy = ters ? ucYon(q.p, true) : ucYon(q.p, false);
@@ -9890,7 +9893,7 @@ function bkTeshis9(j, ek){
   let L = []; try{ bkModel9(jj); L = jj.__bkT9; }catch(e){ L = ["HATA: " + (e.message || e)]; }
   delete jj.__bkT9; if(eski) jj._bkM9 = eski;
   let Y = []; try{ Y = kbYollar9(jj).map(y => `${y.ad}${y.ana ? " (ana)" : ""}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))}`); }catch(_){}
-  return [`İşTakip boy kesit teşhisi · v237`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
+  return [`İşTakip boy kesit teşhisi · v240`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -9957,6 +9960,11 @@ function bkBolumler9(j){
   for(let i = 0; i < C.length; i++) for(let k = i + 1; k < C.length; k++){
     const A = kut[i], B = kut[k]; if(A[0] > B[1] + pay || B[0] > A[1] + pay || A[2] > B[3] + pay * 1.4 || B[2] > A[3] + pay * 1.4) continue;
     if(bul(i) !== bul(k) && degir(C[i], C[k])) ust[bul(i)] = bul(k); }
+  // v240: iki küme arasındaki boşluğu KMZ'nin beyaz (orta) çizgisi bağlıyorsa yol devam ediyordur → aynı bölüm
+  { const BZ = ((j.hat && j.hat.cizgi) || []).filter(c => c && c.i && c.p && c.p.length >= 2);
+    BZ.forEach(bz => { const uclar = [bz.p[0], bz.p[bz.p.length - 1]], deg = [];
+      C.forEach((c, i) => { if(uclar.some(q => bkHatUzak9(q, c.p) < 80)) deg.push(i); });
+      for(let k = 1; k < deg.length; k++) if(bul(deg[0]) !== bul(deg[k])) ust[bul(deg[k])] = bul(deg[0]); }); }
   const G = new Map(); C.forEach((c, i) => { const r = bul(i); (G.get(r) || G.set(r, []).get(r)).push(c); });
   if(G.size < 2) return kaydet(null);
   const grup = [...G.values()].map(cz => ({ cz, u: cz.reduce((t, c) => t + uz(c.p), 0), nok: [], km: [] }));

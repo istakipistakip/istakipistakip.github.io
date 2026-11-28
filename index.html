@@ -1425,6 +1425,18 @@ html, body{ touch-action:manipulation; }
 .hatv .sagk button svg{ filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.7)); }
 .hatv .sagk button[data-et]::after{ text-shadow:0 1px 2px rgba(0,0,0,.85); }
 .hatv .sagk .ayr{ display:none !important; }
+/* v271: KMZ ekranı daha saydam (arka plan ~%25, ince kenar, hafif gölge; yazılar gölgeli ve net) */
+.cam5, .hatv .hb2 .hr1 .x, .hatv .hb2 .ad, .hatv .hara, .hatv .htum, .hatv .hseg, .hatv .katman, .hatv .pus, .gezhud{ background:rgba(12,18,34,.25) !important; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.08) !important; box-shadow:0 3px 10px rgba(0,0,0,.18) !important; }
+.hatv .sagk{ background:rgba(12,18,34,.2) !important; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.08) !important; box-shadow:0 3px 10px rgba(0,0,0,.18) !important; }
+.hatv .hb2, .hatv .hb2 b, .hatv .hb2 small, .hatv .hara, .hatv .htum, .hatv .hseg button, .hatv .katman, .hatv .solk, .olckart.k9, .olcsec9, .hatv .konumkart b, .hatv .konumkart small{ text-shadow:0 1px 2px rgba(0,0,0,.85); }
+.hatv .hara input::placeholder{ color:#e2e8f0; opacity:.85; }
+.hatv .hb2 svg, .hatv .hara svg, .hatv .htum svg, .hatv .pus svg{ filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.7)); }
+.hatv .kes9{ background:rgba(15,23,42,.35) !important; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); }
+.hatv .solk > span, .hatv .solk > div:not(.kesl9){ background-color:rgba(12,18,34,.3) !important; }
+.olckart.k9{ background:rgba(12,18,34,.35) !important; -webkit-backdrop-filter:blur(6px) !important; backdrop-filter:blur(6px) !important; }
+.olcsec9{ background:rgba(12,18,34,.5) !important; }
+.hatv .konumkart, html.dark .hatv .konumkart{ background:rgba(12,18,34,.35) !important; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.08) !important; box-shadow:0 3px 10px rgba(0,0,0,.18) !important; }
+.hatv .konumkart b{ color:#f1f5f9 !important; } .hatv .konumkart small{ color:#cbd5e1 !important; }
 /* v256: KMZ + itinerer çift ekran */
 .itp9{ position:absolute; left:0; right:0; bottom:0; height:42%; z-index:1002; background:#fff; color:#0f172a; border-radius:16px 16px 0 0; box-shadow:0 -6px 24px rgba(0,0,0,.35); display:flex; flex-direction:column; padding-bottom:env(safe-area-inset-bottom); }
 .itp9b{ display:flex; align-items:center; gap:6px; padding:2px 10px 7px; border-bottom:1px solid #e2e8f0; touch-action:none; }
@@ -2719,7 +2731,7 @@ async function hatGoster(id, korun){
     if(n._e9){ const mk = L.circleMarker([n[0], n[1]], { radius: 7, color: "#ffffff", weight: 2, fillColor: "#f59e0b", fillOpacity: 1 }).addTo(m);
       mk.bindTooltip(n[2], { permanent: true, direction: "top", className: "kmz-km-label kmz-es9", offset: [0, -8] }); sinir.push([n[0], n[1]]); return; }
     const mk = L.circleMarker([n[0], n[1]], { radius: 6, color: "#ffffff", weight: 2, fillColor: n[3] || "#dc2626", fillOpacity: 1 }).addTo(m);
-    if(n[2]) mk.bindTooltip(n[2], { permanent: true, direction: "top", className: "kmz-km-label" + (n._ek9 ? " kmz-ek9" : ""), offset: [0, -8] });
+    if(n[2]) mk.bindTooltip(n[2], { permanent: true, direction: "top", className: "kmz-km-label", offset: [0, -8] });
     mk.on("click", ev => { if(olc) return; L.DomEvent.stopPropagation(ev); kmMenu(m, n); });
     sinir.push([n[0], n[1]]);
   });
@@ -10240,7 +10252,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v270`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v271`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -10437,7 +10449,7 @@ function ekIs9(o, id){ const k = String(id); if(!o[k]) o[k] = { n: [], a: [] }; 
 function ekNoktaKat9(j){
   if(!j || !j.hat || !Array.isArray(j.hat.nok)) return;
   const E = (ekOku9()[String(j.id)] || {}).n || [];
-  E.forEach(e => { if(!Array.isArray(e) || !Number.isFinite(+e[0]) || !Number.isFinite(+e[1])) return; const q = [+e[0], +e[1], String(e[2] || ""), "#16a34a"]; q._ek9 = 1; j.hat.nok.push(q); });
+  E.forEach(e => { if(!Array.isArray(e) || !Number.isFinite(+e[0]) || !Number.isFinite(+e[1])) return; const q = [+e[0], +e[1], String(e[2] || "")]; q._ek9 = 1; j.hat.nok.push(q); });
 }
 const _duzelt270 = duzelt;
 duzelt = function(v){ const r = _duzelt270.apply(this, arguments); try{ (r.isler || []).forEach(j => ekNoktaKat9(j)); }catch(_){} return r; };

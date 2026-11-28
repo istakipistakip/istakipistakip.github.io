@@ -1421,13 +1421,21 @@ html.don9 .pdfis{ max-height:calc(var(--vh9) * 34); } html.don9 .yl9{ max-height
 .mapwrap.yat9 .zoom{ right:calc(12px + env(safe-area-inset-right)) !important; }
 .mapwrap.yan9 .hust{ right:auto !important; width:calc(var(--yan9) - 20px - env(safe-area-inset-left)); max-width:360px; }
 #mapwrap.yat9 .hust{ transition:none !important; }
+/* v277: yatayda İL / BİRİM / STD başlıkları alt alta, düğmeler sığdığı kadar yan yana (yana kaydırma yok); panel sığmazsa kendi içinde kayar */
+.mapwrap.yat9 .hust{ right:auto !important; width:min(320px, 44%); max-height:calc(100% - 20px); overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none; }
+.mapwrap.yat9 .hust::-webkit-scrollbar{ display:none; }
+.mapwrap.yat9 .hcsat{ flex-direction:column; align-items:stretch; gap:4px; }
+.mapwrap.yat9 .hcsat .lb{ width:auto; font-size:9px; margin:4px 0 0 2px; }
+.mapwrap.yat9 .hcsat .hck{ flex-wrap:wrap; overflow:visible; -webkit-mask-image:none; mask-image:none; gap:5px; }
+.mapwrap.yat9 .hcsat .hcip{ height:28px; min-height:28px; padding:0 10px; font-size:12px; }
+.mapwrap.yat9.yan9 .hust{ width:calc(var(--yan9) - 20px - env(safe-area-inset-left)) !important; }
 .pon-sayfalar canvas{ margin-left:auto; margin-right:auto; }
 /* v270: eksik km noktası */
 .eks9{ border-color:rgba(34,197,94,.6) !important; color:#bbf7d0 !important; } .eks9 span{ background:#22c55e !important; } .eks9 i{ background:rgba(34,197,94,.25) !important; color:#86efac !important; } .eks9.sonuk{ opacity:.6; }
 .eks9p{ position:absolute; left:10px; right:10px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:1300; background:rgba(12,18,34,.88); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.14); border-radius:16px; padding:10px 12px; color:#e2e8f0; font-size:13px; pointer-events:auto; box-shadow:0 8px 24px rgba(0,0,0,.4); max-width:460px; margin:0 auto; }
 .eks9p .ust{ display:flex; justify-content:space-between; align-items:center; gap:8px; } .eks9p .ust b{ font-size:16px; color:#86efac; } .eks9p small{ color:#94a3b8; font-size:11.5px; }
 .eks9p .nt{ margin:3px 0 9px; font-size:12.5px; color:#cbd5e1; line-height:1.35; }
-.eks9p .dg{ display:flex; gap:6px; } .eks9p .dg button{ flex:1; font:inherit; font-weight:800; font-size:13px; border:0; border-radius:11px; padding:10px 0; background:rgba(255,255,255,.1); color:#e2e8f0; } .eks9p .dg .ana{ background:#16a34a; color:#fff; } .eks9p .dg .on{ background:#f59e0b; color:#1c1917; }
+.eks9p .dg{ display:flex; gap:6px; } .eks9p .dg button{ flex:1; font:inherit; font-weight:800; font-size:13px; border:0; border-radius:11px; padding:10px 0; background:rgba(255,255,255,.1); color:#e2e8f0; } .eks9p .dg .ana{ background:#16a34a; color:#fff; } .eks9p .dg .on{ background:#f59e0b; color:#1c1917; } .eks9p .dg .sil{ flex:.7; background:rgba(220,38,38,.22); color:#fecaca; }
 .eks9p .x{ background:none; border:0; color:#94a3b8; font-size:22px; line-height:1; padding:0 4px; }
 .eks9m{ background:none; border:0; } .eks9m .eks9d{ position:absolute; inset:0; border-radius:50%; background:#22c55e; border:3px solid #fff; box-shadow:0 0 0 6px rgba(34,197,94,.3), 0 2px 6px rgba(0,0,0,.5); }
 .eks9m .eks9l{ position:absolute; left:50%; bottom:calc(100% + 6px); transform:translateX(-50%); background:#14532d; color:#dcfce7; font-size:12px; font-weight:800; padding:2px 7px; border-radius:7px; white-space:nowrap; border:1px solid #22c55e; }
@@ -10300,6 +10308,23 @@ function bkModel9(j){
   const yolAd = y => [...y.adS].find(a => !genel.test(a) && !KMRX9.test(a)) || "";
   yollar.forEach((y, i) => { y.ad = yolAd(y) || (yollar.length > 1 ? "Ana yol " + (i + 1) : "Ana yol"); });
   kollar.forEach(k => { const { y, r } = enYakinYol(k.jp); k.c = y.kum[r.i] + (yollar.indexOf(y) * 1e9); k.ayr = r.d < 300 ? kmAdi(y, y.kum[r.i]) : null; });
+  // v277: itinererdeki bağlı yol (bağlantı / kol: L, T, +) KMZ kolunun km'sini doğrular — kavşağın ana yoldaki km'si, kolun kavşaktaki km'si
+  // (ör. bağlantı yolunun 0+000'ı ana yola bağlandığı yerde) ve öbür ucu itinererden. KMZ km yazıları buna uymuyorsa itinerer kazanır.
+  try{ const D9 = itiDallar9(j); if(D9.length) kollar.forEach(k => {
+    const { y, r } = enYakinYol(k.jp); if(r.d > 300 || y !== yollar[0] || !y.kmF) return;
+    const av = y.kmF(y.kum[r.i]); if(!Number.isFinite(av)) return;
+    const d = D9.filter(x => Math.abs(x.kav - av) < 0.25).sort((a, b) => Math.abs(a.kav - av) - Math.abs(b.kav - av))[0]; if(!d || d.ic) return;
+    const T = k.kum[k.kum.length - 1]; if(!(T > 50)) return;
+    const vJ = d.dk, vU = Math.abs(d.dk - d.bas) < 0.002 ? d.bit : d.bas;
+    const j0 = mesafe6(k.p[0], k.jp) <= mesafe6(k.p[k.p.length - 1], k.jp), cJ = j0 ? 0 : T, cU = j0 ? T : 0;
+    const kJ = k.kmF ? k.kmF(cJ) : NaN, kU = k.kmF ? k.kmF(cU) : NaN;
+    if(Number.isFinite(kJ) && Math.abs(kJ - vJ) <= 0.1 && Number.isFinite(kU) && Math.abs(kU - vU) <= Math.max(0.15, Math.abs(vU - vJ) * 0.25)) return;   // KMZ itinererle uyumlu
+    if(TL) TL.push(`${k.ad || "kol"} (ayrılış ${kmT9(av)}): KMZ km'si itinererle uyuşmuyor (kavşakta KMZ ${Number.isFinite(kJ) ? kmT9(kJ) : "km yok"}, itinerer ${kmT9(vJ)}) → itinerer: kavşak ${kmT9(vJ)}, uç ${kmT9(vU)}`);
+    if((vJ < vU) !== j0) cevir(k);   // km kavşaktan uzaklaştıkça artıyorsa kavşak başta
+    const T2 = k.kum[k.kum.length - 1];
+    k.L = [{ c: 0, v: Math.min(vJ, vU) }, { c: T2, v: Math.max(vJ, vU) }]; k.E = [];
+    k.kmF = bkKmFn9(k.L, k.E, IE9); k._iti9 = 1; k.ayr = kmAdi(y, y.kum[r.i]);
+  }); }catch(_){}
   kollar.sort((a, b) => a.c - b.c);
   let adsiz = 0; kollar.forEach(k => { if(!k.ad) k.ad = "Kol " + (++adsiz); });
   const paket = h => ({ p: h.p, kop: h.kop, etik: h.et, L: h.L, kmF: h.kmF, esit: h.E, ad: h.ad, ayr: h.ayr || null, kol: h === yollar[0] ? 0 : 1, yol: h.yol ? 1 : 0 });
@@ -10312,6 +10337,14 @@ function bkModel9(j){
   }
   return (j._bkM9 = { h: j.hat, ana: paket(yollar[0]), kollar: yollar.slice(1).map(paket).concat(kollar.map(paket)), esitN: esN });
 }
+// v277: itinererdeki bağlı yollar (km cinsinden): kav = bağlandığı yoldaki km, dk = kendi kavşak km'si, ic = kavşak yolun ortasında (T / +)
+function itiDallar9(j){ const out = [];
+  try{ ytKodlar9(j).forEach(kod => { const q = ytProje9(kod); if(!q || !Array.isArray(q.yollar)) return; const ana = q.yollar[0];
+    q.yollar.forEach((y, i) => { if(i === 0 || !y || !["L", "T", "+"].includes(y.sekil) || y.kavsakKm == null || y.bas == null || y.bit == null) return;
+      if(ana && y.bagliYolId && y.bagliYolId !== ana.id) return;
+      const bas = +y.bas / 1000, bit = +y.bit / 1000, dk = y.dalKm != null ? +y.dalKm / 1000 : bas; if(!(bit > bas)) return;
+      out.push({ kav: +y.kavsakKm / 1000, dk, bas, bit, ic: dk > bas + 0.001 && dk < bit - 0.001, ad: y.adi || "" }); }); }); }catch(_){}
+  return out; }
 // v228: boy kesit / KMZ teşhisi (yalnız yöneticinin düzenleme modunda): yol modelinin kararları yazı olarak kopyalanır
 function bkTeshis9(j, ek){
   const jj = bkJ9 ? bkJ9(j) : j; if(!jj || !jj.hat) return "Bu işte KMZ hattı yok";
@@ -10334,7 +10367,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boykesit teşhisi · v276`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boykesit teşhisi · v277`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -10527,7 +10560,7 @@ hatGoster = async function(){ const gecis = window._tumGecis9; window._tumGecis9
 const EK9K = "istakip-kmzek9";
 function ekOku9(){ try{ const o = JSON.parse(yerel(EK9K) || "{}"); return o && typeof o === "object" ? o : {}; }catch(_){ return {}; } }
 function ekYaz9(o){ try{ yerel(EK9K, JSON.stringify(o)); }catch(_){} }
-function ekIs9(o, id){ const k = String(id); if(!o[k]) o[k] = { n: [], a: [] }; o[k].n = o[k].n || []; o[k].a = o[k].a || []; return o[k]; }
+function ekIs9(o, id){ const k = String(id); if(!o[k]) o[k] = { n: [], s: [] }; o[k].n = o[k].n || []; o[k].s = o[k].s || []; delete o[k].a; return o[k]; }   // v277: s = silinen öneriler (a = eski "atla", artık kullanılmaz)
 function ekNoktaKat9(j){
   if(!j || !j.hat || !Array.isArray(j.hat.nok)) return;
   const E = (ekOku9()[String(j.id)] || {}).n || [];
@@ -10570,7 +10603,7 @@ function eksikKm9(j){
   A.sort((x, y) => x.m - y.m || x.kol - y.kol);
   const B = [];
   A.forEach(x => { const l = B[B.length - 1]; if(l && l.kol === x.kol && Math.abs(l.m - x.m) <= 5){ if(!l.ad.includes(x.ne) && l.ad.split(" · ").length < 3) l.ad += " · " + x.ne; return; } B.push({ m: x.m, ad: x.ne, kol: x.kol, ik: x.ik, zc: x.zc }); });
-  const atla = new Set(((ekOku9()[String(j.id)] || {}).a || []).map(Number));
+  const atla = new Set(((ekOku9()[String(j.id)] || {}).s || []).map(Number));
   const nokta = (h, c) => { const P = h.p, K = h.kum || bkKum9(P, h.kop); let k = 0; while(k < K.length - 2 && K[k + 1] < c) k++; const u = K[k + 1] > K[k] ? (c - K[k]) / (K[k + 1] - K[k]) : 0, a = P[k], b = P[k + 1] || a; return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u]; };
   B.forEach(x => {
     if(V.some(v => Math.abs(v - x.m) <= 20)) return;
@@ -10599,8 +10632,8 @@ function eksikDugme9(){
   b.innerHTML = `<span>+</span>Eksik km noktası<i>${kalan.length}</i>`;
   solk.appendChild(b);
   b.addEventListener("click", async e => { e.stopPropagation();
-    if(!kalan.length){ const ok = await onay9("Eksik km noktası", `Eksik nokta kalmadı. Atlanan ${atl} nokta var.`, [{ t: "Kapat", v: false }, { t: "Atlananları geri getir", v: true, ana: 1 }]);
-      if(ok){ const o = ekOku9(); ekIs9(o, j.id).a = []; ekYaz9(o); eksikDugme9(); eksikSihirbaz9(); } return; }
+    if(!kalan.length){ const ok = await onay9("Eksik km noktası", `Eksik nokta kalmadı. Sildiğin ${atl} öneri var.`, [{ t: "Kapat", v: false }, { t: "Silinenleri geri getir", v: true, ana: 1 }]);
+      if(ok){ const o = ekOku9(); ekIs9(o, j.id).s = []; ekYaz9(o); eksikDugme9(); eksikSihirbaz9(); } return; }
     eksikSihirbaz9(); });
 }
 let EKS9 = null;   // { j, L, i, mk, eklenen, kaydir }
@@ -10626,7 +10659,10 @@ function eksikSihirbaz9(){
     if(ne === "kapat"){ eksikKapat9(); return; }
     if(ne === "kaydir"){ s.kaydir = !s.kaydir; try{ s.kaydir ? s.mk.dragging.enable() : s.mk.dragging.disable(); }catch(_){} eksikGoster9(true); return; }
     if(ne === "ekle"){ const ll = s.mk.getLatLng(), o = ekOku9(), E = ekIs9(o, s.j.id); E.n.push([+ll.lat.toFixed(7), +ll.lng.toFixed(7), x.km]); ekYaz9(o); s.eklenen++; }
-    if(ne === "atla"){ const o = ekOku9(), E = ekIs9(o, s.j.id); if(!E.a.includes(Math.round(x.m))) E.a.push(Math.round(x.m)); ekYaz9(o); }
+    if(ne === "sil"){ onay9("Öneri silinsin mi?", `<b>${esc(x.km)}</b> — ${esc(x.ad)}<br>Bu km noktası bir daha önerilmez. (Düğmeden "Silinenleri geri getir" ile geri gelir.)`, [{ t: "Vazgeç", v: false }, { t: "Sil", v: true, ana: 1, tehlike: 1 }]).then(ok => {
+        if(!ok || EKS9 !== s) return; const o = ekOku9(), E = ekIs9(o, s.j.id); if(!E.s.includes(Math.round(x.m))) E.s.push(Math.round(x.m)); ekYaz9(o);
+        s.i++; if(s.i >= s.L.length){ eksikKapat9(); return; } eksikGoster9(); }); return; }
+    // atla: yalnız şimdilik geçer — öneri listede kalır, bir sonraki açışta yine gelir
     s.i++; if(s.i >= s.L.length){ eksikKapat9(); return; } eksikGoster9(); });
   eksikGoster9();
 }
@@ -10644,7 +10680,7 @@ function eksikGoster9(ayni){
   let burada = ""; try{ const ll = s.mk.getLatLng(), r = noktadanKm9(s.j, ll.lat, ll.lng); if(r && Number.isFinite(r.km)) burada = kmT9(r.km); }catch(_){}
   p.innerHTML = `<div class="ust"><div><b>${esc(x.km)}</b> <small>${s.i + 1} / ${s.L.length}</small></div><button type="button" class="x" data-e9="kapat" aria-label="Kapat">×</button></div>
 <div class="nt">${esc(x.ad)}<br><small>${s.kaydir ? "Noktayı parmakla hat boyunca sürükleyip bırakın; hatta yapışır." : "Yer, KMZ'deki komşu km yazılarından tahmin edildi."}${burada ? ` · Buradaki KMZ km'si ≈ ${esc(burada)}` : ""}</small></div>
-<div class="dg"><button type="button" class="ana" data-e9="ekle">Ekle</button><button type="button" class="${s.kaydir ? "on" : ""}" data-e9="kaydir">${s.kaydir ? "Kaydırılıyor" : "Kaydır"}</button><button type="button" data-e9="atla">Atla</button></div>`;
+<div class="dg"><button type="button" class="ana" data-e9="ekle">Ekle</button><button type="button" class="${s.kaydir ? "on" : ""}" data-e9="kaydir">${s.kaydir ? "Kaydırılıyor" : "Kaydır"}</button><button type="button" data-e9="atla">Atla</button><button type="button" class="sil" data-e9="sil">Sil</button></div>`;
 }
 // eklenen noktaya dokununca: "Eklenen noktayı sil"
 const _kmMenu270 = kmMenu;
@@ -10732,7 +10768,7 @@ html.don9 body{ position:fixed !important; left:0 !important; top:0 !important; 
   const izinIste = () => { if(istendi) return; istendi = true; const DM = window.DeviceMotionEvent; if(!DM) return;
     if(typeof DM.requestPermission === "function") DM.requestPermission().then(r => { if(r === "granted") window.addEventListener("devicemotion", hareket); }).catch(() => {});
     else window.addEventListener("devicemotion", hareket); };
-  document.addEventListener("click", e => { const t = e.target; if(t && t.closest && t.closest("[data-hat], [data-iti], [data-parasal], [data-pdfonizle], [data-haritada], #tabs button, .tabs button, .tab")) izinIste(); }, true);
+  // v277: hareket sensörü izni istenmez (her açılışta soruyordu); yan çevirme yalnız iPhone yön kilidi kapalıyken çalışır
   let kT = 0; const sonra = () => { if(kT) return; kT = requestAnimationFrame(() => { kT = 0; karar(); }); };
   window.addEventListener("resize", sonra); window.addEventListener("orientationchange", () => setTimeout(karar, 60));
   try{ new MutationObserver(sonra).observe(document.body, { childList: true, subtree: true }); }catch(_){}

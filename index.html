@@ -1421,10 +1421,37 @@ html, body{ touch-action:manipulation; }
 .leaflet-tooltip.kmz-ek9{ border-color:#22c55e !important; }
 /* v270: sağ menü: düğmelerin kendi kutuları da saydam, ayırıcı çizgiler yok */
 .hatv .sagk{ background:rgba(12,18,34,.32) !important; }
-.hatv .sagk button:not(.on):not(.acik):not(.olc-on), html.dark .hatv .sagk button:not(.on):not(.acik):not(.olc-on), html.dark .hatv .sagk .kat:not(.on){ background:transparent !important; box-shadow:none !important; }
+.hatv .sagk button:not(.on):not(.acik):not(.olc-on):not(.on6), html.dark .hatv .sagk button:not(.on):not(.acik):not(.olc-on):not(.on6), html.dark .hatv .sagk .kat:not(.on){ background:transparent !important; box-shadow:none !important; }
 .hatv .sagk button svg{ filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.7)); }
 .hatv .sagk button[data-et]::after{ text-shadow:0 1px 2px rgba(0,0,0,.85); }
 .hatv .sagk .ayr{ display:none !important; }
+/* v272: Boykesit açıkken düğme turuncu (saydam düğme kuralı bunu ezmesin) */
+.hatv .sagk button[data-boykesit].on6{ background:#ea580c !important; color:#fff !important; box-shadow:0 4px 12px rgba(234,88,12,.45) !important; }
+.hatv .sagk button[data-boykesit].on6[data-et]::after{ color:#fff !important; }
+.hatv .sagk button[data-et]::after{ max-width:52px; overflow:hidden; text-overflow:clip; }
+.hatv .sagk button[data-boykesit][data-et]::after{ font-size:8px !important; letter-spacing:-.3px !important; }
+/* v272: yatay ekran düzeni */
+@media (orientation: landscape) and (max-height: 540px){
+  .hatv{ max-width:none !important; }
+  .hatv .hatbar.hb2{ display:flex !important; flex-direction:row !important; flex-wrap:wrap; align-items:center; gap:6px; padding:calc(6px + env(safe-area-inset-top)) calc(160px + env(safe-area-inset-right)) 4px calc(8px + env(safe-area-inset-left)) !important; }
+  .hatv .hb2 .hr1{ flex:0 1 32%; min-width:0; display:flex; gap:6px; align-items:center; margin:0 !important; }
+  .hatv .hb2 .hr2{ flex:1 1 0; min-width:0; margin:0 !important; }
+  .hatv .hb2 .honer{ flex-basis:100%; }
+  .hatv .hb2 .hr1 .x{ width:36px !important; height:36px !important; flex:none; }
+  .hatv .hb2 .ad{ min-height:36px !important; padding:3px 10px !important; min-width:0; overflow:hidden; } .hatv .hb2 .ad b{ font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .hatv .hb2 .ad small{ font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .hatv .hara, .hatv .htum, .hatv .hseg{ height:36px !important; min-height:36px !important; }
+  .hatv .katman{ top:calc(6px + env(safe-area-inset-top)) !important; right:calc(8px + env(safe-area-inset-right)) !important; left:auto !important; height:36px; box-sizing:border-box; align-items:center; }
+  .hatv .katman button{ padding:5px 10px !important; }
+  .hatv .solk{ top:calc(50px + env(safe-area-inset-top)) !important; margin-top:0 !important; left:calc(10px + env(safe-area-inset-left)) !important; }
+  .hatv .sagk{ top:calc(50px + env(safe-area-inset-top)) !important; right:calc(2px + env(safe-area-inset-right)) !important; width:auto !important; display:grid !important; grid-template-columns:repeat(2, 48px); grid-auto-rows:auto; gap:1px 2px !important; padding:4px !important; border-radius:18px !important; }
+  .hatv .konumkart{ left:calc(10px + env(safe-area-inset-left)) !important; right:auto !important; max-width:min(360px, 46vw); bottom:calc(8px + env(safe-area-inset-bottom)) !important; padding:6px 10px !important; border-radius:12px !important; gap:8px !important; }
+  .hatv .konumkart b{ font-size:12.5px !important; } .hatv .konumkart small{ font-size:10.5px !important; } .hatv .konumkart .nok{ width:11px !important; height:11px !important; }
+  .bk6p{ left:calc(10px + env(safe-area-inset-left)) !important; right:calc(120px + env(safe-area-inset-right)) !important; bottom:calc(6px + env(safe-area-inset-bottom)) !important; }
+  .bk6p canvas{ height:64px !important; } .bk6p .yk{ height:64px !important; }
+  .itp9{ left:env(safe-area-inset-left) !important; right:env(safe-area-inset-right) !important; }
+  .eks9p{ left:calc(10px + env(safe-area-inset-left)) !important; right:auto !important; width:min(380px, 52vw); margin:0 !important; bottom:calc(8px + env(safe-area-inset-bottom)) !important; padding:7px 10px !important; }
+  .eks9p .nt{ margin:2px 0 6px !important; } .eks9p .dg button{ padding:7px 0 !important; }
+}
 /* v271: KMZ ekranı daha saydam (arka plan ~%25, ince kenar, hafif gölge; yazılar gölgeli ve net) */
 .cam5, .hatv .hb2 .hr1 .x, .hatv .hb2 .ad, .hatv .hara, .hatv .htum, .hatv .hseg, .hatv .katman, .hatv .pus, .gezhud{ background:rgba(12,18,34,.25) !important; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.08) !important; box-shadow:0 3px 10px rgba(0,0,0,.18) !important; }
 .hatv .sagk{ background:rgba(12,18,34,.2) !important; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.08) !important; box-shadow:0 3px 10px rgba(0,0,0,.18) !important; }
@@ -2684,7 +2711,7 @@ async function hatGoster(id, korun){
 <div class="hr2"><div class="hara h9" id="hara"><button data-hara aria-label="İş ara">${IK("ara")}</button><input id="hara2" type="search" placeholder="İş / firma ara" autocomplete="off"></div><button class="htum${hatTum ? " on" : ""}" data-htum>${IK("lejant")}Tüm İşler</button><div class="hseg"><button data-hmod="2b"${hatMod === "2b" ? ' class="on"' : ""}>2B</button><button data-hmod="3b"${hatMod === "3b" ? ' class="on"' : ""}>3B</button></div></div><div class="honer" id="honer2"></div></div>
 <div class="hatmap etiketsiz" id="hatmap"></div><div class="hat3b" id="hat3b" hidden></div>
 <div class="katman"><button data-katman="sokak">Sokak</button><button data-katman="uydu" class="on">Uydu</button></div>
-<div class="sagk">${katVar ? `<button class="kat" data-katlar aria-label="Katmanlar" data-et="Katman">${IK("katman")}Katmanlar<i id="katsay">0</i></button><span class="ayr"></span>` : ""}<button data-konumum aria-label="Konumum" data-et="Konum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 4 3.5 10.6l6.9 2.6 2.6 6.9z" fill="currentColor" fill-opacity=".18"/></svg></button><button data-yola aria-label="Yol hattına dön" data-et="Yola dön">${IK("yol")}</button><button data-boykesit aria-label="Boy kesit" data-et="Kesit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="M3 16l4-6 4 3 4-7 6 10"/></svg></button>${(() => { try{ return itiVar(j) ? `<button data-iti="${esc(j.id)}" aria-label="İtinerer" data-et="İtinerer">${IK("iti")}</button>` : ""; }catch(_){ return ""; } })()}<span class="ayr"></span><button data-olc aria-label="Mesafe ölç" data-et="Ölçüm">${IK("cetvel")}</button><button data-yt="${esc(j.id)}" aria-label="Yol tarifi" data-et="Tarif">${IK("yt")}</button><button data-kmzindir aria-label="KMZ indir" data-et="İndir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></button><span class="ayr"></span><button class="egm" data-egim aria-label="Eğik / tepeden" data-et="Eğim">${IK("egim")}</button><button data-gez aria-label="Yolu gez" data-et="Gez"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 9 3M19 21 15 3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></svg></button></div><button class="pus" data-kuzey aria-label="Kuzeyi yukarı al">${PUSULA}</button>
+<div class="sagk">${katVar ? `<button class="kat" data-katlar aria-label="Katmanlar" data-et="Katman">${IK("katman")}Katmanlar<i id="katsay">0</i></button><span class="ayr"></span>` : ""}<button data-konumum aria-label="Konumum" data-et="Konum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M20 4 3.5 10.6l6.9 2.6 2.6 6.9z" fill="currentColor" fill-opacity=".18"/></svg></button><button data-yola aria-label="Yol hattına dön" data-et="Yola dön">${IK("yol")}</button><button data-boykesit aria-label="Boykesit" data-et="Boykesit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h18"/><path d="M3 16l4-6 4 3 4-7 6 10"/></svg></button>${(() => { try{ return itiVar(j) ? `<button data-iti="${esc(j.id)}" aria-label="İtinerer" data-et="İtinerer">${IK("iti")}</button>` : ""; }catch(_){ return ""; } })()}<span class="ayr"></span><button data-olc aria-label="Mesafe ölç" data-et="Ölçüm">${IK("cetvel")}</button><button data-yt="${esc(j.id)}" aria-label="Yol tarifi" data-et="Tarif">${IK("yt")}</button><button data-kmzindir aria-label="KMZ indir" data-et="İndir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg></button><span class="ayr"></span><button class="egm" data-egim aria-label="Eğik / tepeden" data-et="Eğim">${IK("egim")}</button><button data-gez aria-label="Yolu gez" data-et="Gez"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21 9 3M19 21 15 3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></svg></button></div><button class="pus" data-kuzey aria-label="Kuzeyi yukarı al">${PUSULA}</button>
 <div class="solk"><div class="hatnot" id="hatnot" style="display:none">Çevrimdışı · arka plan haritası yok</div><div class="chips" id="chips"></div></div>
 <div class="dserit" id="dserit" style="display:none"></div>
 <div class="konumkart" id="konumkart" style="display:none"><span class="nok"></span><div><b id="konumb"></b><small id="konums"></small></div></div>`;
@@ -6162,6 +6189,8 @@ function pusulaGuncel(){
   const b = uc && uc.map ? -uc.map.getBearing() : (hatHarita && hatHarita.getBearing ? hatHarita.getBearing() : 0);
   p.style.transform = `rotate(${b}deg)`;
 }
+// v272: telefon döndürülünce pusula ve ölçüm kutusu yeniden yerleşir
+window.addEventListener("resize", () => { setTimeout(() => { try{ pusulaYeri(); }catch(_){} try{ olcKartYer9(); }catch(_){} }, 120); });
 function pusulaYeri(){
   const v = document.getElementById("hatv"); if(!v) return;
   const s = v.querySelector(".sagk"), p = v.querySelector(".pus"); if(!s || !p) return;
@@ -6647,10 +6676,10 @@ async function boyKesit(j){
   document.getElementById("bk6")?.remove();
   const hv = document.getElementById("hatv"); if(!hv || !j || !j.hat) return;
   const p = document.createElement("div"); p.className = "bk6p"; p.id = "bk6";
-  p.innerHTML = `<div class="b1"><b>Boy Kesit</b><em>yaklaşık</em><span></span><button data-bkkapat aria-label="Kapat">${IK("x")}</button></div><div class="yk" id="bk6yk">Arazi verisi alınıyor…</div>`;
+  p.innerHTML = `<div class="b1"><b>Boykesit</b><em>yaklaşık</em><span></span><button data-bkkapat aria-label="Kapat">${IK("x")}</button></div><div class="yk" id="bk6yk">Arazi verisi alınıyor…</div>`;
   hv.appendChild(p);
   p.querySelector("[data-bkkapat]").addEventListener("click", () => { p.remove(); bkTemizle9(); });
-  const ana = bkSecHat9(j) || (anaCizgiler(j)[0] || j.hat.cizgi.slice().sort((a, b) => b.p.length - a.p.length)[0]); if(!ana || ana.p.length < 2){ p.querySelector("#bk6yk").textContent = "Bu işin çizgisi boy kesit için yetersiz."; return; }
+  const ana = bkSecHat9(j) || (anaCizgiler(j)[0] || j.hat.cizgi.slice().sort((a, b) => b.p.length - a.p.length)[0]); if(!ana || ana.p.length < 2){ p.querySelector("#bk6yk").textContent = "Bu işin çizgisi boykesit için yetersiz."; return; }
   const kop = ana.kop || new Set();
   const cum = [0]; for(let i = 1; i < ana.p.length; i++) cum.push(cum[i - 1] + (kop.has(i) ? 0 : mesafe6(ana.p[i - 1], ana.p[i])));
   bkHat9 = { p: ana.p, kop };
@@ -6658,7 +6687,7 @@ async function boyKesit(j){
   const top = cum[cum.length - 1], N = Math.max(20, Math.min(400, Math.round(top / 40))), S = [];
   let k = 0; for(let s = 0; s <= N; s++){ const d = top * s / N; while(k < cum.length - 2 && cum[k + 1] < d) k++; const t = (d - cum[k]) / Math.max(1e-9, cum[k + 1] - cum[k]), a = ana.p[k], b = ana.p[k + 1]; S.push({ d, p: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t] }); }
   try{ for(const s of S) s.h = await yukseklik(s.p[0], s.p[1]); }
-  catch(_){ const y = p.querySelector("#bk6yk"); if(y) y.innerHTML = "Arazi verisi alınamadı.<br>Boy kesit için internet gerekir; bir kez açılan yol sonra internetsiz de görünür."; return; }
+  catch(_){ const y = p.querySelector("#bk6yk"); if(y) y.innerHTML = "Arazi verisi alınamadı.<br>Boykesit için internet gerekir; bir kez açılan yol sonra internetsiz de görünür."; return; }
   if(!document.getElementById("bk6")) return;
   // KM etiketleri: KMZ'deki "12+000" noktalarının çizgi üzerindeki yeri
   const km = []; (ana.etik || (ana.kol ? [] : j.hat.nok.filter(q => !bkEsit9(q[2])))).forEach(q => { const mm = /(\d+)\s*\+\s*(\d{3})/.exec(q[2] || ""); if(!mm) return; const et = mm[1] + "+" + mm[2]; let bi = 0, bd = 1e18; S.forEach((s, i) => { const dd = (s.p[0] - q[0]) ** 2 + (s.p[1] - q[1]) ** 2; if(dd < bd){ bd = dd; bi = i; } }); if(mesafe6(S[bi].p, [q[0], q[1]]) < 300) km.push([S[bi].d, et]); });
@@ -6816,6 +6845,9 @@ hikGoster = function(i){ _hikGoster94(i); if(!hikD || !hikD.l[hikD.i]) return; c
   const yer = ic.querySelector(".kar6") || ic; yer.insertAdjacentHTML("beforeend", `<div class="dn9h">${esc(x.k.dn)}</div>`); };
 // boy kesit: düğme açıkken turuncu, açılınca yol panelin üstüne sığar
 function bkDugme(){ const b = document.querySelector(".hatv [data-boykesit]"); if(b) b.classList.toggle("on6", !!document.getElementById("bk6")); }
+// v272: Boykesit düğmesi panel nasıl açılır / kapanırsa kapansın (×, tekrar basma, geri, iş değişimi) turuncu durumu izler
+(() => { let t = null; const izle = () => { if(t) return; t = requestAnimationFrame(() => { t = null; try{ bkDugme(); }catch(_){} }); };
+  try{ new MutationObserver(ms => { for(const m of ms){ for(const n of m.addedNodes) if(n.id === "bk6" || n.id === "hatv"){ izle(); return; } for(const n of m.removedNodes) if(n.id === "bk6"){ izle(); return; } } }).observe(document.body, { childList: true, subtree: true }); }catch(_){} })();
 document.addEventListener("click", e => { if(e.target.closest && e.target.closest("[data-boykesit], [data-bkkapat]")) setTimeout(bkDugme, 0); }, true);
 const _boyKesit8 = boyKesit;
 boyKesit = async function(j){
@@ -10252,7 +10284,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v271`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boykesit teşhisi · v272`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}

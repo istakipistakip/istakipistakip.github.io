@@ -1415,8 +1415,10 @@ html.don9 .bh{ max-height:calc(var(--vh9) * 46); } html.don9 .on9 .kut{ max-heig
 html.don9 .gal6 .sah{ width:min(300px, calc(var(--vw9) * 78)); height:min(430px, calc(var(--vh9) * 60)); } html.don9 .kqk7{ flex-basis:calc(var(--vw9) * 82); }
 html.don9 .pdfis{ max-height:calc(var(--vh9) * 34); } html.don9 .yl9{ max-height:calc(var(--vh9) * 40); } html.don9 .kgi9{ max-height:calc(var(--vh9) * 58); }
 /* v273: anasayfa haritası yatayda tamamı görünür; arama / filtreler solda, +/− sağda (haritanın üstüne binmez) */
-.mapwrap.yan9 .hust{ right:auto !important; width:calc(var(--yan9) - 18px); max-width:340px; }
-.mapwrap.yan9 .hcipler{ flex-wrap:wrap !important; overflow-x:visible !important; overflow-y:auto; max-height:230px; }
+.mapwrap.yan9 .hust{ left:0 !important; right:auto !important; top:0 !important; bottom:0 !important; width:calc(236px + env(safe-area-inset-left)) !important; max-width:none !important; box-sizing:border-box; padding:calc(10px + env(safe-area-inset-top)) 10px 10px calc(10px + env(safe-area-inset-left)) !important; background:#0b1220 !important; border-right:1px solid rgba(255,255,255,.08); overflow-y:auto; z-index:4; opacity:1 !important; }
+.mapwrap.yan9 .hust .hfd9{ display:none !important; }
+.mapwrap.yan9 .zoom{ top:0 !important; bottom:0 !important; right:0 !important; width:calc(56px + env(safe-area-inset-right)); box-sizing:border-box; padding:0 env(safe-area-inset-right) 14px 0 !important; justify-content:flex-end; align-items:center; background:#0b1220; border-left:1px solid rgba(255,255,255,.08); opacity:1 !important; z-index:4; }
+.mapwrap.yan9 .sheet{ left:var(--sol9) !important; right:var(--sag9) !important; width:auto !important; max-width:none !important; }
 .pon-sayfalar canvas{ margin-left:auto; margin-right:auto; }
 /* v270: eksik km noktası */
 .eks9{ border-color:rgba(34,197,94,.6) !important; color:#bbf7d0 !important; } .eks9 span{ background:#22c55e !important; } .eks9 i{ background:rgba(34,197,94,.25) !important; color:#86efac !important; } .eks9.sonuk{ opacity:.6; }
@@ -2530,11 +2532,14 @@ function mapUygula(){
   const inn = document.getElementById("mapin"), w = document.getElementById("mapwrap"), img = document.getElementById("mapimg");
   if(!inn || !w || !img) return;
   const W = w.clientWidth, H = w.clientHeight;
-  // v273: yatayda harita yüksekliğe sığar (tamamı görünür); iki yandaki boşluk arama / filtre ve +/− için
-  let Wb = W; if(W > H * 1.1 && img.naturalWidth && img.naturalHeight) Wb = Math.min(W, Math.floor(H * img.naturalWidth / img.naturalHeight));
-  inn.style.width = Wb + "px"; const yan9 = Math.max(0, (W - Wb) / 2); w.style.setProperty("--yan9", yan9 + "px"); w.classList.toggle("yan9", yan9 >= 150);
+  // v274: yatayda solda arama / filtre, sağda +/− kendi sütunlarında; harita aradaki alanda (büyütünce sütunların altına girmez)
+  const yat9 = W > H * 1.1 && img.naturalWidth && img.naturalHeight; w.classList.toggle("yan9", !!yat9);
+  let sol9 = 0, sag9 = 0; if(yat9){ const hu = w.querySelector(".hust"), zo = w.querySelector(".zoom"); sol9 = hu ? hu.offsetWidth : 0; sag9 = zo ? zo.offsetWidth : 0; }
+  const A9 = W - sol9 - sag9; w.style.setProperty("--sol9", sol9 + "px"); w.style.setProperty("--sag9", sag9 + "px");
+  const Wb = yat9 ? Math.max(100, Math.min(A9, Math.floor(H * img.naturalWidth / img.naturalHeight))) : W;
+  inn.style.width = Wb + "px";
   const iw = Wb * mz.s, ih = img.offsetHeight * mz.s;
-  mz.x = iw <= W ? (W - iw) / 2 : Math.min(0, Math.max(W - iw, mz.x));
+  mz.x = yat9 ? (iw <= A9 ? sol9 + (A9 - iw) / 2 : Math.min(sol9, Math.max(sol9 + A9 - iw, mz.x))) : Math.min(0, Math.max(W - iw, mz.x));
   // v203: klavye açıkken haritanın altı klavyenin üstüne kadar çıkabilir (alttaki kutular klavyenin üstünde görünebilsin)
   let kb = 0; try{ const vv = window.visualViewport; if(vv){ const wr = w.getBoundingClientRect(); kb = Math.max(0, wr.bottom - (vv.offsetTop + vv.height)); if(kb < 60) kb = 0; } }catch(_){}
   // v232: klavye kapanınca harita yerinde kalır (klavyenin açtığı pay, harita elle oynatılana / kart kapanana kadar korunur)
@@ -2750,16 +2755,23 @@ async function hatGoster(id, korun){
   renkli.forEach(c => sinir.push(...c.p)); beyaz.forEach(c => sinir.push(...c.p));
   // v241: KMZ'de yazmayan km eşitlikleri (iki km yazısının yan yana geldiği, itinererden teyit edilen yer) haritaya yazılır;
   // eşitliği oluşturan iki km yazısının yerine "125+750 = 0+000" yazısı konur (yazılar çakışırsa önce bu görünür)
-  let NK9 = j.hat.nok;
+  let NK9 = j.hat.nok; const bag9 = [];
   try{ const r = bkOrtukEsit9(j.hat.nok, anaCizgiler(j), itiEsit9(j)); if(r !== j.hat.nok){ NK9 = r.filter(q => q._e9).concat(r.filter(q => !q._e9)); } }catch(_){}
   NK9.forEach(n => {
-    if(n._e9){ const mk = L.circleMarker([n[0], n[1]], { radius: 7, color: "#ffffff", weight: 2, fillColor: "#f59e0b", fillOpacity: 1 }).addTo(m);
-      mk.bindTooltip(n[2], { permanent: true, direction: "top", className: "kmz-km-label kmz-es9", offset: [0, -8] }); sinir.push([n[0], n[1]]); return; }
+    if(n._e9){ const gp = n._g9 || [n[0], n[1]];
+      if(n._bag9) bag9.push(n._bag9);
+      const mk = L.circleMarker(gp, { radius: 7, color: "#ffffff", weight: 2, fillColor: "#f59e0b", fillOpacity: 1 }).addTo(m);
+      mk.bindTooltip(n[2], { permanent: true, direction: "top", className: "kmz-km-label kmz-es9", offset: [0, -8] }); sinir.push(gp); return; }
     const mk = L.circleMarker([n[0], n[1]], { radius: 6, color: "#ffffff", weight: 2, fillColor: n[3] || "#dc2626", fillOpacity: 1 }).addTo(m);
     if(n[2]) mk.bindTooltip(n[2], { permanent: true, direction: "top", className: "kmz-km-label", offset: [0, -8] });
     mk.on("click", ev => { if(olc) return; L.DomEvent.stopPropagation(ev); kmMenu(m, n); });
     sinir.push([n[0], n[1]]);
   });
+  // v274: kesişimde KMZ çizgisi öbür yola birkaç metre kala bitmişse aradaki boşluk o çizginin rengiyle kapatılır
+  try{ bag9.forEach(([E, J]) => { let st = null, sd = 6;
+    m.eachLayer(l => { if(!(l instanceof L.Polyline) || l instanceof L.Polygon || !l.options) return; const c = String(l.options.color || "").toLowerCase(); if(/^#fff(fff)?$|^white$|255,\s*255,\s*255/.test(c)) return;
+      const ll = l.getLatLngs().flat(Infinity); ll.forEach(q => { const d = mesafe6([q.lat, q.lng], E); if(d < sd){ sd = d; st = l.options; } }); });
+    L.polyline([E, J], { color: st ? st.color : "#2563eb", weight: st ? st.weight : 5, opacity: st && st.opacity != null ? st.opacity : 1, lineCap: "butt", interactive: false }).addTo(m); }); }catch(_){}
   const el = document.getElementById("hatmap");
   // v148: nokta yazıları üst üste binmez — başka bir yazıya çarpan yazı o an gizlenir, yakınlaşınca yer açıldıkça geri gelir
   const cakisGizle = () => { try{
@@ -7290,12 +7302,12 @@ document.addEventListener("input", e => { if(e.target.id === "hAra"){ const n = 
 let hustAcik9 = false, hustMod9 = "";   // v202: yakınken "Ara" yalnız arama kutusunu, "Filtre" yalnız İL · BİRİM · STD satırlarını açar
 function hustKucult9(){
   const h = document.querySelector("#mapwrap .hust"); if(!h) return;
-  const ara = document.activeElement && document.activeElement.id === "hAra", yakin = mz.s > 1.25;
+  const yan = !!(h.closest(".mapwrap") || {}).classList?.contains("yan9"), ara = document.activeElement && document.activeElement.id === "hAra", yakin = !yan && mz.s > 1.25;   // v274: yatay sütunda filtreler hep açık
   h.classList.toggle("kucuk9", yakin && !hustAcik9 && !ara);
   const mod = yakin && (hustAcik9 || ara) ? (hustMod9 || (ara ? "ara" : "")) : "";
   h.classList.toggle("ara9", mod === "ara"); h.classList.toggle("filt9", mod === "filtre");
   // v225: yakınlaştırılmışken Ara · Filtre ile yenile / + / − yarı saydam (arama / filtre açıkken değil)
-  const w = document.getElementById("mapwrap"); if(w) w.classList.toggle("say9", mz.s > 1.01 && !hustAcik9 && !ara);
+  const w = document.getElementById("mapwrap"); if(w) w.classList.toggle("say9", !yan && mz.s > 1.01 && !hustAcik9 && !ara);
 }
 
 const _mapUygula37 = mapUygula;
@@ -9927,6 +9939,19 @@ function bkOrtukEsit9_(nok, cz, IE){
       if(!kanit) continue;
       at.add(a.q); const q = [a.p[0], a.p[1], iTar ? `${kmT9(p.g)} = ${kmT9(a.v)}` : `${kmT9(a.v)} = ${kmT9(p.i)}`]; q._e9 = 1; ek.push(q); return; } });
   if(!ek.length) return nok;
+  // v274: kesişim noktası iki çizginin tam birleştiği yerde gösterilir (bir çizginin ucu öbürüne indirilir);
+  // uç ile öbür çizgi arasında 30 m'den kısa boşluk varsa bağlantı (bag9) çizilir. Model (q[0], q[1]) değişmez, yalnız görünen yer (_g9).
+  try{ if(L9.length) ek.forEach(q => {
+    const P = [q[0], q[1]], cl = Math.cos(P[0] * Math.PI / 180), M = 111320;
+    const icinde = (li, X) => { const b = BB9[li]; return !(X[0] < b[0] || X[0] > b[1] || X[1] < b[2] || X[1] > b[3]); };
+    const izd = (E, atla) => { let en = null; L9.forEach((p, li) => { if(li === atla || !icinde(li, E)) return;
+      for(let i = 1; i < p.length; i++){ const A = p[i - 1], B = p[i], ax = (A[1] - E[1]) * cl * M, ay = (A[0] - E[0]) * M, bx = (B[1] - E[1]) * cl * M, by = (B[0] - E[0]) * M, dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy;
+        let t = L2 ? -(ax * dx + ay * dy) / L2 : 0; t = Math.max(0, Math.min(1, t)); const d = Math.hypot(ax + t * dx, ay + t * dy);
+        if(!en || d < en.d) en = { d, p: [A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t] }; } }); return en; };
+    let uc = null; L9.forEach((p, li) => { if(!icinde(li, P)) return; [0, p.length - 1].forEach(k => { const d = mesafe6(p[k], P); if(d <= 60 && (!uc || d < uc.d)) uc = { d, e: p[k], li }; }); });
+    if(uc){ const J = izd(uc.e, uc.li); if(J && J.d <= 30){ q._g9 = J.p; if(J.d > 0.5) q._bag9 = [uc.e, J.p]; return; } }
+    const J = izd(P, -1); if(J && J.d <= 40) q._g9 = J.p;
+  }); }catch(_){}
   const r = nok.filter(q => !at.has(q)).concat(ek); r._ort9 = 1; return r;
 }
 function bkEsit9(t){
@@ -10282,7 +10307,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boykesit teşhisi · v273`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boykesit teşhisi · v274`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -10428,7 +10453,7 @@ function kmEsitDugme9(){
   const kt = x => { const m = Math.round(x * 1000); return Math.floor(m / 1000) + "+" + String(m % 1000).padStart(3, "0"); };
   // v243: KMZ'de yazmayan, iki km yazısından bulunup itinererden teyit edilen eşitlikler de listelenir
   let NK = j.hat.nok || []; try{ NK = bkOrtukEsit9(NK, anaCizgiler(j), itiEsit9(j)) || NK; }catch(_){}
-  const L0 = NK.map(q => { const e = bkEsit9(q[2]); return e ? { p: [q[0], q[1]], e, k: q._e9 ? 1 : 0 } : null; }).filter(Boolean);
+  const L0 = NK.map(q => { const e = bkEsit9(q[2]); return e ? { p: q._g9 ? q._g9.slice() : [q[0], q[1]], e, k: q._e9 ? 1 : 0 } : null; }).filter(Boolean);
   if(!L0.length) return;
   const L = L0;
   L.sort((a, b) => a.e.g - b.e.g);
@@ -13410,7 +13435,7 @@ async function kmzIndir9(j){
     // km / eşitlik yazıları
     let NK = j.hat.nok || [];
     try{ const r = bkOrtukEsit9(NK, anaCizgiler(j), itiEsit9(j)); if(r !== NK) NK = r; }catch(_){}
-    const nk = NK.map(n => `<Placemark><name>${X(n[2] || "")}</name><styleUrl>#${n._e9 ? "ne" : "nk"}</styleUrl><Point><coordinates>${(+n[1]).toFixed(7)},${(+n[0]).toFixed(7)},0</coordinates></Point></Placemark>`);
+    const nk = NK.map(n => { const g = n._g9 || n; return `<Placemark><name>${X(n[2] || "")}</name><styleUrl>#${n._e9 ? "ne" : "nk"}</styleUrl><Point><coordinates>${(+g[1]).toFixed(7)},${(+g[0]).toFixed(7)},0</coordinates></Point></Placemark>`; });
     const stiller = [...stil].map(([k, id]) => { const [c, w] = k.split("|"); return `<Style id="${id}"><LineStyle><color>${c}</color><width>${w}</width></LineStyle></Style>`; }).join("")
       + `<Style id="nk"><IconStyle><color>ff2626dc</color><scale>0.6</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle><LabelStyle><scale>0.8</scale></LabelStyle></Style>`
       + `<Style id="ne"><IconStyle><color>ff0b9ef5</color><scale>0.7</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle><LabelStyle><color>ff0b9ef5</color><scale>0.9</scale></LabelStyle></Style>`;

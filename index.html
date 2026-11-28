@@ -1415,10 +1415,12 @@ html.don9 .bh{ max-height:calc(var(--vh9) * 46); } html.don9 .on9 .kut{ max-heig
 html.don9 .gal6 .sah{ width:min(300px, calc(var(--vw9) * 78)); height:min(430px, calc(var(--vh9) * 60)); } html.don9 .kqk7{ flex-basis:calc(var(--vw9) * 82); }
 html.don9 .pdfis{ max-height:calc(var(--vh9) * 34); } html.don9 .yl9{ max-height:calc(var(--vh9) * 40); } html.don9 .kgi9{ max-height:calc(var(--vh9) * 58); }
 /* v273: anasayfa haritası yatayda tamamı görünür; arama / filtreler solda, +/− sağda (haritanın üstüne binmez) */
-.mapwrap.yan9 .hust{ left:0 !important; right:auto !important; top:0 !important; bottom:0 !important; width:calc(236px + env(safe-area-inset-left)) !important; max-width:none !important; box-sizing:border-box; padding:calc(10px + env(safe-area-inset-top)) 10px 10px calc(10px + env(safe-area-inset-left)) !important; background:#0b1220 !important; border-right:1px solid rgba(255,255,255,.08); overflow-y:auto; z-index:4; opacity:1 !important; }
-.mapwrap.yan9 .hust .hfd9{ display:none !important; }
-.mapwrap.yan9 .zoom{ top:0 !important; bottom:0 !important; right:0 !important; width:calc(56px + env(safe-area-inset-right)); box-sizing:border-box; padding:0 env(safe-area-inset-right) 14px 0 !important; justify-content:flex-end; align-items:center; background:#0b1220; border-left:1px solid rgba(255,255,255,.08); opacity:1 !important; z-index:4; }
-.mapwrap.yan9 .sheet{ left:var(--sol9) !important; right:var(--sag9) !important; width:auto !important; max-width:none !important; }
+/* v275: yatayda harita ilk açılışta tamamı görünür; arama / filtre sol boşlukta, +/− sağ boşlukta (çentik payıyla). Büyütünce harita bütün ekranı kullanır,
+   filtreler hemen "Ara · Filtre" düğmesine iner (dikeydeki gibi) */
+.mapwrap.yat9 .hust{ left:calc(10px + env(safe-area-inset-left)) !important; }
+.mapwrap.yat9 .zoom{ right:calc(12px + env(safe-area-inset-right)) !important; }
+.mapwrap.yan9 .hust{ right:auto !important; width:calc(var(--yan9) - 20px - env(safe-area-inset-left)); max-width:360px; }
+#mapwrap.yat9 .hust{ transition:none !important; }
 .pon-sayfalar canvas{ margin-left:auto; margin-right:auto; }
 /* v270: eksik km noktası */
 .eks9{ border-color:rgba(34,197,94,.6) !important; color:#bbf7d0 !important; } .eks9 span{ background:#22c55e !important; } .eks9 i{ background:rgba(34,197,94,.25) !important; color:#86efac !important; } .eks9.sonuk{ opacity:.6; }
@@ -2532,14 +2534,13 @@ function mapUygula(){
   const inn = document.getElementById("mapin"), w = document.getElementById("mapwrap"), img = document.getElementById("mapimg");
   if(!inn || !w || !img) return;
   const W = w.clientWidth, H = w.clientHeight;
-  // v274: yatayda solda arama / filtre, sağda +/− kendi sütunlarında; harita aradaki alanda (büyütünce sütunların altına girmez)
-  const yat9 = W > H * 1.1 && img.naturalWidth && img.naturalHeight; w.classList.toggle("yan9", !!yat9);
-  let sol9 = 0, sag9 = 0; if(yat9){ const hu = w.querySelector(".hust"), zo = w.querySelector(".zoom"); sol9 = hu ? hu.offsetWidth : 0; sag9 = zo ? zo.offsetWidth : 0; }
-  const A9 = W - sol9 - sag9; w.style.setProperty("--sol9", sol9 + "px"); w.style.setProperty("--sag9", sag9 + "px");
-  const Wb = yat9 ? Math.max(100, Math.min(A9, Math.floor(H * img.naturalWidth / img.naturalHeight))) : W;
-  inn.style.width = Wb + "px";
+  // v275: yatayda harita yüksekliğe sığar (tamamı görünür), iki yandaki boşlukta arama / filtre ve +/−; büyütünce bütün ekranda serbest kayar
+  const yat9 = !!(W > H * 1.1 && img.naturalWidth && img.naturalHeight);
+  const Wb = yat9 ? Math.max(100, Math.min(W, Math.floor(H * img.naturalWidth / img.naturalHeight))) : W;
+  inn.style.width = Wb + "px"; const yan9 = Math.max(0, (W - Wb) / 2);
+  w.classList.toggle("yat9", yat9); w.classList.toggle("yan9", yat9 && mz.s <= 1.01 && yan9 >= 150); w.style.setProperty("--yan9", yan9 + "px");
   const iw = Wb * mz.s, ih = img.offsetHeight * mz.s;
-  mz.x = yat9 ? (iw <= A9 ? sol9 + (A9 - iw) / 2 : Math.min(sol9, Math.max(sol9 + A9 - iw, mz.x))) : Math.min(0, Math.max(W - iw, mz.x));
+  mz.x = iw <= W ? (W - iw) / 2 : Math.min(0, Math.max(W - iw, mz.x));
   // v203: klavye açıkken haritanın altı klavyenin üstüne kadar çıkabilir (alttaki kutular klavyenin üstünde görünebilsin)
   let kb = 0; try{ const vv = window.visualViewport; if(vv){ const wr = w.getBoundingClientRect(); kb = Math.max(0, wr.bottom - (vv.offsetTop + vv.height)); if(kb < 60) kb = 0; } }catch(_){}
   // v232: klavye kapanınca harita yerinde kalır (klavyenin açtığı pay, harita elle oynatılana / kart kapanana kadar korunur)
@@ -7302,7 +7303,7 @@ document.addEventListener("input", e => { if(e.target.id === "hAra"){ const n = 
 let hustAcik9 = false, hustMod9 = "";   // v202: yakınken "Ara" yalnız arama kutusunu, "Filtre" yalnız İL · BİRİM · STD satırlarını açar
 function hustKucult9(){
   const h = document.querySelector("#mapwrap .hust"); if(!h) return;
-  const yan = !!(h.closest(".mapwrap") || {}).classList?.contains("yan9"), ara = document.activeElement && document.activeElement.id === "hAra", yakin = !yan && mz.s > 1.25;   // v274: yatay sütunda filtreler hep açık
+  const yat = !!(h.closest(".mapwrap") || {}).classList?.contains("yat9"), yan = false, ara = document.activeElement && document.activeElement.id === "hAra", yakin = mz.s > (yat ? 1.01 : 1.25);   // v275: yatayda büyütmeye başlar başlamaz filtreler düğmeye iner
   h.classList.toggle("kucuk9", yakin && !hustAcik9 && !ara);
   const mod = yakin && (hustAcik9 || ara) ? (hustMod9 || (ara ? "ara" : "")) : "";
   h.classList.toggle("ara9", mod === "ara"); h.classList.toggle("filt9", mod === "filtre");
@@ -10307,7 +10308,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boykesit teşhisi · v274`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boykesit teşhisi · v275`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}

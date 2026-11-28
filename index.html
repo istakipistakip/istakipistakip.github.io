@@ -305,9 +305,11 @@ tr.t td{ font-weight:800; background:#fff7ed; color:#7c2d12; }
 .ljhost{ overflow:auto; margin-top:8px; }
 @media (max-height:500px){ .itiv .hatbar{ padding-top:max(6px, env(safe-area-inset-top)); padding-bottom:6px; } .itisek{ padding:5px 12px; } }
 /* v180: yan çevirince çentik tarafında çizim ve düğmeler çentiğin altında kalmaz */
-@media (orientation:landscape){ .itiv{ max-width:none; }
-  .itiv .hatbar, .itiv .itialt{ padding-left:max(12px, env(safe-area-inset-left)); padding-right:max(12px, env(safe-area-inset-right)); }
-  .itiv .itialan, .itiv .itiozet{ margin-left:env(safe-area-inset-left); margin-right:env(safe-area-inset-right); } }
+@media (orientation:landscape){ html:not(.dik9) .itiv{ max-width:none; } html:not(.dik9) .itiv .hatbar, html:not(.dik9) .itiv .itialt{ padding-left:max(12px, env(safe-area-inset-left)); padding-right:max(12px, env(safe-area-inset-right)); } html:not(.dik9) .itiv .itialan, html:not(.dik9) .itiv .itiozet{ margin-left:env(safe-area-inset-left); margin-right:env(safe-area-inset-right); } 
+}
+/* v273: yön kilidi açıkken sensörle çevrilen ekran (yat9) aynı yatay düzeni alır */
+html.yat9 .itiv{ max-width:none; } html.yat9 .itiv .hatbar, html.yat9 .itiv .itialt{ padding-left:max(12px, env(safe-area-inset-left)); padding-right:max(12px, env(safe-area-inset-right)); } html.yat9 .itiv .itialan, html.yat9 .itiv .itiozet{ margin-left:env(safe-area-inset-left); margin-right:env(safe-area-inset-right); }
+
 /* açılış */
 .acil-y{ width:120px; height:3px; border-radius:2px; background:rgba(255,255,255,.18); margin-top:26px; overflow:hidden; }
 .acil-y i{ display:block; width:40%; height:100%; background:#fb923c; border-radius:2px; animation:acilY 1s ease-in-out infinite; }
@@ -806,14 +808,12 @@ html.dark .kutu.parla{ border-color:#d946ef !important; box-shadow:0 0 0 calc(1p
 .itiserit .ic{ position:absolute; inset:2px; }
 .itiserit .fr{ position:absolute; top:0; bottom:0; border:2px solid #ea580c; border-radius:4px; background:rgba(234,88,12,.1); pointer-events:none; }
 /* yatay tutunca iki sütun */
-@media (orientation: landscape) and (max-height: 520px){
-  .dpad{ display:grid !important; grid-template-columns:1fr 1fr; align-items:start; padding-left:max(14px, env(safe-area-inset-left)) !important; padding-right:max(14px, env(safe-area-inset-right)) !important; }
-  .dh{ padding-left:max(16px, env(safe-area-inset-left)); padding-right:max(16px, env(safe-area-inset-right)); }
-  #app{ max-width:none; }
-  .dalt{ max-width:none; }
-  main:not(.harita-on) > .pad:has(#gd){ display:grid; grid-template-columns:1.1fr 1fr; align-items:start; padding-left:max(14px, env(safe-area-inset-left)); padding-right:max(14px, env(safe-area-inset-right)); }
-  main > .pad:has(#gd) > .warn{ grid-column:1/-1; }
+@media (orientation: landscape) and (max-height: 520px){ html:not(.dik9) .dpad{ display:grid !important; grid-template-columns:1fr 1fr; align-items:start; padding-left:max(14px, env(safe-area-inset-left)) !important; padding-right:max(14px, env(safe-area-inset-right)) !important; } html:not(.dik9) .dh{ padding-left:max(16px, env(safe-area-inset-left)); padding-right:max(16px, env(safe-area-inset-right)); } html:not(.dik9) #app{ max-width:none; } html:not(.dik9) .dalt{ max-width:none; } html:not(.dik9) main:not(.harita-on) > .pad:has(#gd){ display:grid; grid-template-columns:1.1fr 1fr; align-items:start; padding-left:max(14px, env(safe-area-inset-left)); padding-right:max(14px, env(safe-area-inset-right)); } html:not(.dik9) main > .pad:has(#gd) > .warn{ grid-column:1/-1; }
+
 }
+/* v273: yön kilidi açıkken sensörle çevrilen ekran (yat9) aynı yatay düzeni alır */
+html.yat9 .dpad{ display:grid !important; grid-template-columns:1fr 1fr; align-items:start; padding-left:max(14px, env(safe-area-inset-left)) !important; padding-right:max(14px, env(safe-area-inset-right)) !important; } html.yat9 .dh{ padding-left:max(16px, env(safe-area-inset-left)); padding-right:max(16px, env(safe-area-inset-right)); } html.yat9 #app{ max-width:none; } html.yat9 .dalt{ max-width:none; } html.yat9 main:not(.harita-on) > .pad:has(#gd){ display:grid; grid-template-columns:1.1fr 1fr; align-items:start; padding-left:max(14px, env(safe-area-inset-left)); padding-right:max(14px, env(safe-area-inset-right)); } html.yat9 main > .pad:has(#gd) > .warn{ grid-column:1/-1; }
+
 /* uygulama simgesi / açılış: lacivert */
 .hos{ background:linear-gradient(170deg,#1e3a5f,#0f2440 70%) !important; }
 .hos-logo{ width:78px !important; height:78px !important; border-radius:22px !important; background:linear-gradient(150deg,#f97316,#c2410c) !important; box-shadow:0 10px 30px rgba(234,88,12,.4) !important; }
@@ -1409,6 +1409,15 @@ html, body{ touch-action:manipulation; }
 .hatv .sagk button[data-et]::after{ content:attr(data-et); display:block; font-size:8.5px !important; line-height:1.05; font-weight:700; letter-spacing:-.1px; color:#cbd5e1; white-space:nowrap; }
 .hatv .sagk button.on[data-et]::after, .hatv .sagk button.acik[data-et]::after{ color:#fff; } .hatv .sagk button.olc-on[data-et]::after{ color:#422006; }
 .hatv .sagk .kat i{ top:0; right:4px; }
+/* v273: ekran ters çevrilip dik tutulurken (dik9) vh / vw yerine çevrilmiş ekranın ölçüleri */
+html.don9 .pop{ max-height:calc(var(--vh9) * 80); } html.don9 .mbox{ max-height:calc(var(--vh9) * 88); } html.don9 .bs{ max-height:calc(var(--vh9) * 86); }
+html.don9 .bh{ max-height:calc(var(--vh9) * 46); } html.don9 .on9 .kut{ max-height:calc(var(--vh9) * 86); } html.don9 .sec9 .kut{ height:calc(var(--vh9) * 82); }
+html.don9 .gal6 .sah{ width:min(300px, calc(var(--vw9) * 78)); height:min(430px, calc(var(--vh9) * 60)); } html.don9 .kqk7{ flex-basis:calc(var(--vw9) * 82); }
+html.don9 .pdfis{ max-height:calc(var(--vh9) * 34); } html.don9 .yl9{ max-height:calc(var(--vh9) * 40); } html.don9 .kgi9{ max-height:calc(var(--vh9) * 58); }
+/* v273: anasayfa haritası yatayda tamamı görünür; arama / filtreler solda, +/− sağda (haritanın üstüne binmez) */
+.mapwrap.yan9 .hust{ right:auto !important; width:calc(var(--yan9) - 18px); max-width:340px; }
+.mapwrap.yan9 .hcipler{ flex-wrap:wrap !important; overflow-x:visible !important; overflow-y:auto; max-height:230px; }
+.pon-sayfalar canvas{ margin-left:auto; margin-right:auto; }
 /* v270: eksik km noktası */
 .eks9{ border-color:rgba(34,197,94,.6) !important; color:#bbf7d0 !important; } .eks9 span{ background:#22c55e !important; } .eks9 i{ background:rgba(34,197,94,.25) !important; color:#86efac !important; } .eks9.sonuk{ opacity:.6; }
 .eks9p{ position:absolute; left:10px; right:10px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:1300; background:rgba(12,18,34,.88); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.14); border-radius:16px; padding:10px 12px; color:#e2e8f0; font-size:13px; pointer-events:auto; box-shadow:0 8px 24px rgba(0,0,0,.4); max-width:460px; margin:0 auto; }
@@ -1431,27 +1440,12 @@ html, body{ touch-action:manipulation; }
 .hatv .sagk button[data-et]::after{ max-width:52px; overflow:hidden; text-overflow:clip; }
 .hatv .sagk button[data-boykesit][data-et]::after{ font-size:8px !important; letter-spacing:-.3px !important; }
 /* v272: yatay ekran düzeni */
-@media (orientation: landscape) and (max-height: 540px){
-  .hatv{ max-width:none !important; }
-  .hatv .hatbar.hb2{ display:flex !important; flex-direction:row !important; flex-wrap:wrap; align-items:center; gap:6px; padding:calc(6px + env(safe-area-inset-top)) calc(160px + env(safe-area-inset-right)) 4px calc(8px + env(safe-area-inset-left)) !important; }
-  .hatv .hb2 .hr1{ flex:0 1 32%; min-width:0; display:flex; gap:6px; align-items:center; margin:0 !important; }
-  .hatv .hb2 .hr2{ flex:1 1 0; min-width:0; margin:0 !important; }
-  .hatv .hb2 .honer{ flex-basis:100%; }
-  .hatv .hb2 .hr1 .x{ width:36px !important; height:36px !important; flex:none; }
-  .hatv .hb2 .ad{ min-height:36px !important; padding:3px 10px !important; min-width:0; overflow:hidden; } .hatv .hb2 .ad b{ font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .hatv .hb2 .ad small{ font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .hatv .hara, .hatv .htum, .hatv .hseg{ height:36px !important; min-height:36px !important; }
-  .hatv .katman{ top:calc(6px + env(safe-area-inset-top)) !important; right:calc(8px + env(safe-area-inset-right)) !important; left:auto !important; height:36px; box-sizing:border-box; align-items:center; }
-  .hatv .katman button{ padding:5px 10px !important; }
-  .hatv .solk{ top:calc(50px + env(safe-area-inset-top)) !important; margin-top:0 !important; left:calc(10px + env(safe-area-inset-left)) !important; }
-  .hatv .sagk{ top:calc(50px + env(safe-area-inset-top)) !important; right:calc(2px + env(safe-area-inset-right)) !important; width:auto !important; display:grid !important; grid-template-columns:repeat(2, 48px); grid-auto-rows:auto; gap:1px 2px !important; padding:4px !important; border-radius:18px !important; }
-  .hatv .konumkart{ left:calc(10px + env(safe-area-inset-left)) !important; right:auto !important; max-width:min(360px, 46vw); bottom:calc(8px + env(safe-area-inset-bottom)) !important; padding:6px 10px !important; border-radius:12px !important; gap:8px !important; }
-  .hatv .konumkart b{ font-size:12.5px !important; } .hatv .konumkart small{ font-size:10.5px !important; } .hatv .konumkart .nok{ width:11px !important; height:11px !important; }
-  .bk6p{ left:calc(10px + env(safe-area-inset-left)) !important; right:calc(120px + env(safe-area-inset-right)) !important; bottom:calc(6px + env(safe-area-inset-bottom)) !important; }
-  .bk6p canvas{ height:64px !important; } .bk6p .yk{ height:64px !important; }
-  .itp9{ left:env(safe-area-inset-left) !important; right:env(safe-area-inset-right) !important; }
-  .eks9p{ left:calc(10px + env(safe-area-inset-left)) !important; right:auto !important; width:min(380px, 52vw); margin:0 !important; bottom:calc(8px + env(safe-area-inset-bottom)) !important; padding:7px 10px !important; }
-  .eks9p .nt{ margin:2px 0 6px !important; } .eks9p .dg button{ padding:7px 0 !important; }
+@media (orientation: landscape) and (max-height: 540px){ html:not(.dik9) .hatv{ max-width:none !important; } html:not(.dik9) .hatv .hatbar.hb2{ display:flex !important; flex-direction:row !important; flex-wrap:wrap; align-items:center; gap:6px; padding:calc(6px + env(safe-area-inset-top)) calc(160px + env(safe-area-inset-right)) 4px calc(8px + env(safe-area-inset-left)) !important; } html:not(.dik9) .hatv .hb2 .hr1{ flex:0 1 32%; min-width:0; display:flex; gap:6px; align-items:center; margin:0 !important; } html:not(.dik9) .hatv .hb2 .hr2{ flex:1 1 0; min-width:0; margin:0 !important; } html:not(.dik9) .hatv .hb2 .honer{ flex-basis:100%; } html:not(.dik9) .hatv .hb2 .hr1 .x{ width:36px !important; height:36px !important; flex:none; } html:not(.dik9) .hatv .hb2 .ad{ min-height:36px !important; padding:3px 10px !important; min-width:0; overflow:hidden; } html:not(.dik9) .hatv .hb2 .ad b{ font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } html:not(.dik9) .hatv .hb2 .ad small{ font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } html:not(.dik9) .hatv .hara, html:not(.dik9) .hatv .htum, html:not(.dik9) .hatv .hseg{ height:36px !important; min-height:36px !important; } html:not(.dik9) .hatv .katman{ top:calc(6px + env(safe-area-inset-top)) !important; right:calc(8px + env(safe-area-inset-right)) !important; left:auto !important; height:36px; box-sizing:border-box; align-items:center; } html:not(.dik9) .hatv .katman button{ padding:5px 10px !important; } html:not(.dik9) .hatv .solk{ top:calc(50px + env(safe-area-inset-top)) !important; margin-top:0 !important; left:calc(10px + env(safe-area-inset-left)) !important; } html:not(.dik9) .hatv .sagk{ top:calc(50px + env(safe-area-inset-top)) !important; right:calc(2px + env(safe-area-inset-right)) !important; width:auto !important; display:grid !important; grid-template-columns:repeat(2, 48px); grid-auto-rows:auto; gap:1px 2px !important; padding:4px !important; border-radius:18px !important; } html:not(.dik9) .hatv .konumkart{ left:calc(10px + env(safe-area-inset-left)) !important; right:auto !important; max-width:min(360px, 46vw); bottom:calc(8px + env(safe-area-inset-bottom)) !important; padding:6px 10px !important; border-radius:12px !important; gap:8px !important; } html:not(.dik9) .hatv .konumkart b{ font-size:12.5px !important; } html:not(.dik9) .hatv .konumkart small{ font-size:10.5px !important; } html:not(.dik9) .hatv .konumkart .nok{ width:11px !important; height:11px !important; } html:not(.dik9) .bk6p{ left:calc(10px + env(safe-area-inset-left)) !important; right:calc(120px + env(safe-area-inset-right)) !important; bottom:calc(6px + env(safe-area-inset-bottom)) !important; } html:not(.dik9) .bk6p canvas{ height:64px !important; } html:not(.dik9) .bk6p .yk{ height:64px !important; } html:not(.dik9) .itp9{ left:env(safe-area-inset-left) !important; right:env(safe-area-inset-right) !important; } html:not(.dik9) .eks9p{ left:calc(10px + env(safe-area-inset-left)) !important; right:auto !important; width:min(380px, 52vw); margin:0 !important; bottom:calc(8px + env(safe-area-inset-bottom)) !important; padding:7px 10px !important; } html:not(.dik9) .eks9p .nt{ margin:2px 0 6px !important; } html:not(.dik9) .eks9p .dg button{ padding:7px 0 !important; }
+
 }
+/* v273: yön kilidi açıkken sensörle çevrilen ekran (yat9) aynı yatay düzeni alır */
+html.yat9 .hatv{ max-width:none !important; } html.yat9 .hatv .hatbar.hb2{ display:flex !important; flex-direction:row !important; flex-wrap:wrap; align-items:center; gap:6px; padding:calc(6px + env(safe-area-inset-top)) calc(160px + env(safe-area-inset-right)) 4px calc(8px + env(safe-area-inset-left)) !important; } html.yat9 .hatv .hb2 .hr1{ flex:0 1 32%; min-width:0; display:flex; gap:6px; align-items:center; margin:0 !important; } html.yat9 .hatv .hb2 .hr2{ flex:1 1 0; min-width:0; margin:0 !important; } html.yat9 .hatv .hb2 .honer{ flex-basis:100%; } html.yat9 .hatv .hb2 .hr1 .x{ width:36px !important; height:36px !important; flex:none; } html.yat9 .hatv .hb2 .ad{ min-height:36px !important; padding:3px 10px !important; min-width:0; overflow:hidden; } html.yat9 .hatv .hb2 .ad b{ font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } html.yat9 .hatv .hb2 .ad small{ font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } html.yat9 .hatv .hara, html.yat9 .hatv .htum, html.yat9 .hatv .hseg{ height:36px !important; min-height:36px !important; } html.yat9 .hatv .katman{ top:calc(6px + env(safe-area-inset-top)) !important; right:calc(8px + env(safe-area-inset-right)) !important; left:auto !important; height:36px; box-sizing:border-box; align-items:center; } html.yat9 .hatv .katman button{ padding:5px 10px !important; } html.yat9 .hatv .solk{ top:calc(50px + env(safe-area-inset-top)) !important; margin-top:0 !important; left:calc(10px + env(safe-area-inset-left)) !important; } html.yat9 .hatv .sagk{ top:calc(50px + env(safe-area-inset-top)) !important; right:calc(2px + env(safe-area-inset-right)) !important; width:auto !important; display:grid !important; grid-template-columns:repeat(2, 48px); grid-auto-rows:auto; gap:1px 2px !important; padding:4px !important; border-radius:18px !important; } html.yat9 .hatv .konumkart{ left:calc(10px + env(safe-area-inset-left)) !important; right:auto !important; max-width:min(360px, 46vw); bottom:calc(8px + env(safe-area-inset-bottom)) !important; padding:6px 10px !important; border-radius:12px !important; gap:8px !important; } html.yat9 .hatv .konumkart b{ font-size:12.5px !important; } html.yat9 .hatv .konumkart small{ font-size:10.5px !important; } html.yat9 .hatv .konumkart .nok{ width:11px !important; height:11px !important; } html.yat9 .bk6p{ left:calc(10px + env(safe-area-inset-left)) !important; right:calc(120px + env(safe-area-inset-right)) !important; bottom:calc(6px + env(safe-area-inset-bottom)) !important; } html.yat9 .bk6p canvas{ height:64px !important; } html.yat9 .bk6p .yk{ height:64px !important; } html.yat9 .itp9{ left:env(safe-area-inset-left) !important; right:env(safe-area-inset-right) !important; } html.yat9 .eks9p{ left:calc(10px + env(safe-area-inset-left)) !important; right:auto !important; width:min(380px, 52vw); margin:0 !important; bottom:calc(8px + env(safe-area-inset-bottom)) !important; padding:7px 10px !important; } html.yat9 .eks9p .nt{ margin:2px 0 6px !important; } html.yat9 .eks9p .dg button{ padding:7px 0 !important; }
+
 /* v271: KMZ ekranı daha saydam (arka plan ~%25, ince kenar, hafif gölge; yazılar gölgeli ve net) */
 .cam5, .hatv .hb2 .hr1 .x, .hatv .hb2 .ad, .hatv .hara, .hatv .htum, .hatv .hseg, .hatv .katman, .hatv .pus, .gezhud{ background:rgba(12,18,34,.25) !important; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.08) !important; box-shadow:0 3px 10px rgba(0,0,0,.18) !important; }
 .hatv .sagk{ background:rgba(12,18,34,.2) !important; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.08) !important; box-shadow:0 3px 10px rgba(0,0,0,.18) !important; }
@@ -1751,10 +1745,12 @@ html.dark .ak9 .btn.ikinci{ background:#334155; }
 .exr9 .eslr b{ font-size:13.5px; }
 .exr9 .eslr small{ font-size:12px; color:#64748b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .exr9 .eslr select{ margin-top:4px; width:100%; border:1px solid #d6dbe3; border-radius:10px; padding:9px; font-size:14px; background:#fff; color:#0f172a; }
-@media (orientation:landscape) and (min-width:560px){
-  .exr9 .eiki{ grid-template-columns:1fr 1fr; }
-  .exr9 .eb{ padding-left:calc(12px + env(safe-area-inset-left)); padding-right:calc(12px + env(safe-area-inset-right)); }
+@media (orientation:landscape) and (min-width:560px){ html:not(.dik9) .exr9 .eiki{ grid-template-columns:1fr 1fr; } html:not(.dik9) .exr9 .eb{ padding-left:calc(12px + env(safe-area-inset-left)); padding-right:calc(12px + env(safe-area-inset-right)); }
+
 }
+/* v273: yön kilidi açıkken sensörle çevrilen ekran (yat9) aynı yatay düzeni alır */
+html.yat9 .exr9 .eiki{ grid-template-columns:1fr 1fr; } html.yat9 .exr9 .eb{ padding-left:calc(12px + env(safe-area-inset-left)); padding-right:calc(12px + env(safe-area-inset-right)); }
+
 html.dark .exr9{ background:#0b1220; }
 html.dark .exr9 .ead b{ color:#e6ebf3; }
 html.dark .exr9 .eblk, html.dark .exr9 .eslr, html.dark .exr9 .ef{ background:#141c2b; border-color:#222d41; }
@@ -2534,9 +2530,11 @@ function mapUygula(){
   const inn = document.getElementById("mapin"), w = document.getElementById("mapwrap"), img = document.getElementById("mapimg");
   if(!inn || !w || !img) return;
   const W = w.clientWidth, H = w.clientHeight;
-  inn.style.width = W + "px";
-  const iw = W * mz.s, ih = img.offsetHeight * mz.s;
-  mz.x = Math.min(0, Math.max(W - iw, mz.x));
+  // v273: yatayda harita yüksekliğe sığar (tamamı görünür); iki yandaki boşluk arama / filtre ve +/− için
+  let Wb = W; if(W > H * 1.1 && img.naturalWidth && img.naturalHeight) Wb = Math.min(W, Math.floor(H * img.naturalWidth / img.naturalHeight));
+  inn.style.width = Wb + "px"; const yan9 = Math.max(0, (W - Wb) / 2); w.style.setProperty("--yan9", yan9 + "px"); w.classList.toggle("yan9", yan9 >= 150);
+  const iw = Wb * mz.s, ih = img.offsetHeight * mz.s;
+  mz.x = iw <= W ? (W - iw) / 2 : Math.min(0, Math.max(W - iw, mz.x));
   // v203: klavye açıkken haritanın altı klavyenin üstüne kadar çıkabilir (alttaki kutular klavyenin üstünde görünebilsin)
   let kb = 0; try{ const vv = window.visualViewport; if(vv){ const wr = w.getBoundingClientRect(); kb = Math.max(0, wr.bottom - (vv.offsetTop + vv.height)); if(kb < 60) kb = 0; } }catch(_){}
   // v232: klavye kapanınca harita yerinde kalır (klavyenin açtığı pay, harita elle oynatılana / kart kapanana kadar korunur)
@@ -4020,7 +4018,7 @@ async function pdfOnizle(){
     const kap = document.createElement("div"); kap.className = "pon-sayfalar";
     for(let i = 1; i <= belge.numPages; i++){
       const sy = await belge.getPage(i); if(no !== ciziliyor) return;
-      const v1 = sy.getViewport({ scale: 1 }), sc = gen / v1.width, v = sy.getViewport({ scale: sc * dpr });
+      const v1 = sy.getViewport({ scale: 1 }), sc = gen / v1.width, v = sy.getViewport({ scale: Math.min(sc * dpr, Math.sqrt(14e6 / (v1.width * v1.height))) });   // v273: çok büyütünce tuval sınırı (iPhone)
       const c = document.createElement("canvas"); c.width = Math.round(v.width); c.height = Math.round(v.height);
       c.style.width = Math.round(v1.width * sc) + "px"; c.style.height = Math.round(v1.height * sc) + "px";
       kap.appendChild(c);
@@ -4034,7 +4032,7 @@ async function pdfOnizle(){
     if(e.target.closest("[data-ponkapat]")){ ciziliyor++; ov.remove(); return; }
     if(e.target.closest("[data-ponpaylas]")){ pdfPaylas(); return; }
     const z = e.target.closest("[data-ponz]");
-    if(z){ const yeni = Math.max(1, Math.min(4, olcek + Number(z.dataset.ponz) * 0.5)); if(yeni !== olcek){ const r = gv.getBoundingClientRect(), cx = r.width / 2, cy = r.height / 2; gv._hedef = { x: (gv.scrollLeft + cx) / olcek * yeni - cx, y: (gv.scrollTop + cy) / olcek * yeni - cy }; olcek = yeni; gv._olcek = yeni; ciz(); } }
+    if(z){ const yeni = Math.max(0.25, Math.min(10, +(olcek * (Number(z.dataset.ponz) > 0 ? 1.5 : 1 / 1.5)).toFixed(3))); if(yeni !== olcek){ const r = gv.getBoundingClientRect(), cx = r.width / 2, cy = r.height / 2; gv._hedef = { x: (gv.scrollLeft + cx) / olcek * yeni - cx, y: (gv.scrollTop + cy) / olcek * yeni - cy }; olcek = yeni; gv._olcek = yeni; ciz(); } }
   });
   try{
     await pdfjsHazir();
@@ -7602,13 +7600,13 @@ hatGoster = async function(){ yolaYak9(false); return _hatGoster43.apply(this, a
     e.preventDefault();
     const [a, b] = e.touches, d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
     const ol = (pz.g._olcek || 1);
-    pz.k = Math.max(1 / ol, Math.min(4 / ol, d / pz.d0));
+    pz.k = Math.max(0.25 / ol, Math.min(10 / ol, d / pz.d0));
     pz.kap.style.transform = `scale(${pz.k})`;
   }, { capture: true, passive: false });
   document.addEventListener("touchend", e => {
     if(!pz || e.touches.length >= 2) return;
     const z = pz; pz = null;
-    const ol = z.g._olcek || 1, yeni = Math.max(1, Math.min(4, ol * z.k));
+    const ol = z.g._olcek || 1, yeni = Math.max(0.25, Math.min(10, ol * z.k));
     if(Math.abs(yeni - ol) < .02){ z.kap.style.transform = ""; return; }
     // odak noktası yerinde kalsın
     const fx = (z.g.scrollLeft + z.cx) / ol, fy = (z.g.scrollTop + z.cy) / ol;
@@ -10284,7 +10282,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boykesit teşhisi · v272`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boykesit teşhisi · v273`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -10614,6 +10612,89 @@ document.addEventListener("click", async e => {
 });
 const _hatGoster270 = hatGoster;
 hatGoster = async function(){ if(EKS9) eksikKapat9(false); const r = await _hatGoster270.apply(this, arguments); try{ eksikDugme9(); }catch(_){} return r; };
+
+// ===================== v273: ekran yönü =====================
+// iPhone web uygulamasında sayfa sayfa yön kilidi yok. İki yol birlikte:
+// A) Yön kilidi kapalı (iPhone döner): dönmemesi gereken ekranlar (anasayfa, işin sayfası, ayarlar…) ters yöne çevrilip dik kalır.
+// B) Yön kilidi açık (iPhone dönmez): dönebilen ekranlar (KMZ, itinerer, İhale Bilgileri, PDF önizleme, anasayfadaki harita)
+//    telefonun yan tutulduğunu hareket sensöründen anlayıp kendini çevirir.
+// Çevrilen ekranda dokunuş ve kutu konumları (clientX/Y, getBoundingClientRect, elementFromPoint, innerWidth/Height) ekranın kendi
+// eksenine çevrilerek verilir; böylece harita, itinerer ve diğer dokunma kodları çevrilmemiş gibi çalışır.
+const YON73 = (() => {
+  let R = null;
+  const H0 = document.documentElement, st = document.createElement("style"); document.head.appendChild(st);
+  const ekran = () => ({ w: H0.clientWidth, h: H0.clientHeight });
+  const pr = document.createElement("div"); pr.style.cssText = "position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)";
+  H0.appendChild(pr);
+  const ins = () => { const c = getComputedStyle(pr); return { t: parseFloat(c.paddingTop) || 0, r: parseFloat(c.paddingRight) || 0, b: parseFloat(c.paddingBottom) || 0, l: parseFloat(c.paddingLeft) || 0 }; };
+  const yerel = (sx, sy) => !R ? [sx, sy] : R.a === -90 ? [R.ty - sy, sx - R.tx] : [sy - R.ty, R.tx - sx];
+  const ekr = (x, y) => !R ? [x, y] : R.a === -90 ? [R.tx + y, R.ty - x] : [R.tx - y, R.ty + x];
+  let tT = 0; const tetikle = () => { cancelAnimationFrame(tT); tT = requestAnimationFrame(() => { try{ window.dispatchEvent(new Event("resize")); }catch(_){} }); };
+  const uygula = (a, mod) => {
+    if(!a){ if(!R) return; R = null; H0.classList.remove("don9", "dik9", "yat9"); st.textContent = ""; tetikle(); return; }
+    const e = ekran(), i = ins(), X0 = i.l, X1 = e.w - i.r, Y0 = i.t, Y1 = e.h - i.b, W = Math.round(Y1 - Y0), H = Math.round(X1 - X0);
+    const tx = a === -90 ? X0 : X1, ty = a === -90 ? Y1 : Y0;
+    if(R && R.a === a && R.W === W && R.H === H && R.tx === tx && R.ty === ty && R.mod === mod) return;
+    R = { a, tx, ty, W, H, mod };
+    H0.classList.add("don9"); H0.classList.toggle("dik9", mod === "dik"); H0.classList.toggle("yat9", mod === "yat");
+    st.textContent = `html.don9{ background:#0b1220 !important; --vh9:${H / 100}px; --vw9:${W / 100}px; }
+html.don9 body{ position:fixed !important; left:0 !important; top:0 !important; right:auto !important; bottom:auto !important; width:${W}px !important; height:${H}px !important; min-height:0 !important; max-width:none !important; margin:0 !important; overflow:hidden !important; transform-origin:0 0 !important; transform:translate(${tx}px,${ty}px) rotate(${a}deg) !important; }`;
+    tetikle();
+  };
+  // koordinat yamaları (yalnız ekran çevrilmişken etkili)
+  const yama = (P, ax, ay) => { try{ const dx = Object.getOwnPropertyDescriptor(P, ax), dy = Object.getOwnPropertyDescriptor(P, ay); if(!dx || !dy || !dx.get || !dy.get) return;
+    Object.defineProperty(P, ax, { configurable: true, enumerable: dx.enumerable, get(){ const x = dx.get.call(this); return R ? yerel(x, dy.get.call(this))[0] : x; } });
+    Object.defineProperty(P, ay, { configurable: true, enumerable: dy.enumerable, get(){ const y = dy.get.call(this); return R ? yerel(dx.get.call(this), y)[1] : y; } }); }catch(_){} };
+  yama(MouseEvent.prototype, "clientX", "clientY"); yama(MouseEvent.prototype, "pageX", "pageY"); yama(MouseEvent.prototype, "x", "y");
+  if(window.Touch){ yama(Touch.prototype, "clientX", "clientY"); yama(Touch.prototype, "pageX", "pageY"); }
+  const gbr = Element.prototype.getBoundingClientRect;
+  const cevirR = r => { const a = yerel(r.left, r.top), b = yerel(r.right, r.bottom), x = Math.min(a[0], b[0]), y = Math.min(a[1], b[1]); return new DOMRect(x, y, Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1])); };
+  Element.prototype.getBoundingClientRect = function(){ const r = gbr.call(this); if(!R || this === H0 || this === pr || !document.body || !document.body.contains(this)) return r; return cevirR(r); };
+  const efp = Document.prototype.elementFromPoint, efps = Document.prototype.elementsFromPoint;
+  Document.prototype.elementFromPoint = function(x, y){ if(!R) return efp.call(this, x, y); const p = ekr(x, y); return efp.call(this, p[0], p[1]); };
+  if(efps) Document.prototype.elementsFromPoint = function(x, y){ if(!R) return efps.call(this, x, y); const p = ekr(x, y); return efps.call(this, p[0], p[1]); };
+  const pencere = (ad, al) => { try{ const d = Object.getOwnPropertyDescriptor(window, ad) || Object.getOwnPropertyDescriptor(Window.prototype, ad);
+    Object.defineProperty(window, ad, { configurable: true, get(){ if(R) return R[al]; return d && d.get ? d.get.call(window) : (ad === "innerWidth" ? H0.clientWidth : H0.clientHeight); } }); }catch(_){} };
+  pencere("innerWidth", "W"); pencere("innerHeight", "H");
+  try{ if(window.VisualViewport){ const P = VisualViewport.prototype; [["width", "W"], ["height", "H"], ["offsetTop", 0], ["offsetLeft", 0], ["pageTop", 0], ["pageLeft", 0]].forEach(([k, v]) => { const d = Object.getOwnPropertyDescriptor(P, k); if(!d || !d.get) return;
+    Object.defineProperty(P, k, { configurable: true, enumerable: d.enumerable, get(){ return R ? (typeof v === "string" ? R[v] : v) : d.get.call(this); } }); }); } }catch(_){}
+  // hangi ekran dönebilir
+  const izinli = () => { const q = s => document.getElementById(s);
+    if(q("pon") || q("itiv") || q("hatv")) return true;
+    if(q("bsov")) return !!document.querySelector("#bsov .bs.par");
+    try{ return tab === "map" && !detay && !!q("mapwrap"); }catch(_){ return false; } };
+  const sysAci = () => { let o = 0; try{ o = (screen.orientation && typeof screen.orientation.angle === "number") ? screen.orientation.angle : (+window.orientation || 0); }catch(_){} return o === 270 ? -90 : o; };
+  // B: hareket sensörü (yön kilidi açıkken)
+  let yan = 0, aday = 0, adayT = 0, sy = /iPhone|iPad|iPod/.test(navigator.userAgent) ? -1 : 1, istendi = false;
+  const karar = () => { const e = ekran(), iz = izinli();
+    if(e.w > e.h){ if(iz) uygula(null); else uygula(sysAci() === 90 ? -90 : 90, "dik"); }
+    else { if(iz && yan) uygula(yan, "yat"); else uygula(null); } };
+  const hareket = ev => { const g = ev.accelerationIncludingGravity; if(!g || g.x == null || g.y == null) return; const x = +g.x, y = +g.y, z = +g.z || 0;
+    if(Math.abs(z) > 8) return;   // masada yatıyor: değiştirme
+    let s = yan;
+    if(Math.abs(y) > 7 && Math.abs(y) > 2 * Math.abs(x)){ if(Math.abs(y) > 8) sy = y > 0 ? 1 : -1; s = 0; }
+    else if(Math.abs(x) > 7 && Math.abs(x) > 2 * Math.abs(y)) s = (x * sy) < 0 ? -90 : 90;
+    if(s === yan){ aday = s; return; }
+    if(aday !== s){ aday = s; adayT = Date.now(); return; }
+    if(Date.now() - adayT > 350){ yan = s; karar(); } };
+  const izinIste = () => { if(istendi) return; istendi = true; const DM = window.DeviceMotionEvent; if(!DM) return;
+    if(typeof DM.requestPermission === "function") DM.requestPermission().then(r => { if(r === "granted") window.addEventListener("devicemotion", hareket); }).catch(() => {});
+    else window.addEventListener("devicemotion", hareket); };
+  document.addEventListener("click", e => { const t = e.target; if(t && t.closest && t.closest("[data-hat], [data-iti], [data-parasal], [data-pdfonizle], [data-haritada], #tabs button, .tabs button, .tab")) izinIste(); }, true);
+  let kT = 0; const sonra = () => { if(kT) return; kT = requestAnimationFrame(() => { kT = 0; karar(); }); };
+  window.addEventListener("resize", sonra); window.addEventListener("orientationchange", () => setTimeout(karar, 60));
+  try{ new MutationObserver(sonra).observe(document.body, { childList: true, subtree: true }); }catch(_){}
+  sonra();
+  return { karar, izinIste, hareket, durum: () => R && { ...R } };
+})();
+// v273: PDF önizlemede çift dokunma: büyüt (2,5 kat) ↔ sığdır
+(() => { let son = 0, sx = 0, sy = 0;
+  document.addEventListener("touchend", e => { const g = document.getElementById("pon-govde"); if(!g || !g.contains(e.target) || e.touches.length || e.changedTouches.length !== 1) return;
+    const t = e.changedTouches[0], n = Date.now();
+    if(n - son < 300 && Math.hypot(t.clientX - sx, t.clientY - sy) < 30){ son = 0; e.preventDefault();
+      const r = g.getBoundingClientRect(), cx = t.clientX - r.left, cy = t.clientY - r.top, ol = g._olcek || 1, yeni = ol > 1.2 ? 1 : 2.5;
+      g._hedef = { x: (g.scrollLeft + cx) / ol * yeni - cx, y: (g.scrollTop + cy) / ol * yeni - cy }; g._yakinlas && g._yakinlas(yeni); return; }
+    son = n; sx = t.clientX; sy = t.clientY; }, { capture: true, passive: false }); })();
 
 // ---------- v88: Devam Eden / Biten yazılarında cümle cümle silme (onaylı, geri alınabilir) ----------
 const KISA9 = /(^|\s)(vb|vs|no|nr|km|m|bkz|yy|sn|dk|st|cad|sok|mah|mh|bul|kv|vd|örn|ör|ort|yak|max|min|tbl)\.$/i;

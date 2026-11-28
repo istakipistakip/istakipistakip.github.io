@@ -753,6 +753,14 @@ html.dark .hara, html.dark .honer{ background:#141c2b; } html.dark .hara input, 
 .olckart .bt button.p{ background:#0f2440; color:#fff; border-color:#0f2440; }
 .olckart .bt button.k{ background:#facc15; color:#422006; border-color:#eab308; }
 .olckart .mod9{ margin:0 0 8px; } .olckart{ z-index:1004 !important; }
+/* v265: sol üstte küçük ölçüm kutusu */
+.olckart.k9{ position:static !important; left:auto; right:auto; bottom:auto !important; pointer-events:auto; width:228px; max-width:calc(100vw - 96px); box-sizing:border-box; padding:9px 10px 8px; border-radius:14px; background:rgba(12,18,34,.9); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.14); color:#e2e8f0; box-shadow:0 8px 22px rgba(0,0,0,.4); }
+.olckart.k9 .r1{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; } .olckart.k9 .r1 b{ font-size:18px; color:#facc15; white-space:nowrap; } .olckart.k9 .r1 span{ font-size:11px; color:#94a3b8; text-align:right; }
+.olckart.k9 .r2{ font-size:11px; color:#cbd5e1; margin-top:2px; min-height:13px; } .olckart.k9 .r2:empty{ display:none; }
+.olckart.k9 .sg9{ display:flex; gap:3px; background:rgba(255,255,255,.08); padding:2px; border-radius:9px; margin-top:6px; } .olckart.k9 .sg9 button{ flex:1; height:26px; border:none; border-radius:7px; background:none; color:#cbd5e1; font-size:11.5px; font-weight:700; } .olckart.k9 .sg9 button.on{ background:#facc15; color:#422006; }
+.olckart.k9 .r3{ display:flex; gap:5px; margin-top:7px; } .olckart.k9 .r3 button{ height:30px; min-width:34px; padding:0 9px; border-radius:9px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.06); color:#e2e8f0; font-size:12px; font-weight:800; display:grid; place-items:center; }
+.olckart.k9 .r3 button svg{ width:16px; height:16px; } .olckart.k9 .r3 button.p{ margin-left:auto; background:#e2e8f0; color:#0f172a; border-color:#e2e8f0; } .olckart.k9 .r3 button.k{ background:#facc15; color:#422006; border-color:#eab308; }
+.olcsec9 button.on{ background:rgba(250,204,21,.14); } .olcsec9 button.bit9 i{ background:rgba(255,255,255,.12); color:#e2e8f0; font-style:normal; font-weight:800; }
 .olcsec9{ position:absolute; z-index:1005; display:flex; flex-direction:column; gap:2px; padding:5px; border-radius:16px; background:rgba(12,18,34,.92); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.14); box-shadow:0 10px 28px rgba(0,0,0,.45); width:214px; animation:olcsec9 .14s ease-out; }
 @keyframes olcsec9{ from{ opacity:0; transform:translateX(8px) scale(.97); } to{ opacity:1; transform:none; } }
 .olcsec9 button{ display:flex; align-items:center; gap:10px; padding:9px 10px; border:none; border-radius:11px; background:none; color:#e2e8f0; text-align:left; }
@@ -2677,7 +2685,7 @@ async function hatGoster(id, korun){
   if(!ciz10){
     // v241: kırmızı / mavi yan yana ise kırmızının yanında mavi gösterilmez
     const yk = [], iti9 = itiModu9(j), RL = renkli.map(c => ({ p: c.p, r: c.r }));
-    if(iti9){ kmzItiMavi9(RL, renkli).forEach(x => L.polyline(x.p, { color: x.r, weight: 8, opacity: 1 }).addTo(m)); if(beyazOl9(j)) RL.filter(x => kmzTon9(x.r) !== "k").forEach(x => L.polyline(x.p, { color: "#ffffff", weight: 3, opacity: 1 }).addTo(m)); }
+    if(iti9){ kmzItiMavi9(RL, renkli).forEach(x => L.polyline(x.p, { color: x.r, weight: 8, opacity: 1 }).addTo(m)); itiBeyaz9(j).forEach(p => L.polyline(p, { color: "#ffffff", weight: 3, opacity: 1 }).addTo(m)); }
     else kmzKirMavi9(RL, (pp, r, yan) => { if(!yan) L.polyline(pp, { color: r, weight: 8, opacity: 1 }).addTo(m);
       else { let ilk = pp; try{ ilk = kbKaydir9(m, pp, yan * 2); }catch(_){} const ly = L.polyline(ilk, { color: r, weight: 4, opacity: 1, lineCap: "butt", uc3bHam: pp, uc3bOfs: yan * 2 }).addTo(m); yk.push([ly, pp, yan]); } });
     if(yk.length){ const f = () => yk.forEach(([ly, pp, yan]) => { try{ ly.setLatLngs(kbKaydir9(m, pp, yan * 2)); }catch(_){} }); m.on("zoomend", f); m.on("viewreset", f); }
@@ -4823,7 +4831,7 @@ function tumIslerCiz(){
   tumSecili = hatIs.id;
 }
 // ---------- v254: Tüm İşler KMZ önbelleği ----------
-const KBV9 = "kbc2";                  // boyama kuralları değişince artırılır: bütün kayıtlar yeniden hesaplanır
+const KBV9 = "kbc3";                  // boyama kuralları değişince artırılır: bütün kayıtlar yeniden hesaplanır
 let KBC9 = null, kbcZam9 = 0, tumYarim9 = [], tumAlt9 = {}, kbcSira9 = [], kbcCalis9 = false;
 async function kbcAl9(){ if(KBC9) return KBC9; let v = null; try{ v = await idbOku("kbc9"); }catch(_){} KBC9 = v && v._v === KBV9 ? v : { _v: KBV9 }; return KBC9; }
 function kbcKaydet9(){ clearTimeout(kbcZam9); kbcZam9 = setTimeout(() => { try{ idbYaz9("kbc9", KBC9); }catch(_){} }, 2000); }
@@ -4844,7 +4852,10 @@ function kbYakala9(m, x){
   const g = L.layerGroup(), yd = [], tik = () => {}; let ok = false;
   try{ ok = kbCiz10(m, g, x, 5, 2, { op: .6, isId: x.id, yarimDis: yd }); }catch(_){ ok = false; }
   if(!ok){ g.clearLayers(); const cz = c => { if(c.p.length > 1) L.polyline(c.p, { color: c.r, weight: c.i ? 2 : 5 }).addTo(g); };
-    x.hat.cizgi.filter(c => !c.i).forEach(cz); try{ kmzBoya9(g, x, { w: 5, op: .6, isId: x.id, yarimDis: yd }); }catch(_){} x.hat.cizgi.filter(c => c.i).forEach(cz); }
+    const iti = itiModu9(x), rk = x.hat.cizgi.filter(c => !c.i);
+    if(iti) kmzItiMavi9(rk.map(c => ({ p: c.p, r: c.r })), rk).forEach(q => { if(q.p.length > 1) L.polyline(q.p, { color: q.r, weight: 5 }).addTo(g); }); else rk.forEach(cz);
+    try{ kmzBoya9(g, x, { w: 5, op: .6, isId: x.id, yarimDis: yd }); }catch(_){}
+    if(iti) itiBeyaz9(x).forEach(q => L.polyline(q, { color: "#ffffff", weight: 2 }).addTo(g)); else x.hat.cizgi.filter(c => c.i).forEach(cz); }
   const r6 = v => Math.round(v * 1e6) / 1e6, out = [];
   g.eachLayer(ly => { if(!(ly instanceof L.Polyline)) return; const o = ly.options;
     let p = o.uc3bHam; if(!p){ let a = ly.getLatLngs(); if(a.length && Array.isArray(a[0])) a = a.flat(); p = a.map(q => [q.lat, q.lng]); }
@@ -4988,21 +4999,34 @@ document.addEventListener("click", async e => {
 let olc = null;
 function olcBaslat(){
   const m = hatHarita; if(!m || !hatIs) return;
-  if(olc){ olcBitir(); return; }
-  olc = { nok: [], tur: "kus", mod: null, kapali: false, g: L.layerGroup().addTo(m) };   // v263: mod: "uz" uzunluk / "alan"
+  // v265: ölçüm açıkken Ölç'e basmak seçim menüsünü açar / kapatır (Uzunluk ↔ Alan geçişi, Bitir)
+  if(olc){ if(document.getElementById("olcsec9")) document.getElementById("olcsec9").remove(); else olcSecAc9(); return; }
+  olc = { nok: [], tur: "kus", mod: null, kapali: false, g: L.layerGroup().addTo(m) };
   document.querySelector("[data-olc]")?.classList.add("olc-on");
-  const v = document.getElementById("hatv");
-  v.insertAdjacentHTML("beforeend", `<div class="olcust" id="olcust"><b>Mesafe ölçme açık</b><small>Haritaya dokunarak nokta ekleyin</small></div><div class="olckart" id="olckart"></div>`);
+  const v = document.getElementById("hatv"), solk = v.querySelector(".solk") || v;
+  solk.insertAdjacentHTML("beforeend", `<div class="olckart k9" id="olckart" style="display:none"></div>`);
   const kk = document.getElementById("konumkart"); if(kk) kk.dataset.gizli = kk.style.display, kk.style.display = "none";
   m.on("click", olcTik);
   olcCiz();
+}
+// Ölç tuşunun yanında seçim menüsü
+function olcSecAc9(){
+  document.getElementById("olcsec9")?.remove();
+  const bt = document.querySelector(".hatv [data-olc]"), hv = document.getElementById("hatv"); if(!bt || !hv || !olc) return;
+  const r = bt.getBoundingClientRect(), h = hv.getBoundingClientRect();
+  const d = document.createElement("div"); d.className = "olcsec9"; d.id = "olcsec9"; d.style.top = Math.max(8, r.top - h.top - 6) + "px"; d.style.right = (h.right - r.left + 8) + "px";
+  const sat = (mod, ik, ad, ac) => `<button data-olcmod="${mod}"${olc.mod === mod ? ' class="on"' : ""}><i>${ik}</i><span><b>${ad}</b><small>${ac}</small></span></button>`;
+  d.innerHTML = sat("uz", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21z"/><path d="m7 13 2 2M10 10l2 2M13 7l2 2"/></svg>', "Uzunluk", "Kuş uçuşu ya da yol boyunca")
+    + sat("alan", '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7 12 3l8 5-2 11-11 1z"/><circle cx="4" cy="7" r="1.6" fill="currentColor"/><circle cx="12" cy="3" r="1.6" fill="currentColor"/><circle cx="20" cy="8" r="1.6" fill="currentColor"/><circle cx="18" cy="19" r="1.6" fill="currentColor"/><circle cx="7" cy="20" r="1.6" fill="currentColor"/></svg>', "Alan", "Köşelere dokunarak çevir")
+    + (olc.mod ? `<button data-olcbitir class="bit9"><i>✕</i><span><b>Ölçmeyi bitir</b></span></button>` : "");
+  hv.appendChild(d);
 }
 function olcBitir(){
   const m = hatHarita;
   if(olc && m){ m.removeLayer(olc.g); m.off("click", olcTik); }
   olc = null;
   document.querySelector("[data-olc]")?.classList.remove("olc-on");
-  document.getElementById("olcust")?.remove(); document.getElementById("olckart")?.remove(); document.getElementById("olcsec9")?.remove();
+  document.getElementById("olckart")?.remove(); document.getElementById("olcsec9")?.remove();
   const kk = document.getElementById("konumkart"); if(kk && kk.dataset.gizli !== undefined){ kk.style.display = kk.dataset.gizli; delete kk.dataset.gizli; }
 }
 function olcTik(e){
@@ -5015,10 +5039,7 @@ function olcTik(e){
   olc.nok.push([e.latlng.lat, e.latlng.lng]); olcCiz();
 }
 // v264: itinerer paneli açıksa ölçüm kartı ve üst yazı panelin hemen üstünde
-function olcKartYer9(){
-  const k = document.getElementById("olckart"); if(!k) return; const p = document.getElementById("itp9");
-  k.style.bottom = p ? (p.getBoundingClientRect().height + 10) + "px" : "";
-}
+function olcKartYer9(){}   // v265: kart sol üstte; panelden etkilenmez
 // v263: alan (yerel düzlemde, metrekare) ve gösterimi
 function olcAlan9(P){ if(P.length < 3) return 0; const la0 = P[0][0] * Math.PI / 180, kx = 111320 * Math.cos(la0), ky = 110540; let t = 0;
   for(let i = 0; i < P.length; i++){ const a = P[i], b = P[(i + 1) % P.length]; t += (a[1] * kx) * (b[0] * ky) - (b[1] * kx) * (a[0] * ky); } return Math.abs(t) / 2; }
@@ -5058,17 +5079,14 @@ function olcCiz(){
   if(!olc) return;
   olc.g.clearLayers(); setTimeout(() => { try{ olcKartYer9(); }catch(_){} }, 0);
   const k = document.getElementById("olckart");
-  const ust0 = document.getElementById("olcust");
-  const modSec = `<div class="seg2 mod9"><button data-olcmod="uz"${olc.mod === "uz" ? ' class="on"' : ""}>Uzunluk</button><button data-olcmod="alan"${olc.mod === "alan" ? ' class="on"' : ""}>Alan</button></div>`;
-  // v264: seçim Ölç tuşunun yanında küçük menü olarak; kart ve üst yazı seçimden sonra
+  const IKG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>';
+  const IKS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+  const tuslar = kapat => `<div class="r3"><button data-olcgeri aria-label="Geri al">${IKG}</button><button data-olcsil aria-label="Temizle">${IKS}</button>${kapat ? '<button class="k" data-olckapat>Kapat</button>' : ""}<button class="p" data-olcbitir>Bitir</button></div>`;
+  // v265: seçim yapılmadan kart görünmez; seçim Ölç tuşunun yanındaki menüde
   document.getElementById("olcsec9")?.remove();
-  if(!olc.mod){ if(ust0) ust0.style.display = "none"; if(k) k.style.display = "none";
-    const bt = document.querySelector(".hatv [data-olc]"), hv = document.getElementById("hatv"); if(bt && hv){ const r = bt.getBoundingClientRect(), h = hv.getBoundingClientRect();
-      const d = document.createElement("div"); d.className = "olcsec9"; d.id = "olcsec9"; d.style.top = Math.max(8, r.top - h.top - 6) + "px"; d.style.right = (h.right - r.left + 8) + "px";
-      d.innerHTML = `<button data-olcmod="uz"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17 17 3l4 4L7 21z"/><path d="m7 13 2 2M10 10l2 2M13 7l2 2"/></svg></i><span><b>Uzunluk</b><small>Kuş uçuşu ya da yol boyunca</small></span></button><button data-olcmod="alan"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7 12 3l8 5-2 11-11 1z"/><circle cx="4" cy="7" r="1.6" fill="currentColor"/><circle cx="12" cy="3" r="1.6" fill="currentColor"/><circle cx="20" cy="8" r="1.6" fill="currentColor"/><circle cx="18" cy="19" r="1.6" fill="currentColor"/><circle cx="7" cy="20" r="1.6" fill="currentColor"/></svg></i><span><b>Alan</b><small>Köşelere dokunarak çevir</small></span></button>`;
-      hv.appendChild(d); }
-    return; }
-  if(ust0) ust0.style.display = ""; if(k) k.style.display = "";
+  if(!olc.mod){ if(k) k.style.display = "none"; olcSecAc9(); return; }
+  if(k) k.style.display = "";
+
   if(olc.mod === "alan"){
     const P = olc.nok, n = P.length, A = olcAlan9(P);
     let cevre = 0; for(let i = 1; i < n; i++) cevre += haversine(P[i - 1], P[i]); if(olc.kapali && n > 2) cevre += haversine(P[n - 1], P[0]);
@@ -5079,11 +5097,8 @@ function olcCiz(){
     for(let i = 1; i < n; i++) kenar(P[i - 1], P[i]); if(olc.kapali && n > 2) kenar(P[n - 1], P[0]);
     P.forEach((q, i) => { if(i === 0 && !olc.kapali && n >= 3) L.circleMarker(q, { radius: 13, color: "#facc15", weight: 3, fillColor: "#422006", fillOpacity: .35, interactive: false }).addTo(olc.g);
       L.circleMarker(q, { radius: i === 0 ? 8 : 6, color: "#422006", weight: 2, fillColor: "#facc15", fillOpacity: 1, interactive: false }).addTo(olc.g); });
-    if(ust0) ust0.innerHTML = olc.kapali ? "<b>Alan çevrildi</b><small>Geri al ile kapanış açılır</small>" : "<b>Alan ölçme açık</b><small>Köşelere dokunun · ilk noktaya dokununca kapanır</small>";
-    if(k) k.innerHTML = `${modSec}<div class="t"><b>${n >= 3 ? alanYaz9(A) : "–"}</b><span>${n} köşe · çevre ${n > 1 ? mesafe(cevre) : "–"}</span></div>
-<div class="s">${n >= 3 ? alanAyrinti9(A) + (olc.kapali ? "" : " (kapanınca kesinleşir)") : n ? "En az 3 köşe ekleyin" : "İlk köşeye dokunun"}</div>
-<div class="bt"><button data-olcgeri>↶ Geri al</button><button data-olcsil>Temizle</button>${!olc.kapali && n >= 3 ? `<button class="k" data-olckapat>Kapat</button>` : `<button class="p" data-olcbitir>Bitir</button>`}</div>`;
-    if(n && hatHarita && !olc.kapali){ const son = P[n - 1], pt = hatHarita.latLngToContainerPoint(son), H = document.getElementById("hatmap").clientHeight; if(pt.y > H - 250) hatHarita.panBy([0, pt.y - (H - 280)]); }
+    if(k) k.innerHTML = `<div class="r1"><b>${n >= 3 ? alanYaz9(A) : "Alan"}</b><span>${n} köşe${n > 1 ? " · çevre " + mesafe(cevre) : ""}</span></div>
+<div class="r2">${n >= 3 ? alanAyrinti9(A).replace(/^[^·]+· /, "") + (olc.kapali ? "" : " · kapanmadı") : n ? "En az 3 köşe ekleyin" : "İlk köşeye dokunun"}</div>${tuslar(!olc.kapali && n >= 3)}`;
     return;
   }
   let toplam = 0, parca = [], kmA = null, kmB = null;
@@ -5106,20 +5121,15 @@ function olcCiz(){
     yer.forEach(y => L.circleMarker(y.p, { radius: 7, color: "#422006", weight: 2, fillColor: "#facc15", fillOpacity: 1, interactive: false }).addTo(olc.g));
     if(yer.length > 1){ const r1 = kmBul(hatIs, yer[0].p[0], yer[0].p[1]), r2 = kmBul(hatIs, yer[yer.length - 1].p[0], yer[yer.length - 1].p[1]); kmA = r1 && r1.km; kmB = r2 && r2.km; }
   }
-  const ust = document.getElementById("olcust");
-  if(ust) ust.innerHTML = olc.tur === "kus" ? "<b>Mesafe ölçme açık</b><small>Haritaya dokunarak nokta ekleyin</small>" : "<b>Hatta yapış açık</b><small>Noktalar işin hattına oturur</small>";
-  if(k) k.innerHTML = `${modSec}<div class="t"><b>${olc.nok.length > 1 ? mesafe(toplam) : "–"}</b><span>${olc.nok.length} nokta · ${olc.tur === "kus" ? "kuş uçuşu" : "yol boyunca" + (olc.kusVar ? " (farklı yollar arası kuş uçuşu)" : "")}</span></div>
-<div class="s">${olc.tur === "hat" && kmA !== null && kmB !== null && kmA !== undefined && kmB !== undefined ? `Yaklaşık ${kmYaz(Math.min(kmA, kmB))} → ${kmYaz(Math.max(kmA, kmB))} arası` : parca.length > 1 ? "Parçalar: " + parca.map(mesafe).join(" · ") : olc.nok.length ? "Bir nokta daha ekleyin" : "İlk noktaya dokunun"}</div>
-<div class="seg2"><button data-olctur="kus"${olc.tur === "kus" ? ' class="on"' : ""}>Kuş uçuşu</button><button data-olctur="hat"${olc.tur === "hat" ? ' class="on"' : ""}>Hatta yapış</button></div>
-<div class="bt"><button data-olcgeri>↶ Geri al</button><button data-olcsil>Temizle</button><button class="p" data-olcbitir>Bitir</button></div>`;
-  // son nokta kartın arkasında kalmasın
-  if(olc.nok.length && hatHarita){ const son = olc.nok[olc.nok.length - 1], pt = hatHarita.latLngToContainerPoint(son), H = document.getElementById("hatmap").clientHeight; if(pt.y > H - 230) hatHarita.panBy([0, pt.y - (H - 260)]); }
+  if(k) k.innerHTML = `<div class="r1"><b>${olc.nok.length > 1 ? mesafe(toplam) : "Uzunluk"}</b><span>${olc.nok.length} nokta</span></div>
+<div class="sg9"><button data-olctur="kus"${olc.tur === "kus" ? ' class="on"' : ""}>Kuş uçuşu</button><button data-olctur="hat"${olc.tur === "hat" ? ' class="on"' : ""}>Hatta yapış</button></div>
+<div class="r2">${olc.tur === "hat" && kmA != null && kmB != null ? `${kmYaz(Math.min(kmA, kmB))} → ${kmYaz(Math.max(kmA, kmB))}` + (olc.kusVar ? " · farklı yollar arası kuş uçuşu" : "") : olc.nok.length ? (olc.nok.length > 1 ? "" : "Bir nokta daha ekleyin") : "İlk noktaya dokunun"}</div>${tuslar(false)}`;
 }
 document.addEventListener("click", e => {
   if(e.target.closest("[data-olc]")){ olcBaslat(); return; }
   if(!olc) return;
-  if(!olc.mod && !e.target.closest("#olcsec9")){ olcBitir(); return; }
-  const md = e.target.closest("[data-olcmod]"); if(md){ if(olc.mod !== md.dataset.olcmod){ olc.mod = md.dataset.olcmod; olc.nok = []; olc.kapali = false; } olcCiz(); return; }
+  if(document.getElementById("olcsec9") && !e.target.closest("#olcsec9")){ document.getElementById("olcsec9").remove(); if(!olc.mod){ olcBitir(); return; } }
+  const md = e.target.closest("[data-olcmod]"); if(md){ document.getElementById("olcsec9")?.remove(); if(olc.mod !== md.dataset.olcmod){ olc.mod = md.dataset.olcmod; olc.nok = []; olc.kapali = false; } olcCiz(); return; }
   if(e.target.closest("[data-olckapat]")){ if(olc.nok.length >= 3){ olc.kapali = true; olcCiz(); } return; }
   const t = e.target.closest("[data-olctur]"); if(t){ olc.tur = t.dataset.olctur; olcCiz(); return; }
   if(e.target.closest("[data-olcgeri]")){ if(olc.kapali) olc.kapali = false; else olc.nok.pop(); olcCiz(); return; }
@@ -10198,7 +10208,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v264`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v265`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -12824,6 +12834,14 @@ function kmzKirMavi9(parcalar, ciz){
     ciz(x.p, x.r, 0, x);
   });
 }
+// v265: itinereri olan işte beyaz orta çizgi yol modelinin itinererde BY olan km'lerinde (TY olan yerde yok)
+function itiBeyaz9(j, YY){
+  const out = []; try{ if(koyYolu9(j)) return out; }catch(_){}
+  try{ (YY || kbYollar9(j)).forEach(yo => { const h = yo.h, S = yo.S || []; let c0 = null, son = null, k = 0, tipS = true;
+    S.forEach(sm => { if(k++ % 4 === 0) tipS = itiTip9(j, sm.m) !== "TY"; if(tipS && c0 === null) c0 = sm.c; if(!tipS && c0 !== null){ kbParca9(h, c0, sm.c).forEach(p => out.push(p)); c0 = null; } son = sm; });
+    if(c0 !== null && son) kbParca9(h, c0, son.c).forEach(p => out.push(p)); }); }catch(_){}
+  return out;
+}
 // v242: itinereri olan iş: KMZ renkleri yerine itinerer
 function itiModu9(j){ try{ return !!(YT9 && ytKodlar9(j).length); }catch(_){ return false; } }
 function beyazOl9(j){
@@ -12978,10 +12996,9 @@ function kbCiz10(m, hedef, j, W, WB, o){
   // bütün yol boyunca (TY değilse); kırmızı yalnız itinererden ve girilen KM'lerden gelir
   // v251: Tüm İşler KMZ'deki öbür işler hafif çizilir (yan yana kırmızı / mavi incelemesi ve boşluk doldurma yalnız seçili işte) — donmasın
   const mvH = ((renkli || []).find(c => kmzTon9(c.r) === "m") || {}).r || "#1e40ff";
-  const yarimK = [], iti9 = itiModu9(j), bz9 = iti9 && beyazOl9(j), cizK = o.hafif ? (L0, f) => L0.forEach(x => { if(iti9 && kmzTon9(x.r) === "k") return; f(x.p, iti9 ? mvH : x.r, 0, x); })
+  const yarimK = [], iti9 = itiModu9(j), bz9 = iti9 && !(() => { try{ return koyYolu9(j); }catch(_){ return false; } })(), cizK = o.hafif ? (L0, f) => L0.forEach(x => { if(iti9 && kmzTon9(x.r) === "k") return; f(x.p, iti9 ? mvH : x.r, 0, x); })
     : iti9 ? (L0, f) => kmzItiMavi9(L0, renkli).forEach(x => f(x.p, x.r, 0, x)) : kmzKirMavi9;
   cizK(kalan, (pp, r, yan, x) => {
-    if(bz9 && !yan) beyazK.push(pp);
     const { uz, u0, u1 } = x; let ly;
     if(!yan) ly = ekle(L.polyline(pp, { ...ortak, color: r, weight: W, lineCap: "butt", lineJoin: "round" }));
     else { ly = ekle(L.polyline(kbKaydir9(m, pp, yan * W / 4), { ...ortak, color: r, weight: W / 2, lineCap: "butt", lineJoin: "round", uc3bHam: pp, uc3bOfs: yan * W / 4 })); yarimK.push([ly, pp, yan]); }
@@ -13008,6 +13025,8 @@ function kbCiz10(m, hedef, j, W, WB, o){
   });
   // 5) KMZ'nin beyazı (koridor dışı) + boyalı yerlerde tam ortada kendi beyazımız
   beyaz.forEach(c => ayir(c).forEach(p => ekle(L.polyline(p, { ...ortak, color: c.r, weight: WB, lineCap: "butt", lineJoin: "round" }))));
+  // v265: boyanmayan yerde beyaz orta çizgi yalnız itinererde BY olan km'lerde (TY olan yerde yok)
+  if(bz9) itiBeyaz9(j, YY).forEach(p => beyazK.push(p));
   beyazK.forEach(p => ekle(L.polyline(p, { ...ortak, color: "#ffffff", weight: WB, lineCap: "butt", lineJoin: "round" })));
   parcalar.forEach(t => { if(t.by) ekle(L.polyline(t.p, { ...ortak, color: "#ffffff", weight: WB, lineCap: "round", lineJoin: "round" })); });
   // yarımlar yalnız yakınlaştırma BİTİNCE yeniden yerleşir (sürerken çizim yenilenirse tuval kayar)
@@ -13045,7 +13064,7 @@ async function kmzIndir9(j){
       else kmzKirMavi9(renkli.map(c => ({ p: c.p, r: c.r })), (pp, r, yan) => { L.polyline(pp, { color: r, weight: yan ? 4 : 8, uc3bHam: yan ? pp : undefined, uc3bOfs: yan ? yan * 2 : undefined }).addTo(grp); });
       try{ kmzBoya9(grp, j); }catch(_){}
       beyaz.forEach(c => L.polyline(c.p, { color: c.r, weight: 3 }).addTo(grp));
-      if(itiModu9(j) && beyazOl9(j)) renkli.filter(c => kmzTon9(c.r) !== "k").forEach(c => L.polyline(c.p, { color: "#ffffff", weight: 3 }).addTo(grp));
+      if(itiModu9(j)) itiBeyaz9(j).forEach(p => L.polyline(p, { color: "#ffffff", weight: 3 }).addTo(grp));
     }
     const X = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const kor = p => p.map(q => (+q[1]).toFixed(7) + "," + (+q[0]).toFixed(7) + ",0").join(" ");
@@ -13237,7 +13256,7 @@ function itp9Cek(p){
   // v264: panelin üst kenarının 24 px üstüne gelen dokunuş en dışta (KMZ ekranında, yakalama aşamasında) alınır — harita ya da başka katman
   // dokunuşu önce kapmasın; hangi katmana denk gelirse gelsin panel kayar
   const hv0 = document.getElementById("hatv");
-  const ustte = y => { const r = p.getBoundingClientRect(); return y >= r.top - 24 && y < r.top + 2; };
+  const ustte = y => { const r = p.getBoundingClientRect(); return y >= r.top - 44 && y < r.top + 2; };   // v265: iPhone dokunma noktasını parmağın biraz üstünde bildirir — 44 px
   const yT = e => { if(e.touches.length !== 1 || !ustte(e.touches[0].clientY)) return; e.stopPropagation(); dokundu(e.touches[0].clientY); dis = true; };
   const yM = e => { if(!dis) return; e.stopPropagation(); if(e.touches.length === 1 && hareket(e.touches[0].clientY, true)) e.preventDefault(); };
   const yE = e => { if(!dis) return; dis = false; e.stopPropagation(); birak(); };

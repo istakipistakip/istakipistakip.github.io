@@ -1447,8 +1447,8 @@ html.don9 .pdfis{ max-height:calc(var(--vh9) * 34); } html.don9 .yl9{ max-height
 .mapwrap.yat9 .hcsat.ac9 .hcip{ width:100%; justify-content:flex-start; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; line-height:28px; }
 /* v280: KMZ'de yapı adı (itinererden) */
 .yapi9k{ background:none; border:0; } .yapiyok9 .yapi9k{ display:none; }
-.yapi9{ position:absolute; left:0; top:0; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; padding:2px 7px 2px 5px; border-radius:7px; background:rgba(15,23,42,.72); color:#fde68a; font:700 11.5px system-ui, -apple-system, sans-serif; box-shadow:0 1px 4px rgba(0,0,0,.35); pointer-events:none; }
-.yapi9 svg{ width:15px; height:10px; flex:none; }
+.yapi9{ position:absolute; left:0; top:0; white-space:nowrap; color:#000; font:800 11px system-ui, -apple-system, sans-serif; letter-spacing:.01em; pointer-events:none;
+  text-shadow:0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff; }   /* v281: yalnız yazı, siyah (beyaz hare ile okunur), ikon yok */
 /* v270: eksik km noktası */
 .eks9{ border-color:rgba(34,197,94,.6) !important; color:#bbf7d0 !important; } .eks9 span{ background:#22c55e !important; } .eks9 i{ background:rgba(34,197,94,.25) !important; color:#86efac !important; } .eks9.sonuk{ opacity:.6; }
 .eks9p{ position:absolute; left:10px; right:10px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:1300; background:rgba(12,18,34,.88); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.14); border-radius:16px; padding:10px 12px; color:#e2e8f0; font-size:13px; pointer-events:auto; box-shadow:0 8px 24px rgba(0,0,0,.4); max-width:460px; margin:0 auto; }
@@ -10412,8 +10412,8 @@ function yapiYazi9(j, m){
       const A = kmdenNokta9(j, Math.max(0, y.km - 0.015), undefined, y.kol), B = kmdenNokta9(j, y.km + 0.015, undefined, y.kol);
       let nx = 1, ny = 0;
       if(A && B){ const a = m.latLngToContainerPoint(A), b = m.latLngToContainerPoint(B), dx = b.x - a.x, dy = b.y - a.y, L0 = Math.hypot(dx, dy); if(L0 > 0.5){ nx = -dy / L0; ny = dx / L0; } }
-      const ox = nx * 16, oy = ny * 16, ax = nx >= 0 ? 0 : -100;
-      grp.addLayer(L.marker(P, { interactive: false, keyboard: false, zIndexOffset: -500, icon: L.divIcon({ className: "yapi9k", iconSize: [0, 0], html: `<div class="yapi9" style="transform:translate(calc(${ox.toFixed(1)}px + ${ax}%), calc(${oy.toFixed(1)}px - 50%))">${YAPISIM9(y.ad)}<span>${esc(y.ad)}</span></div>` }) })); }); };
+      const ox = nx * 8, oy = ny * 8, ax = nx >= 0 ? 0 : -100;   // v281: çizgiye daha yakın
+      grp.addLayer(L.marker(P, { interactive: false, keyboard: false, zIndexOffset: -500, icon: L.divIcon({ className: "yapi9k", iconSize: [0, 0], html: `<div class="yapi9" style="transform:translate(calc(${ox.toFixed(1)}px + ${ax}%), calc(${oy.toFixed(1)}px - 50%))">${esc(y.ad)}</div>` }) })); }); };
   const gor = () => el.classList.toggle("yapiyok9", m.getZoom() < 15);
   m.whenReady(() => { try{ kur(); gor(); }catch(_){} });   // harita yeri ayarlanınca
   m.on("zoomend", () => { try{ gor(); kur(); }catch(_){} }); try{ m.on("rotate", () => { try{ kur(); }catch(_){} }); }catch(_){}
@@ -10471,7 +10471,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boykesit teşhisi · v280`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boykesit teşhisi · v281`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}

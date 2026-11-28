@@ -2763,6 +2763,7 @@ async function hatGoster(id, korun){
       if(n._bag9) bag9.push(n._bag9);
       const mk = L.circleMarker(gp, { radius: 7, color: "#ffffff", weight: 2, fillColor: "#f59e0b", fillOpacity: 1 }).addTo(m);
       mk.bindTooltip(n[2], { permanent: true, direction: "top", className: "kmz-km-label kmz-es9", offset: [0, -8] }); sinir.push(gp); return; }
+    if(n._kv9 && NK9 !== j.hat.nok){ sinir.push([n[0], n[1]]); return; }   // v276: kol kavşağındaki iki km yazısı kesişim etiketiyle gösterilir
     const mk = L.circleMarker([n[0], n[1]], { radius: 6, color: "#ffffff", weight: 2, fillColor: n[3] || "#dc2626", fillOpacity: 1 }).addTo(m);
     if(n[2]) mk.bindTooltip(n[2], { permanent: true, direction: "top", className: "kmz-km-label", offset: [0, -8] });
     mk.on("click", ev => { if(olc) return; L.DomEvent.stopPropagation(ev); kmMenu(m, n); });
@@ -9911,6 +9912,27 @@ function bkOrtukEsit9_(nok, cz, IE){
       let en = -1, ed = Infinity; p.forEach((q, i) => { const d = mesafe6(q, P); if(d < ed){ ed = d; en = i; } }); if(ed > 40) return;
       if(en > 0) ekle(p, en, -1); if(en < p.length - 1) ekle(p, en, 1); });
     return Y.length; };
+  // v276: kol kavşağı — bir çizgi P'de BİTİYOR, başka bir çizgi P'den GEÇİYOR (iki yana da ≥ 40 m) ve biten çizgi geçen çizgiden ayrılıyor
+  // (yönü > 10°, uzak ucu geçen çizgiden > 100 m). Bu bir kesişimdir (ör. bağlantı yolu PS 1+600 = ana yol 5+400): etiket "=" ile
+  // gösterilir ama km eşitliği SAYILMAZ (ana yol bölünmez, kolun km yazısı kolda kalır)
+  const kavsak9 = P => { if(!L9.length) return false;
+    const cl = Math.cos(P[0] * Math.PI / 180), xy = q => [(q[1] - P[1]) * cl * 111320, (q[0] - P[0]) * 111320];
+    const yol = (p, i0, adim, D) => { let i = i0, d = 0; while(i + adim >= 0 && i + adim < p.length && d < D){ d += mesafe6(p[i], p[i + adim]); i += adim; } return { i, d }; };
+    const aci = (a, b) => { const A = xy(a), B = xy(b); return Math.atan2(B[1] - A[1], B[0] - A[0]); };
+    const uc = [], gec = [];
+    L9.forEach((p, li) => { const b = BB9[li]; if(P[0] < b[0] || P[0] > b[1] || P[1] < b[2] || P[1] > b[3]) return;
+      let en = -1, ed = Infinity; p.forEach((q, i) => { const d = mesafe6(q, P); if(d < ed){ ed = d; en = i; } }); if(ed > 40) return;
+      const g = yol(p, en, -1, 40), ile = yol(p, en, 1, 40);
+      if(g.d >= 40 && ile.d >= 40) gec.push({ p, en, g, ile });
+      else if(mesafe6(p[0], P) <= 40 || mesafe6(p[p.length - 1], P) <= 40){ const t = mesafe6(p[p.length - 1], P) < mesafe6(p[0], P); uc.push(t ? p.slice().reverse() : p); } });
+    if(!uc.length || !gec.length) return false;
+    for(const u of uc){ const o = yol(u, 0, 1, 60); if(o.d < 30) continue; const au = aci(u[0], u[o.i]), uz = u[u.length - 1];
+      for(const g of gec){ const yon = [aci(g.p[g.en], g.p[g.g.i]), aci(g.p[g.en], g.p[g.ile.i])];
+        const fark = Math.min(...yon.map(y => Math.abs(Math.atan2(Math.sin(au - y), Math.cos(au - y)))));
+        if(fark < 10 * Math.PI / 180) continue;
+        if(Math.min(...g.p.map(q => mesafe6(q, uz))) < 100) continue;
+        return true; } }
+    return false; };
   const at = new Set(), ek = [];
   K.forEach((a, ai) => { if(at.has(a.q)) return;
     let en = null; K.forEach((b2, bi) => { if(bi === ai || at.has(b2.q) || Math.abs(a.v - b2.v) < 0.05) return; const d = mesafe6(a.p, b2.p); if(d <= 25 && (!en || d < en.d)) en = { b: b2, d }; });
@@ -9921,6 +9943,7 @@ function bkOrtukEsit9_(nok, cz, IE){
     if(uy){
       const [g2, i2] = Math.abs(uy.g - a.v) + Math.abs(uy.i - b2.v) <= Math.abs(uy.g - b2.v) + Math.abs(uy.i - a.v) ? [a.v, b2.v] : [b2.v, a.v];
       at.add(a.q); at.add(b2.q); const q = [P[0], P[1], `${kmT9(g2)} = ${kmT9(i2)}`]; q._e9 = 1; ek.push(q); return; }
+    if(kavsak9(P)){ at.add(a.q); at.add(b2.q); const q = [P[0], P[1], `${kmT9(Math.min(a.v, b2.v))} = ${kmT9(Math.max(a.v, b2.v))}`]; q._e9 = 1; q._kav9 = 1; q._kq9 = [a.q, b2.q]; ek.push(q); return; }
     // G / İ: en yakın başka km yazısı hangi değere yakınsa o taraftadır; ondan küçükse o taraf öncedir (G)
     let g = Math.max(a.v, b2.v), i = Math.min(a.v, b2.v), kom = null;
     K.forEach(o => { if(o === a || o === b2) return; const d = mesafe6(o.p, P); if(d < 40 || d > 3000) return; const ya = Math.abs(o.v - a.v), yb = Math.abs(o.v - b2.v); const yk = Math.min(ya, yb); if(yk > d / 1000 * 1.6 + 0.4) return; if(!kom || d < kom.d) kom = { o, d, x: ya <= yb ? a : b2 }; });
@@ -9953,6 +9976,8 @@ function bkOrtukEsit9_(nok, cz, IE){
     if(uc){ const J = izd(uc.e, uc.li); if(J && J.d <= 30){ q._g9 = J.p; if(J.d > 0.5) q._bag9 = [uc.e, J.p]; return; } }
     const J = izd(P, -1); if(J && J.d <= 40) q._g9 = J.p;
   }); }catch(_){}
+  // kavşakta km yazıları modelde kalır (_kv9: ekranda kesişim etiketi gösterildiği için ayrıca yazılmaz)
+  ek.forEach(q => { if(q._kq9) q._kq9.forEach(x => { at.delete(x); x._kv9 = 1; }); });
   const r = nok.filter(q => !at.has(q)).concat(ek); r._ort9 = 1; return r;
 }
 function bkEsit9(t){
@@ -10052,7 +10077,7 @@ function bkModel9(j){
   tut.sort((a, b) => b.u - a.u);
   par = tut;
   // noktalar: KM eşitlikleri, KM noktaları, proje başı / sonu (PB=, PBı:, PS…)
-  const IE9 = itiEsit9(j), nok = bkOrtukEsit9(j.hat.nok || [], anaCizgiler(j), IE9);
+  const IE9 = itiEsit9(j), nok0 = bkOrtukEsit9(j.hat.nok || [], anaCizgiler(j), IE9), nok = nok0.filter(q => !q._kav9);
   const PBRX = /(^|[\s(])P\s*\.?\s*[BS][ıiIİ]?\s*\.?\s*[:=]|proje\s*(başı|sonu|basi|sonu)/i;
   const esN = nok.map(q => { const e = bkEsit9(q[2]); return e ? { p: [q[0], q[1]], g: e.g, i: e.i, q } : null; }).filter(Boolean);
   const kmN = nok.filter(q => !bkEsit9(q[2])).map(q => { const m = KMRX9.exec(q[2] || ""); return m ? { p: [q[0], q[1]], v: kmSayi(m[1] + "+" + m[2]), q } : null; }).filter(x => x && x.v !== null);
@@ -10249,7 +10274,8 @@ function bkModel9(j){
   belirsiz.forEach(({ n, yak }) => {
     let sec = null, en = 1e9;
     yak.forEach(x => { const t = icAra(x.h.L, x.c); if(t !== null && Math.abs(t - n.v) < en){ en = Math.abs(t - n.v); sec = x; } });
-    if(!sec || en > 0.3) sec = yak.find(x => x.h.yol) || yak[0];
+    // v276: araya koyunca tutmayan yola (ör. kavşakta ana yol 5+400 civarı, yazı 1+600) verilmez; tutarlı (ya da km'si henüz olmayan) en yakın yola gider
+    if(!sec || en > 0.3){ const uy = yak.filter(x => { const t = icAra(x.h.L, x.c); return t === null || Math.abs(t - n.v) <= 0.3; }); sec = uy.length ? uy.slice().sort((a, b) => a.d - b.d)[0] : (yak.find(x => x.h.yol) || yak[0]); }
     sec.h.L.push({ c: sec.c, v: n.v, pb: PBBAS.test(n.q[2] || "") }); sec.h.et.push(n.q);
   });
   esN.filter(e => !PBRX.test(e.q[2] || "")).forEach(e => { const ds = hatlar.map(h => { const r = izd(h, e.p); return { h, d: r.d, c: cBul(h, r) }; }).sort((a, b) => a.d - b.d);
@@ -10282,7 +10308,7 @@ function bkModel9(j){
     TL.push("— sonuç —");
     yollar.forEach((y, i) => TL.push(`${y.ad}: ${Math.round(uz(y.p))} m · ${y.kmF ? kmAdi(y, 0) + " → " + kmAdi(y, y.kum[y.kum.length - 1]) : "km yok"} · baş ${pt9(y.p[0])} · son ${pt9(y.p[y.p.length - 1])}`));
     kollar.forEach(k => TL.push(`${k.ad}: ${Math.round(uz(k.p))} m · ayrılış ${k.ayr || "?"} · baş ${pt9(k.p[0])} · son ${pt9(k.p[k.p.length - 1])}`));
-    TL.push(`KM eşitlikleri (İ/G): ${esN.filter(e => !e.q._e9).map(e => `${e.q[2]} @ ${pt9(e.p)}`).join(" | ") || "yok"}`); TL.push(`Kesişim noktaları: ${esN.filter(e => e.q._e9).map(e => `${e.q[2]} @ ${pt9(e.p)}`).join(" | ") || "yok"}`);
+    TL.push(`KM eşitlikleri (İ/G): ${esN.filter(e => !e.q._e9).map(e => `${e.q[2]} @ ${pt9(e.p)}`).join(" | ") || "yok"}`); TL.push(`Kesişim noktaları: ${esN.filter(e => e.q._e9).map(e => `${e.q[2]} @ ${pt9(e.p)}`).join(" | ") || "yok"}`); TL.push(`Kol kavşakları (eşitlik sayılmaz): ${nok0.filter(q => q._kav9).map(q => `${q[2]} @ ${pt9([q[0], q[1]])}`).join(" | ") || "yok"}`);
   }
   return (j._bkM9 = { h: j.hat, ana: paket(yollar[0]), kollar: yollar.slice(1).map(paket).concat(kollar.map(paket)), esitN: esN });
 }
@@ -10308,7 +10334,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boykesit teşhisi · v275`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boykesit teşhisi · v276`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -13436,7 +13462,7 @@ async function kmzIndir9(j){
     // km / eşitlik yazıları
     let NK = j.hat.nok || [];
     try{ const r = bkOrtukEsit9(NK, anaCizgiler(j), itiEsit9(j)); if(r !== NK) NK = r; }catch(_){}
-    const nk = NK.map(n => { const g = n._g9 || n; return `<Placemark><name>${X(n[2] || "")}</name><styleUrl>#${n._e9 ? "ne" : "nk"}</styleUrl><Point><coordinates>${(+g[1]).toFixed(7)},${(+g[0]).toFixed(7)},0</coordinates></Point></Placemark>`; });
+    const nk = NK.filter(n => !n._kv9 || !NK.some(x => x._kav9)).map(n => { const g = n._g9 || n; return `<Placemark><name>${X(n[2] || "")}</name><styleUrl>#${n._e9 ? "ne" : "nk"}</styleUrl><Point><coordinates>${(+g[1]).toFixed(7)},${(+g[0]).toFixed(7)},0</coordinates></Point></Placemark>`; });
     const stiller = [...stil].map(([k, id]) => { const [c, w] = k.split("|"); return `<Style id="${id}"><LineStyle><color>${c}</color><width>${w}</width></LineStyle></Style>`; }).join("")
       + `<Style id="nk"><IconStyle><color>ff2626dc</color><scale>0.6</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle><LabelStyle><scale>0.8</scale></LabelStyle></Style>`
       + `<Style id="ne"><IconStyle><color>ff0b9ef5</color><scale>0.7</scale><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle><LabelStyle><color>ff0b9ef5</color><scale>0.9</scale></LabelStyle></Style>`;

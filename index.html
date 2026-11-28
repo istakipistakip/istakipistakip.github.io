@@ -1447,8 +1447,9 @@ html.don9 .pdfis{ max-height:calc(var(--vh9) * 34); } html.don9 .yl9{ max-height
 .mapwrap.yat9 .hcsat.ac9 .hcip{ width:100%; justify-content:flex-start; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; line-height:28px; }
 /* v280: KMZ'de yapı adı (itinererden) */
 .yapi9k{ background:none; border:0; } .yapiyok9 .yapi9k{ display:none; }
-.yapi9{ position:absolute; left:0; top:0; white-space:nowrap; color:#000; font:800 11px system-ui, -apple-system, sans-serif; letter-spacing:.01em; pointer-events:none;
-  text-shadow:0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff; }   /* v281: yalnız yazı, siyah (beyaz hare ile okunur), ikon yok */
+.yapi9{ position:absolute; left:0; top:0; display:flex; flex-direction:column; align-items:center; text-align:center; line-height:1.15; white-space:nowrap; color:#000; pointer-events:none; font-family:system-ui, -apple-system, sans-serif;
+  text-shadow:0 0 2px #fff, 0 0 2px #fff, 0 0 3px #fff, 1px 1px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff; }   /* v282: ad üstte, km'ler altta, ortadan hizalı; %25 küçük */
+.yapi9 b{ font-size:8.5px; font-weight:800; letter-spacing:.01em; } .yapi9 small{ font-size:7.5px; font-weight:600; }
 /* v270: eksik km noktası */
 .eks9{ border-color:rgba(34,197,94,.6) !important; color:#bbf7d0 !important; } .eks9 span{ background:#22c55e !important; } .eks9 i{ background:rgba(34,197,94,.25) !important; color:#86efac !important; } .eks9.sonuk{ opacity:.6; }
 .eks9p{ position:absolute; left:10px; right:10px; bottom:calc(14px + env(safe-area-inset-bottom)); z-index:1300; background:rgba(12,18,34,.88); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.14); border-radius:16px; padding:10px 12px; color:#e2e8f0; font-size:13px; pointer-events:auto; box-shadow:0 8px 24px rgba(0,0,0,.4); max-width:460px; margin:0 auto; }
@@ -10404,7 +10405,7 @@ function yapiYazi9(j, m){
       const ad = YAPIAD9[r.tur] || String(r.tur); const kol = r.yolId && ana && r.yolId !== ana && kolMu(r.yolId) ? 1 : 0;
       const km = (a + (Number.isFinite(e) ? e : a)) / 2000;
       if(Y.some(x => x.ad === ad && x.kol === kol && Math.abs(x.km - km) < 0.005)) return;
-      Y.push({ ad, kol, km }); }); });
+      const ea = Number.isFinite(e) ? e : a; Y.push({ ad, kol, km, kmy: Math.abs(ea - a) < 0.5 ? kmT9(a / 1000) : `${kmT9(Math.min(a, ea) / 1000)} – ${kmT9(Math.max(a, ea) / 1000)}` }); }); });
   if(!Y.length) return;
   const grp = L.layerGroup().addTo(m), el = m.getContainer();
   const kur = () => { grp.clearLayers();
@@ -10412,8 +10413,8 @@ function yapiYazi9(j, m){
       const A = kmdenNokta9(j, Math.max(0, y.km - 0.015), undefined, y.kol), B = kmdenNokta9(j, y.km + 0.015, undefined, y.kol);
       let nx = 1, ny = 0;
       if(A && B){ const a = m.latLngToContainerPoint(A), b = m.latLngToContainerPoint(B), dx = b.x - a.x, dy = b.y - a.y, L0 = Math.hypot(dx, dy); if(L0 > 0.5){ nx = -dy / L0; ny = dx / L0; } }
-      const ox = nx * 8, oy = ny * 8, ax = nx >= 0 ? 0 : -100;   // v281: çizgiye daha yakın
-      grp.addLayer(L.marker(P, { interactive: false, keyboard: false, zIndexOffset: -500, icon: L.divIcon({ className: "yapi9k", iconSize: [0, 0], html: `<div class="yapi9" style="transform:translate(calc(${ox.toFixed(1)}px + ${ax}%), calc(${oy.toFixed(1)}px - 50%))">${esc(y.ad)}</div>` }) })); }); };
+      const ox = nx * 7, oy = ny * 7, ax = nx >= 0 ? 0 : -100;   // v281: çizgiye daha yakın
+      grp.addLayer(L.marker(P, { interactive: false, keyboard: false, zIndexOffset: -500, icon: L.divIcon({ className: "yapi9k", iconSize: [0, 0], html: `<div class="yapi9" style="transform:translate(calc(${ox.toFixed(1)}px + ${ax}%), calc(${oy.toFixed(1)}px - 50%))"><b>${esc(y.ad)}</b><small>${esc(y.kmy)}</small></div>` }) })); }); };
   const gor = () => el.classList.toggle("yapiyok9", m.getZoom() < 15);
   m.whenReady(() => { try{ kur(); gor(); }catch(_){} });   // harita yeri ayarlanınca
   m.on("zoomend", () => { try{ gor(); kur(); }catch(_){} }); try{ m.on("rotate", () => { try{ kur(); }catch(_){} }); }catch(_){}
@@ -10471,7 +10472,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boykesit teşhisi · v281`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boykesit teşhisi · v282`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -10698,7 +10699,8 @@ function eksikKm9(j){
     const Yl = Array.isArray(q.yollar) ? q.yollar : [], ana = Yl[0] && Yl[0].id;
     const kolMu = id => { const y = Yl.find(o => o.id === id); return !!(y && (y.sekil === "L" || y.sekil === "T" || y.sekil === "+")); };
     (q.kayitlar || []).forEach(r => { if(!r || r._km9 || r._taban9) return; const a = +r.bas, e = +r.bit; if(!Number.isFinite(a) || !Number.isFinite(e) || Math.abs(e - a) < 1) return;
-      const yol = YOLTUR9.has(r.tur), ad = yol ? `${r.sinif === "TY" || String(r.konum || "").toUpperCase() === "TY" ? "TY" : "BY"} ${r.tur} (${r.durum === "buyil" ? "bu yıl yapılan" : r.durum === "eski" ? "yapılan" : "yapılmayan"})` : String(r.tur || "Kayıt");
+      const yol = YOLTUR9.has(r.tur); if(!yol) return;   // v282: yapı başı / sonu önerilmez (km'si KMZ'de yapı yazısının altında)
+      const ad = yol ? `${r.sinif === "TY" || String(r.konum || "").toUpperCase() === "TY" ? "TY" : "BY"} ${r.tur} (${r.durum === "buyil" ? "bu yıl yapılan" : r.durum === "eski" ? "yapılan" : "yapılmayan"})` : String(r.tur || "Kayıt");
       const kol = r.yolId && ana && r.yolId !== ana && kolMu(r.yolId) ? 1 : 0, ik = r.yolId && ana && r.yolId !== ana && !kol ? 1 : 0;
       A.push({ m: Math.min(a, e), ne: ad + " başı", kol, ik, zc: r.zincir || "" }, { m: Math.max(a, e), ne: ad + " sonu", kol, ik, zc: r.zincir || "" }); });
     (q.yolTipAraliklari || []).forEach(t => { if(!t || t.bas == null || t.bit == null || !(+t.bit > +t.bas)) return; const ty = t.tip === "TY";

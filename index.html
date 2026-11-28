@@ -1402,8 +1402,8 @@ html, body{ touch-action:manipulation; }
 /* v37: KMZ sağ çubuktaki bütün simgeler aynı boyda (Yol Tarifi dahil) */
 .hatv .sagk button svg, .hatv .sagk button svg.ik{ width:20px !important; height:20px !important; }
 /* v255: sağdaki tuşların altında küçük adı; ikonlar %10 küçük */
-.hatv .sagk{ width:54px; right:6px !important; transform:scale(.9); transform-origin:top right; }
-.hatv .pus{ right:6px !important; transform:scale(.9); transform-origin:top right; }
+.hatv .sagk{ width:54px; right:2px !important; transform:scale(.9); transform-origin:top right; }
+.hatv .pus{ right:6px !important; transform:scale(.9); transform-origin:top center; }
 .hatv .sagk button{ width:48px; height:auto; min-height:36px; padding:4px 0 3px !important; flex-direction:column; gap:1px !important; }
 .hatv .sagk button svg, .hatv .sagk button svg.ik{ width:18px !important; height:18px !important; flex:none; }
 .hatv .sagk button[data-et]::after{ content:attr(data-et); display:block; font-size:8.5px !important; line-height:1.05; font-weight:700; letter-spacing:-.1px; color:#cbd5e1; white-space:nowrap; }
@@ -4833,7 +4833,7 @@ function tumIslerCiz(){
   tumSecili = hatIs.id;
 }
 // ---------- v254: Tüm İşler KMZ önbelleği ----------
-const KBV9 = "kbc3";                  // boyama kuralları değişince artırılır: bütün kayıtlar yeniden hesaplanır
+const KBV9 = "kbc4";                  // boyama kuralları değişince artırılır: bütün kayıtlar yeniden hesaplanır
 let KBC9 = null, kbcZam9 = 0, tumYarim9 = [], tumAlt9 = {}, kbcSira9 = [], kbcCalis9 = false;
 async function kbcAl9(){ if(KBC9) return KBC9; let v = null; try{ v = await idbOku("kbc9"); }catch(_){} KBC9 = v && v._v === KBV9 ? v : { _v: KBV9 }; return KBC9; }
 function kbcKaydet9(){ clearTimeout(kbcZam9); kbcZam9 = setTimeout(() => { try{ idbYaz9("kbc9", KBC9); }catch(_){} }, 2000); }
@@ -6137,7 +6137,10 @@ function pusulaGuncel(){
 function pusulaYeri(){
   const v = document.getElementById("hatv"); if(!v) return;
   const s = v.querySelector(".sagk"), p = v.querySelector(".pus"); if(!s || !p) return;
-  p.style.top = (s.getBoundingClientRect().bottom - v.getBoundingClientRect().top + 8) + "px";   // v266: sütun küçültülmüş (scale) olabilir
+  // v267: pusula sütunun hemen altında (4 px) ve ortası sütunun ortasıyla aynı çizgide
+  const hv = v.getBoundingClientRect(), sr = s.getBoundingClientRect(), pw = p.offsetWidth || 46;
+  p.style.top = (sr.bottom - hv.top + 4) + "px"; p.style.right = "auto"; p.style.setProperty("right", "auto", "important");
+  p.style.left = (sr.left + sr.width / 2 - hv.left - pw / 2) + "px";
 }
 const _hatGoster5 = hatGoster;
 hatGoster = async function(id, korun){
@@ -10205,6 +10208,7 @@ function bkTeshis9(j, ek){
   let Y = []; try{ Y = kbYollar9(jj).map(y => `${y.ad}${y.ana ? " (ana)" : ""}: ${mKm9(Math.round(y.lo))} – ${mKm9(Math.round(y.hi))}`); }catch(_){}
   // v244: kesimler (eşitlikten eşitliğe km aralıkları), itinerer eşitlikleri ve her boyalı parçanın kaynağı
   const B = [];
+  try{ B.push("İtinerer yol tipi: " + itiTipOzet9(jj)); }catch(_){}
   try{ const IE = itiEsit9(jj); B.push("İtinerer: " + (IE === null ? "yok" : (IE.length ? IE.filter(p => p.m || p.A).slice(0, 12).map(p => `${kmT9(p.g)} = ${kmT9(p.i)}${p.m ? " (liste)" : ""}`).join(" | ") : "eşitlik yok")) + " · KMZ'yi itinerer boyar: " + (itiModu9(jj) ? "evet" : "hayır"));
     const YY = kbYollar9(jj), kmc = (yo, c) => { const S = yo.S; let k = 0; while(k < S.length - 2 && S[k + 1].c < c) k++; const a = S[k], b = S[k + 1] || a; return b.c > a.c ? a.m + (b.m - a.m) * (c - a.c) / (b.c - a.c) : a.m; };
     YY.forEach(yo => { const Es = (yo.h.esit || []).slice().sort((a, b) => a.c - b.c), K = Es.map(() => 0).concat([0]).map(() => [Infinity, -Infinity]);
@@ -10217,7 +10221,7 @@ function bkTeshis9(j, ek){
       const sat = `${ad} → kesim ${n} ${mKm9(Math.round(kmc(yo, s.c0)))}–${mKm9(Math.round(kmc(yo, s.c1)))}`;
       gor.set(sat, (gor.get(sat) || 0) + 1); });
     B.push(...[...gor.keys()].slice(0, 60)); }catch(e){ B.push("boyama teşhisi hatası: " + (e.message || e)); }
-  return [`İşTakip boy kesit teşhisi · v266`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
+  return [`İşTakip boy kesit teşhisi · v267`, ...(ek ? ["— dokunulan parça —", ek] : []), ...L, "— KMZ boyama yolları —", ...Y, "— boyama kaynakları —", ...B].join("\n");
 }
 async function teshisKopyala9(metin){
   try{ await navigator.clipboard.writeText(metin); bildir("Teşhis kopyalandı · sohbete yapıştırabilirsiniz"); return; }catch(_){}
@@ -11758,16 +11762,34 @@ function kbHatAralik9(Y, x){
   return out;
 }
 // v131: o km'de yol tipi itinererden (yol tipi aralıkları → o km'yi kapsayan yol kaydı → projenin yol tipi)
+// v267: yol tipi itinerer çizimindeki gibi: TY şeridi = proje yol tipi aralıkları (TY) + sınıfı TY ya da şeridi (konum) TY olan kayıtlar
+const TYA9 = new WeakMap();
+function itiTyAralik9(q){
+  if(TYA9.has(q)) return TYA9.get(q);
+  const R = [];
+  (q.yolTipAraliklari || []).forEach(a => { if(a && a.tip === "TY" && a.bas != null && a.bit != null && +a.bit > +a.bas) R.push([+a.bas, +a.bit]); });
+  (q.kayitlar || []).forEach(r => { if(r && (r.sinif === "TY" || String(r.konum || "").toUpperCase() === "TY") && Number.isFinite(+r.bas) && Number.isFinite(+r.bit)) R.push([Math.min(+r.bas, +r.bit), Math.max(+r.bas, +r.bit)]); });
+  R.sort((x, y) => x[0] - y[0]); const M = [];
+  R.forEach(r => { const l = M[M.length - 1]; if(l && r[0] <= l[1] + 1) l[1] = Math.max(l[1], r[1]); else M.push(r.slice()); });
+  const o = { tip: q.yolTipi === "TY" || q.yolTipi === "BY" ? q.yolTipi : null, R: M }; TYA9.set(q, o); return o;
+}
 function itiTip9(j, m){
   if(!YT9 || !j) return null;
   let kodlar = []; try{ kodlar = ytKodlar9(j); }catch(_){}
   for(const kod of kodlar){
-    const q = ytProje9(kod); if(!q) continue;
-    const ar = (q.yolTipAraliklari || []).find(r => m >= +r.bas - 1 && m <= +r.bit + 1); if(ar && ar.tip) return ar.tip === "TY" ? "TY" : "BY";
-    const k = (q.kayitlar || []).find(r => YOLTUR9.has(r.tur) && m >= +r.bas - 1 && m <= +r.bit + 1 && r.sinif); if(k) return k.sinif === "TY" ? "TY" : "BY";
-    if(q.yolTipi) return q.yolTipi === "TY" ? "TY" : "BY";
+    const q = ytProje9(kod); if(!q) continue; const o = itiTyAralik9(q);
+    if(o.tip === "BY") return "BY";
+    if(o.tip === "TY") return "TY";
+    if(o.R.some(r => m >= r[0] - 1 && m <= r[1] + 1)) return "TY";
+    return "BY";
   }
   return null;
+}
+// boy kesit teşhisi için: "48+300–48+800 TY · geri kalan BY"
+function itiTipOzet9(j){
+  let kodlar = []; try{ kodlar = ytKodlar9(j); }catch(_){}
+  return kodlar.map(k => { const q = ytProje9(k); if(!q) return null; const o = itiTyAralik9(q);
+    if(o.tip) return `${k}: tamamı ${o.tip}`; return `${k}: ` + (o.R.length ? o.R.map(r => `${mKm9(r[0])}–${mKm9(r[1])} TY`).join(" · ") + " · geri kalan BY" : "tamamı BY"); }).filter(Boolean).join(" | ") || "itinerer yok";
 }
 async function yolSor9(j, km, eski){
   const a0 = kmM9(km.a), e0 = kmM9(km.e); if(a0 === null || e0 === null) return null;
@@ -12847,7 +12869,7 @@ function kmzKirMavi9(parcalar, ciz){
 function itiBeyaz9(j, YY){
   const out = []; try{ if(koyYolu9(j)) return out; }catch(_){}
   try{ (YY || kbYollar9(j)).forEach(yo => { const h = yo.h, S = yo.S || []; let c0 = null, son = null, k = 0, tipS = true;
-    S.forEach(sm => { if(k++ % 4 === 0) tipS = itiTip9(j, sm.m) !== "TY"; if(tipS && c0 === null) c0 = sm.c; if(!tipS && c0 !== null){ kbParca9(h, c0, sm.c).forEach(p => out.push(p)); c0 = null; } son = sm; });
+    S.forEach(sm => { tipS = itiTip9(j, sm.m) !== "TY"; k++; if(tipS && c0 === null) c0 = sm.c; if(!tipS && c0 !== null){ kbParca9(h, c0, sm.c).forEach(p => out.push(p)); c0 = null; } son = sm; });
     if(c0 !== null && son) kbParca9(h, c0, son.c).forEach(p => out.push(p)); }); }catch(_){}
   return out;
 }
